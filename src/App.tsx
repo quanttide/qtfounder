@@ -1,10 +1,19 @@
-function App() {
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
+import Home from './pages/Home'
+import Works from './pages/Works'
+import WorkDetail from './pages/WorkDetail'
+
+export default function App() {
   return (
-    <>
-      <h1>量潮创始人</h1>
-      <p>认知即叙事，叙事即实践。</p>
-    </>
+    <BrowserRouter basename="/qtfounder">
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/works" element={<Works />} />
+          <Route path="/works/fiction/drafts/:slug" element={<WorkDetail />} />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
   )
 }
-
-export default App
