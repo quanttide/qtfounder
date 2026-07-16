@@ -1,6 +1,4 @@
-# 量潮创始人
-
-创始人官网。
+# 量潮创始人官网
 
 ## 技术栈
 
@@ -20,7 +18,3 @@ npm run dev
 npm run build
 npm run preview
 ```
-
-## 许可
-
-Apache 2.0
