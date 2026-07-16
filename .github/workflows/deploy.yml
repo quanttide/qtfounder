@@ -23,12 +23,15 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: src/site/package-lock.json
       - run: npm ci
+        working-directory: src/site
       - run: npm run build
+        working-directory: src/site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: src/site/dist
 
   deploy:
     runs-on: ubuntu-latest
