@@ -1,4 +1,3 @@
-mod ai;
 mod git;
 mod health;
 mod util;

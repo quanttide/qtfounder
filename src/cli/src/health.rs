@@ -1,7 +1,7 @@
 use chrono::{DateTime, Datelike, TimeDelta, Utc};
 use clap::Subcommand;
 
-use crate::{ai, git, util};
+use crate::{git, util};
 
 const EXTRACT_PROMPT: &str = "从以下文本中提取情绪状态。输出JSON：{\"dominant_mood\":\"\",\"valence\":0,\"arousal\":0,\"warning_signs\":[],\"emotional_needs\":[]} 纯JSON。";
 
@@ -96,7 +96,21 @@ fn daily_content(repo: &str, max: usize) -> Vec<(String, String)> {
 }
 
 fn extract(text: &str) -> serde_json::Value {
-    ai::extract_json(EXTRACT_PROMPT, text).unwrap_or_default()
+    if text.is_empty() {
+        return serde_json::json!({});
+    }
+    let llm = quanttide_agent::llm::LLM::default();
+    let msg = &text[..text.len().min(4000)];
+    match llm.complete(
+        &[
+            quanttide_agent::Message::new("system", EXTRACT_PROMPT),
+            quanttide_agent::Message::new("user", msg),
+        ],
+        quanttide_agent::llm::CompleteOptions::default(),
+    ) {
+        Ok(r) => serde_json::from_str(r.content.trim()).unwrap_or_default(),
+        Err(_) => serde_json::json!({}),
+    }
 }
 
 fn cmd_check(memory: &str, fiction: &str, days: u32) {
