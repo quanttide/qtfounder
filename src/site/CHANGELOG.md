@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-alpha.4] - 2026-08-14
+
+### Removed
+
+- `/brain` 第二大脑页面（`pages/Brain.tsx`）及其路由、部署路由 key
+
 ## [0.1.0-alpha.3] - 2026-08-14
 
 ### Changed
