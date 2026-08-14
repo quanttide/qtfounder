@@ -38,15 +38,17 @@
 | 任务 | 说明 |
 |------|------|
 | `submodule update` | 从 `git submodule status` 的 `+` 行自动生成 `chore: update <name> submodule` 提交序列 |
-| `submodule check` | 列出引用过期、未初始化的子模块 |
+
+状态查看（过期/未初始化）已由 `qtcloud-devops code status` 覆盖，不重复实现。
 
 ### 阶段 3：发布前检查
 
 | 任务 | 说明 |
 |------|------|
-| `release check` | 校验所有子模块引用为最新 |
-| `release check` | CHANGELOG 头部版本与版本号一致 |
+| `release check` | 校验所有子模块引用为最新（`release audit` 只查工作区干净，不查引用过期） |
 | `release check` | 结构类变更（目录迁移/重命名）触发 major 升格提示 |
+
+版本号格式、CHANGELOG 一致性、标签冲突等其余预检已由 `qtcloud-devops release audit` 覆盖，不重复实现。
 
 ### 阶段 4：文档一致性校验
 
