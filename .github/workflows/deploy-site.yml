@@ -1,0 +1,97 @@
+# 发布 site：推送 site/* tag（如 site/v0.1.0，由 qtcloud-devops release publish 创建）时，
+# 构建 Vite 站点，上传到 OSS 发布桶（qtfounder-site，静态网站托管），并刷新 CDN 缓存。
+#
+# 对齐 qtcloud 的 deploy-studio.yml 模式：
+#   site/* tag → Actions（npm build，ossutil cp）→ OSS 桶（qtfounder-site）
+#   → CDN（founder.quanttide.com，泛域名证书 *.quanttide.com）→ 用户浏览器
+#
+# 路径说明：vite base=/qtfounder/，产物上传到桶的 qtfounder/ 前缀；
+# 桶根 index.html 同步覆盖（OSS 静态网站托管根路径默认页）。
+# 404.html 为 SPA 壳（react-router 路由回退，OSS 静态托管 error_document）。
+#
+# 所需 GitHub secrets：
+#   - ALIYUN_ACCESS_KEY_ID / ALIYUN_ACCESS_KEY_SECRET（secret）：RAM 用户 AccessKey（OSS 上传 + CDN 刷新）
+
+name: Deploy Site
+
+on:
+  push:
+    tags:
+      - 'site/**'
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: true
+
+env:
+  OSS_BUCKET: qtfounder-site
+  OSS_ENDPOINT: oss-cn-hangzhou.aliyuncs.com
+  CDN_DOMAIN: founder.quanttide.com
+
+jobs:
+  build-and-deploy:
+    name: Build Vite Site & Deploy to OSS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: src/site/package-lock.json
+
+      - name: Install & Build
+        working-directory: src/site
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup ossutil
+        uses: manyuanrong/setup-ossutil@v3
+        with:
+          endpoint: ${{ env.OSS_ENDPOINT }}
+          access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+
+      # 缓存策略：哈希资源（assets/）长缓存；
+      # 固定名入口（index.html / 404.html / vite.svg）必须 no-cache，
+      # 否则发版后浏览器/CDN 拿旧 HTML（引用旧 hash）
+      - name: Upload assets（长缓存）
+        working-directory: src/site
+        run: |
+          ossutil cp dist/assets/ oss://${{ env.OSS_BUCKET }}/qtfounder/assets/ -r -f \
+            --meta "Cache-Control:public,max-age=31536000"
+
+      - name: Upload entry files（no-cache）
+        working-directory: src/site
+        run: |
+          ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/qtfounder/index.html -f --meta "Cache-Control:no-cache"
+          ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/index.html -f --meta "Cache-Control:no-cache"
+          ossutil cp dist/vite.svg oss://${{ env.OSS_BUCKET }}/qtfounder/vite.svg -f --meta "Cache-Control:no-cache"
+
+      # SPA 回退：react-router 路由（/qtfounder/works 等）由 OSS 静态托管 error_document 返回 404.html
+      - name: Upload 404.html（SPA fallback）
+        working-directory: src/site
+        run: |
+          cp dist/index.html 404.html
+          ossutil cp 404.html oss://${{ env.OSS_BUCKET }}/qtfounder/404.html -f --meta "Cache-Control:no-cache"
+          ossutil cp 404.html oss://${{ env.OSS_BUCKET }}/404.html -f --meta "Cache-Control:no-cache"
+
+      - name: Refresh CDN
+        run: |
+          pip install aliyun-python-sdk-cdn
+          python -c "
+          from aliyunsdkcore.client import AcsClient
+          from aliyunsdkcdn.request.v20180510.RefreshObjectCachesRequest import RefreshObjectCachesRequest
+          import os
+          cli = AcsClient(os.environ['ALIYUN_ACCESS_KEY_ID'], os.environ['ALIYUN_ACCESS_KEY_SECRET'], 'cn-hangzhou')
+          req = RefreshObjectCachesRequest()
+          req.set_ObjectPath('https://${{ env.CDN_DOMAIN }}/')
+          req.set_ObjectType('Directory')
+          cli.do_action_with_exception(req)
+          "
+        env:
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
