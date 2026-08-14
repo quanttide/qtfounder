@@ -80,6 +80,19 @@ jobs:
           ossutil cp 404.html oss://${{ env.OSS_BUCKET }}/qtfounder/404.html -f --meta "Cache-Control:no-cache"
           ossutil cp 404.html oss://${{ env.OSS_BUCKET }}/404.html -f --meta "Cache-Control:no-cache"
 
+      # SPA 路由 200：把 SPA 壳上传为无扩展名 key（OSS key 无需扩展名），
+      # 使深链直接访问返回 200 + text/html，避免 404 状态码；
+      # 路由集合固定：works / brain / works/fiction/drafts/<slug>（slug 从内容目录解析）
+      - name: Upload SPA route entries（200）
+        working-directory: src/site
+        run: |
+          for r in works brain; do
+            ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/qtfounder/$r -f --meta "Content-Type:text/html" --meta "Cache-Control:no-cache"
+          done
+          for s in $(ls -d src/content/works/fiction/*/ | xargs -n1 basename); do
+            ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/qtfounder/works/fiction/drafts/$s -f --meta "Content-Type:text/html" --meta "Cache-Control:no-cache"
+          done
+
       - name: Refresh CDN
         run: |
           pip install aliyun-python-sdk-cdn
