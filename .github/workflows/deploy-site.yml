@@ -18,6 +18,7 @@ on:
   push:
     tags:
       - 'site/**'
+  workflow_dispatch:
 
 concurrency:
   group: deploy-site
@@ -49,7 +50,7 @@ jobs:
           npm run build
 
       - name: Setup ossutil
-        uses: manyuanrong/setup-ossutil@v3
+        uses: manyuanrong/setup-ossutil@v3.0
         with:
           endpoint: ${{ env.OSS_ENDPOINT }}
           access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
