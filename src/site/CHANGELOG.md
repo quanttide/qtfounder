@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.0-alpha.2] - 2026-08-14
+
+### Fixed
+
+- OSS 部署工作流移至 `.github/workflows/deploy-site.yml`（对齐 qtcloud `deploy-studio.yml` 模式）：此前置于仓库根目录，GitHub Actions 不识别，发布后从未自动部署
+- 上传路径修正：构建产物上传到 OSS 桶 `qtfounder/` 前缀（与 vite `base=/qtfounder/` 匹配）并同步桶根 index.html；此前路径错位导致 HTML 引用的资源 404
+- 缓存策略区分：哈希资源长缓存、入口文件 no-cache；新增 404.html SPA 回退
+
 ## [0.1.0-alpha.1] - 2026-08-14
 
 结构类变更：首页从"作品集"重构为"创作现场"；作品数据模型从单类型扩展为四类型（改稿/文章/游戏/工具）；改稿正文目录迁移为按版本组织。
