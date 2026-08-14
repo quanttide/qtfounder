@@ -654,7 +654,9 @@ dependencies = [
 
 [[package]]
 name = "quanttide-agent"
-version = "0.1.0"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cde6812ca9db74e0748ccc9f0c041c175d049f2ba688d68d8170b173a39e5fce"
 dependencies = [
  "serde",
  "serde_json",
