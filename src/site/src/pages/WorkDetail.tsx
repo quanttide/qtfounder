@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getWork } from '../data/works'
 
-const fictionContent = import.meta.glob('/src/content/works/fiction/*.md', {
+// 收录的版本正文：<slug>/<version>.md；v0/v1 待数据自动化从 git 历史生成
+const fictionContent = import.meta.glob('/src/content/works/fiction/*/*.md', {
   query: '?raw',
   import: 'default',
   eager: true,
@@ -21,6 +23,7 @@ function renderContent(raw: string) {
 export default function WorkDetail() {
   const { slug } = useParams<{ slug: string }>()
   const work = slug ? getWork(slug) : undefined
+  const [version, setVersion] = useState<string | null>(null)
 
   if (!work) {
     return (
@@ -31,17 +34,12 @@ export default function WorkDetail() {
     )
   }
 
-  const filePath = `/src/content/works/fiction/${work.slug}.md`
-  const raw = fictionContent[filePath]
+  const revisions = work.revisions ?? []
+  // 默认查看最新版本（轨迹最后一个）
+  const activeVersion = version ?? revisions[revisions.length - 1]?.version ?? 'v2'
 
-  if (!raw) {
-    return (
-      <div className="page work-detail">
-        <Link to="/works" className="back-link">&larr; 作品</Link>
-        <p className="empty">内容加载失败</p>
-      </div>
-    )
-  }
+  const filePath = `/src/content/works/fiction/${work.slug}/${activeVersion}.md`
+  const raw = fictionContent[filePath]
 
   return (
     <div className="page work-detail">
@@ -54,9 +52,43 @@ export default function WorkDetail() {
             <span className="work-date">{work.date}</span>
           </div>
         </header>
-        <div className="detail-content">
-          {renderContent(raw)}
-        </div>
+
+        {revisions.length > 0 && (
+          <section className="revision-trail">
+            <h2>改稿轨迹</h2>
+            <nav className="revision-switch">
+              {revisions.map(rev => (
+                <button
+                  key={rev.version}
+                  className={rev.version === activeVersion ? 'filter-active' : ''}
+                  onClick={() => setVersion(rev.version)}
+                >
+                  {rev.label}
+                </button>
+              ))}
+            </nav>
+            <div className="revision-list">
+              {revisions.map(rev => (
+                <div
+                  className={`revision-item${rev.version === activeVersion ? ' revision-current' : ''}`}
+                  key={rev.version}
+                >
+                  <span className="revision-version">{rev.version} {rev.label}</span>
+                  <span className="revision-date">{rev.date}</span>
+                  <span className="revision-note">{rev.note}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {raw ? (
+          <div className="detail-content">
+            {renderContent(raw)}
+          </div>
+        ) : (
+          <p className="empty">该版本正文未收录，仅保留版本记录</p>
+        )}
       </article>
     </div>
   )
