@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0-alpha.3] - 2026-08-14
+
+### Changed
+
+- 部署形态改为域名根路径：vite `base` 改为 `/`，去掉 `BrowserRouter` basename（`/qtfounder` 前缀移除，GitHub Pages 部署已停用）
+- OSS 桶布局改为桶根：`assets/`、`index.html`、`404.html` 直接位于桶根；SPA 路由（works/brain/详情页）以无扩展名 key + `Content-Type:text/html` 上传，深链直接返回 200
+- 移除 GitHub Pages 部署工作流（`.github/workflows/deploy.yml`），OSS 部署（deploy-site.yml）为唯一部署链路
+
+### Fixed
+
+- 修复根路径访问白屏：`BrowserRouter` 固定 basename 与域名根路径 URL 不匹配导致 React Router 拒绝渲染
+
 ## [0.1.0-alpha.2] - 2026-08-14
 
 ### Fixed

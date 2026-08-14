@@ -5,9 +5,8 @@
 #   site/* tag → Actions（npm build，ossutil cp）→ OSS 桶（qtfounder-site）
 #   → CDN（founder.quanttide.com，泛域名证书 *.quanttide.com）→ 用户浏览器
 #
-# 路径说明：vite base=/qtfounder/，产物上传到桶的 qtfounder/ 前缀；
-# 桶根 index.html 同步覆盖（OSS 静态网站托管根路径默认页）。
-# 404.html 为 SPA 壳（react-router 路由回退，OSS 静态托管 error_document）。
+# 路径说明：vite base=/，产物上传到桶根；index.html 为 SPA 壳（OSS 静态网站托管根路径默认页），
+# 404.html 为 SPA 壳（error_document）；SPA 路由以无扩展名 key 上传（Content-Type:text/html）使深链返回 200。
 #
 # 所需 GitHub secrets：
 #   - ALIYUN_ACCESS_KEY_ID / ALIYUN_ACCESS_KEY_SECRET（secret）：RAM 用户 AccessKey（OSS 上传 + CDN 刷新）
@@ -62,22 +61,20 @@ jobs:
       - name: Upload assets（长缓存）
         working-directory: src/site
         run: |
-          ossutil cp dist/assets/ oss://${{ env.OSS_BUCKET }}/qtfounder/assets/ -r -f \
+          ossutil cp dist/assets/ oss://${{ env.OSS_BUCKET }}/assets/ -r -f \
             --meta "Cache-Control:public,max-age=31536000"
 
       - name: Upload entry files（no-cache）
         working-directory: src/site
         run: |
-          ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/qtfounder/index.html -f --meta "Cache-Control:no-cache"
           ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/index.html -f --meta "Cache-Control:no-cache"
-          ossutil cp dist/vite.svg oss://${{ env.OSS_BUCKET }}/qtfounder/vite.svg -f --meta "Cache-Control:no-cache"
+          ossutil cp dist/vite.svg oss://${{ env.OSS_BUCKET }}/vite.svg -f --meta "Cache-Control:no-cache"
 
-      # SPA 回退：react-router 路由（/qtfounder/works 等）由 OSS 静态托管 error_document 返回 404.html
+      # SPA 回退：未知路径由 OSS 静态托管 error_document 返回 404.html
       - name: Upload 404.html（SPA fallback）
         working-directory: src/site
         run: |
           cp dist/index.html 404.html
-          ossutil cp 404.html oss://${{ env.OSS_BUCKET }}/qtfounder/404.html -f --meta "Cache-Control:no-cache"
           ossutil cp 404.html oss://${{ env.OSS_BUCKET }}/404.html -f --meta "Cache-Control:no-cache"
 
       # SPA 路由 200：把 SPA 壳上传为无扩展名 key（OSS key 无需扩展名），
@@ -87,10 +84,10 @@ jobs:
         working-directory: src/site
         run: |
           for r in works brain; do
-            ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/qtfounder/$r -f --meta "Content-Type:text/html" --meta "Cache-Control:no-cache"
+            ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/$r -f --meta "Content-Type:text/html" --meta "Cache-Control:no-cache"
           done
           for s in $(ls -d src/content/works/fiction/*/ | xargs -n1 basename); do
-            ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/qtfounder/works/fiction/drafts/$s -f --meta "Content-Type:text/html" --meta "Cache-Control:no-cache"
+            ossutil cp dist/index.html oss://${{ env.OSS_BUCKET }}/works/fiction/drafts/$s -f --meta "Content-Type:text/html" --meta "Cache-Control:no-cache"
           done
 
       - name: Refresh CDN
