@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'bloc/app_bloc_provider.dart';
 import 'screens/asset_catalog_screen.dart';
 import 'screens/assets_screen.dart';
-import 'screens/create_screen.dart';
+import 'screens/create_screen_new.dart';
 
 void main() {
   runApp(const FounderApp());
@@ -13,20 +14,22 @@ class FounderApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '量潮创始人工作台',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4F46E5),
-          surface: Colors.white,
-          brightness: Brightness.light,
+    return AppBlocProvider(
+      child: MaterialApp(
+        title: '量潮创始人工作台',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF4F46E5),
+            surface: Colors.white,
+            brightness: Brightness.light,
+          ),
+          scaffoldBackgroundColor: const Color(0xFFF1F5F9),
+          useMaterial3: true,
+          fontFamily: 'Inter',
         ),
-        scaffoldBackgroundColor: const Color(0xFFF1F5F9),
-        useMaterial3: true,
-        fontFamily: 'Inter',
+        home: const Shell(),
       ),
-      home: const Shell(),
     );
   }
 }
@@ -59,7 +62,7 @@ class _ShellState extends State<Shell> {
     _NavItem(
       icon: Icons.edit_outlined,
       label: '写作',
-      buildPage: () => const CreateScreen(),
+      buildPage: () => const CreateScreenNew(),
     ),
     _NavItem(
       icon: Icons.insights_outlined,

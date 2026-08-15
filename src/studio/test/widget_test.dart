@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:qtfounder_studio/main.dart';
@@ -19,13 +18,13 @@ void main() {
     await tester.pumpWidget(const FounderApp());
     await tester.pumpAndSettle();
 
-    // 切到写作（流程视图，含真实 IO——验证页面挂载）
+    // 切到写作（Bloc 编辑器——验证页面挂载）
     await tester.tap(find.byTooltip('写作'));
     await tester.pump();
-    // 创作页挂载：加载中（CircularProgressIndicator）或标题出现
+    // 写作页挂载：搜索框 + 空状态（选择章节提示）出现
     final created =
-        find.text('创作').evaluate().isNotEmpty ||
-            find.byType(CircularProgressIndicator).evaluate().isNotEmpty;
+        find.text('搜索章节...').evaluate().isNotEmpty ||
+            find.text('选择一个章节开始写作').evaluate().isNotEmpty;
     expect(created, isTrue);
 
     // 切到思考（占位页）
