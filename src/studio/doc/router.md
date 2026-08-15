@@ -32,10 +32,11 @@ Shell（壳）
 | `/fiction` | 小说资产（改稿轨迹/章节） | menu_book | 规划（当前创作现场迁移） |
 | `/memory` | 记忆资产（roadmap/context 文档） | memory | 规划 |
 
-### 领域组（能力视角：有什么可以用）
+### 领域组（职能视角：有什么可以用）
 
 | 路径 | 页面 | 导航图标 | 状态 |
 | --- | --- | --- | --- |
+| `/create` | 创作职能（写作/改稿工作流） | edit | 规划 |
 | `/emotion` | 情绪状态（cli 数据接入） | insights | 规划 |
 
 ### 二级路由（一级内 push，带参数）
@@ -72,8 +73,9 @@ GoRouter
         ├── 资产组
         │   ├── /fiction（小说资产）
         │   └── /memory（记忆资产）
-        └── 领域组
-            └── /emotion（情绪状态）
+        └── 领域组（职能）
+            ├── /create（创作职能）
+            └── /emotion（情绪职能）
                   └── 二级路由（/fiction/chapters/:id 等，从一级内 push）
 ```
 
