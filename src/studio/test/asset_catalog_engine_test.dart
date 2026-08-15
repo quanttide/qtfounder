@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:qtfounder_studio/data/asset_catalog_engine.dart';
+import 'package:qtfounder_studio/repositories/asset_catalog_engine.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

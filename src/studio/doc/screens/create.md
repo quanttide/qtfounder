@@ -548,13 +548,37 @@ class SplitView extends StatelessWidget {
 - 资产页可展示整理层只读信息（标签、摘要、场景），不可修改
 - 切换页面时自动刷新数据
 
+## 当前实现状态
+
+> 更新日期：2026-08-15
+
+| 模块 | 状态 | 位置 |
+|------|------|------|
+| 数据模型（Chapter/Workflow/Stage） | ✅ 已实现 | `lib/models/chapter.dart` · `lib/models/workflow.dart` |
+| 章节仓库（ChapterRepository 接口） | ✅ 已实现 | `lib/repositories/chapter_repository.dart` |
+| 文件仓库（FileChapterRepository） | ✅ 已实现 | `lib/repositories/file_chapter_repository.dart` |
+| 章节列表 Bloc | ✅ 已实现 | `lib/bloc/chapter_list/chapter_list_bloc.dart` |
+| 编辑器 Bloc（自动保存/字数统计） | ✅ 已实现 | `lib/bloc/editor/editor_bloc.dart` |
+| 工作流 Bloc | ✅ 已实现 | `lib/bloc/workflow/workflow_bloc.dart` |
+| Bloc 注入（AppBlocProvider） | ✅ 已实现 | `lib/bloc/app_bloc_provider.dart` |
+| 资产目录引擎 | ✅ 已实现（已迁至 repositories） | `lib/repositories/asset_catalog_engine.dart` |
+| 创作数据仓库 | ✅ 已实现（已迁至 repositories） | `lib/repositories/creative_repository.dart` |
+| 全屏编辑器 + 侧边栏导航 | 🔶 原型（create_screen_new.dart） | `lib/screens/create_screen_new.dart` |
+| 分析层（ChapterAnalysisRepository/AnalyzeBloc/LLMClient） | ⬜ 待实现 | — |
+| Markdown 预览 / 分屏布局 | ⬜ 待实现 | — |
+
+**目录约定**：数据访问层统一放 `lib/repositories/`（原 `lib/data/` 已合并）；状态管理放 `lib/bloc/`；模型放 `lib/models/`。
+
 ## 演进计划
 
-### 第一阶段：基础重构
-1. 将编辑器从对话框改为全屏页面
-2. 添加侧边栏导航
-3. 实现自动保存功能
-4. 添加保存状态指示
+### 第一阶段：基础重构（🔶 部分完成）
+1. ✅ 创建数据模型与仓库抽象（models/ + repositories/）
+2. ✅ 实现三大 Bloc（chapter_list / editor / workflow）
+3. ✅ Bloc 注入与页面接线（AppBlocProvider）
+4. 🔶 编辑器从对话框改为全屏页面（原型已建，待接入主页面）
+5. 🔶 添加侧边栏导航（原型已建，待接入主页面）
+6. ✅ 实现自动保存功能（EditorBloc 防抖 3 秒）
+7. ✅ 添加保存状态指示（saved/saving/unsaved/error）
 
 ### 第二阶段：编辑体验增强
 1. 实现 Markdown 实时预览
@@ -594,7 +618,7 @@ class SplitView extends StatelessWidget {
 
 ### 状态管理
 
-使用 Bloc 进行状态管理，遵循单向数据流原则。
+使用 Bloc 进行状态管理，遵循单向数据流原则（已实现，见 `lib/bloc/`）。
 
 ```dart
 // 章节列表 Bloc
@@ -642,7 +666,7 @@ class WorkflowBloc extends Bloc<WorkflowEvent, WorkflowState> {
   // 实现同前版（加载/推进）
 }
 
-// 分析 Bloc（新增）
+// 分析 Bloc（待实现）
 class AnalyzeBloc extends Bloc<AnalyzeEvent, AnalysisState> {
   final ChapterAnalysisRepository _analysisRepository;
   final ChapterRepository _chapterRepository;
@@ -715,6 +739,8 @@ class AnalyzeBloc extends Bloc<AnalyzeEvent, AnalysisState> {
 
 ### 数据访问层
 
+统一存放于 `lib/repositories/`（原 `lib/data/` 已合并至此）。
+
 ```dart
 abstract class ChapterRepository {
   Future<List<Chapter>> getChapters();
@@ -743,7 +769,7 @@ class FileChapterRepository implements ChapterRepository {
   }
 }
 
-// 整理层仓库（新增）——与原文文件系统完全分离
+// 整理层仓库（待实现）——与原文文件系统完全分离
 abstract class ChapterAnalysisRepository {
   Future<ChapterAnalysis?> getAnalysis(String chapterId);
   Future<void> saveAnalysis(ChapterAnalysis analysis);
@@ -764,6 +790,15 @@ class FileAnalysisRepository implements ChapterAnalysisRepository {
   }
 }
 ```
+
+**实际已实现文件**（`lib/repositories/`）：
+
+| 文件 | 说明 |
+|------|------|
+| `chapter_repository.dart` | 章节仓库接口（getChapters/getChapter/getChapterContent/saveChapter/createChapter/deleteChapter/moveChapter/renameChapter） |
+| `file_chapter_repository.dart` | 文件系统实现（含文件名解析、字数统计、重命名去重） |
+| `asset_catalog_engine.dart` | 资产目录引擎（契约加载/遍历/命名解析/排序） |
+| `creative_repository.dart` | 创作数据仓库（改稿章节 + memory 文档，Web 回退内置数据） |
 
 ### LLM 结构化输出协议（新增）
 
@@ -817,7 +852,11 @@ Prompt 硬约束（示例）：
 
 ## 总结
 
-新的设计以 AI 原生编辑器为核心：**AI 整理归类，永不改写原文**。关键改进：
+新的设计以 AI 原生编辑器为核心：**AI 整理归类，永不改写原文**。
+
+**当前进度**：基础架构（models / repositories / bloc）已落地；编辑器原型（create_screen_new）已建；分析层与 Markdown 预览待实现。**下一步**：将原型接入主页面，替换旧版 CreateScreen。
+
+关键改进：
 
 1. **编辑器优先**：全屏编辑器替代对话框，提供更好的编辑体验
 2. **原文不可变**：AI 在架构上没有改写通道——整理层与内容层物理分离，可测试保证（`git diff` 为零）
