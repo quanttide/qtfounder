@@ -1,56 +1,57 @@
 # CONTRIBUTING
 
-## src/studio 数据源配置方法
+面向 qtfounder 的**贡献者**：参与开发的规则与约定。开发环境搭建与命令见 [docs/dev-guide/index.md](docs/dev-guide/index.md)。
 
-创始人工作台（`src/studio`）以 fiction 和 memory 仓库为数据源。数据源路径通过**环境变量（dart-define）**配置，编译期注入，跨平台一致。
+## 文档定位
 
-### 1. 配置环境变量
+| 文档 | 回答的问题 |
+|------|-----------|
+| [docs/dev-guide/index.md](docs/dev-guide/index.md) | 如何开发（结构/环境/命令） |
+| 本文件 | 如何合规地贡献（规则/约定） |
 
-```bash
-# 方式一：命令行直接注入
-flutter run \
-  --dart-define=QTFOUNDER_FICTION_PATH=/absolute/path/to/assets/fiction \
-  --dart-define=QTFOUNDER_MEMORY_PATH=/absolute/path/to/assets/memory
+## 提交约定
 
-# 方式二：构建时注入
-flutter build web \
-  --dart-define=QTFOUNDER_FICTION_PATH=/absolute/path/to/assets/fiction \
-  --dart-define=QTFOUNDER_MEMORY_PATH=/absolute/path/to/assets/memory
-```
+遵循 Conventional Commits：
 
-### 2. 变量说明
+| 类型 | 说明 | 示例 |
+|------|------|------|
+| `feat` | 新功能 | `feat: 章节详情页` |
+| `fix` | 修复 | `fix: 章节排序字典序错误` |
+| `docs` | 文档 | `docs: 更新 user-guide` |
+| `refactor` | 重构 | `refactor: 数据加载解耦` |
+| `test` | 测试 | `test: 章节加载用例` |
+| `chore` | 构建/工具 | `chore: 更新依赖` |
 
-| 变量 | 说明 | 未配置默认值 |
-|------|------|-------------|
-| `QTFOUNDER_FICTION_PATH` | fiction 仓库根（改稿章节来源） | `$HOME/repos/quanttide-founder/assets/fiction`（桌面端） |
-| `QTFOUNDER_MEMORY_PATH` | memory 仓库根（roadmap/context 来源） | `$HOME/repos/quanttide-founder/assets/memory`（桌面端） |
+## 提交前验证（门禁）
 
-### 3. 数据源布局约定
+| 模块 | 必跑命令 |
+|------|---------|
+| studio | `flutter analyze && flutter test` |
+| provider | `go build ./... && go vet ./... && go test ./...` |
+| cli | `cargo build && cargo test` |
+| site | `npm run build` |
 
-配置的路径指向仓库**根目录**，工作台按固定相对结构读取：
+本地双绿（格式 + lint 通过）约等于 CI 绿；CI 失败先查是格式差异还是逻辑错误。
 
-```
-{fiction}/
-└── 职场言情/
-    └── 4_改稿/*.md        → 改稿轨迹（章节列表）
+## 分层提交
 
-{memory}/
-├── roadmap/*.md            → 创作方向
-└── context/*.md            → 创作方法
-```
+1. 模块内（src/studio 等）提交推送
+2. 父仓库（quanttide-founder）`chore: update qtfounder submodule` 更新指针并推送
+3. 禁止在子仓库做父仓库的事，反之亦然
 
-### 4. 平台行为
+## 文档同步要求
 
-| 平台 | 行为 |
-|------|------|
-| 桌面端（Linux/macOS/Windows） | 直接读文件系统（dart:io），配置路径即真实数据 |
-| Web 端 | 无文件系统访问，使用内置示例数据；如需真实数据，需经 API 服务转发 |
-| 测试 | 依赖注入（CreativeDesk 的 loader 参数），不访问真实文件系统 |
+重要变更（新功能/结构变化/方向调整）后，同步更新：
 
-### 5. 实现位置
+- `STATUS.md`（模块版本/状态）
+- `CHANGELOG.md`（版本记录）
+- 对应模块 `ROADMAP.md`（任务勾选/新增）
 
-| 文件 | 职责 |
-|------|------|
-| `src/studio/lib/config.dart` | 环境变量读取与默认路径解析 |
-| `src/studio/lib/data/creative_repository.dart` | fiction/memory 数据加载（桌面 IO / Web 回退） |
-| `src/studio/lib/main.dart` | CreativeDesk 界面（loader 可注入） |
+## 数据源一致
+
+环境变量命名（`QTFOUNDER_*`）跨模块统一，不另起名。配置方法见 dev-guide。
+
+## 目录即语义
+
+- 有实体才建目录；不擅自移除空目录和占位文件
+- 修改前确认"改内容 vs 改名字"、"替换 vs 并存"

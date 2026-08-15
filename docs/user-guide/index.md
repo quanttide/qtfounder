@@ -27,7 +27,7 @@ cd src/studio
 flutter run
 ```
 
-> 如果打开后没有数据，说明数据源路径未配置——告诉开发者（或见 CONTRIBUTING.md）配置 fiction/memory 路径即可。
+> 如果打开后没有数据，说明数据源路径未配置——告诉开发者（或见 [开发指南](dev-guide/index.md) 的数据源配置）配置 fiction/memory 路径即可。
 
 ### 网页版
 

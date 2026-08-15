@@ -38,7 +38,7 @@ flutter run \
 | 文档 | 用途 |
 |------|------|
 | [STATUS.md](STATUS.md) | 项目状态报告（时效） |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | 数据源配置方法、贡献流程 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献规范（提交约定/验证门禁/分层提交） |
 | [AGENTS.md](AGENTS.md) | AI 工作指南 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更记录 |
 | [docs/user-guide/index.md](docs/user-guide/index.md) | 用户指南（产品使用） |
