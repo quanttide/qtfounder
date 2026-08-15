@@ -19,8 +19,8 @@ void main() {
     await tester.pumpWidget(const FounderApp());
     await tester.pumpAndSettle();
 
-    // 切到创作（流程视图，含真实 IO——验证页面挂载）
-    await tester.tap(find.byTooltip('创作'));
+    // 切到写作（流程视图，含真实 IO——验证页面挂载）
+    await tester.tap(find.byTooltip('写作'));
     await tester.pump();
     // 创作页挂载：加载中（CircularProgressIndicator）或标题出现
     final created =
