@@ -22,11 +22,11 @@ void main() {
     // 职场言情 → 阶段 → 文件
     final zc = catalog.nodes.firstWhere((n) => n.name == '职场言情');
     final stageNames = zc.children.map((s) => s.name).toList();
-    expect(stageNames, containsAll(['1_灵感', '2_脚本', '3_初稿', '4_改稿']));
+    expect(stageNames, containsAll(['0_日志', '1_灵感', '2_脚本', '3_初稿', '4_改稿']));
 
     final gaogao = zc.children.firstWhere((s) => s.name == '4_改稿');
     final files = gaogao.files;
-    expect(files.length, 19);
+    expect(files.length, 20);
     // 编号排序：1_1 第一，10_1 在 1_1 之后（数值而非字典序）
     expect(files.first.title, '咖啡厅重逢');
     expect(files.first.sortKey, '1_1');
