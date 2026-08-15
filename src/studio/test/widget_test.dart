@@ -27,9 +27,10 @@ void main() {
             find.text('选择一个章节开始写作').evaluate().isNotEmpty;
     expect(created, isTrue);
 
-    // 切到思考（占位页）
+    // 切到思考（情绪结构化处理器）
     await tester.tap(find.byTooltip('思考'));
     await tester.pumpAndSettle();
-    expect(find.text('思绪结构化（思考云原型，规划中）'), findsOneWidget);
+    expect(find.text('每日日志'), findsOneWidget);
+    expect(find.text('选择一天日志开始整理'), findsOneWidget);
   });
 }

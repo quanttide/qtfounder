@@ -4,6 +4,7 @@ import 'bloc/app_bloc_provider.dart';
 import 'screens/asset_catalog_screen.dart';
 import 'screens/assets_screen.dart';
 import 'screens/create_screen_new.dart';
+import 'screens/think_screen.dart';
 
 void main() {
   runApp(const FounderApp());
@@ -67,7 +68,7 @@ class _ShellState extends State<Shell> {
     _NavItem(
       icon: Icons.insights_outlined,
       label: '思考',
-      buildPage: () => const _PlaceholderPage(title: '思考', subtitle: '思绪结构化（思考云原型，规划中）'),
+      buildPage: () => const ThinkScreen(),
     ),
   ];
 
@@ -142,32 +143,6 @@ class _ShellState extends State<Shell> {
             Expanded(child: _navItems[_selectedIndex].buildPage()),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// 占位页（创作/情绪等未实现职能）
-class _PlaceholderPage extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const _PlaceholderPage({required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-          ),
-          const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
-        ],
       ),
     );
   }

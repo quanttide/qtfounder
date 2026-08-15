@@ -3,13 +3,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../config.dart';
 import '../repositories/analysis_repository.dart';
 import '../repositories/chapter_repository.dart';
+import '../repositories/emotion_repository.dart';
 import '../repositories/file_chapter_repository.dart';
 import '../services/llm_client.dart';
 import 'analyze/analyze_bloc.dart';
 import 'chapter_list/chapter_list_bloc.dart';
 import 'editor/editor_bloc.dart';
+import 'think/think_bloc.dart';
 import 'workflow/workflow_bloc.dart';
 
 /// 应用级 Bloc Provider
@@ -35,6 +38,12 @@ class AppBlocProvider extends StatelessWidget {
         ),
         RepositoryProvider<LLMClient>(
           create: (context) => LLMClient(config: LLMConfig.defaults()),
+        ),
+        RepositoryProvider<JournalRepository>(
+          create: (context) => JournalRepository(memoryPath: memoryPath),
+        ),
+        RepositoryProvider<EmotionAnalysisRepository>(
+          create: (context) => EmotionAnalysisRepository(),
         ),
       ],
       child: MultiBlocProvider(
@@ -62,6 +71,13 @@ class AppBlocProvider extends StatelessWidget {
               onInspirationApplied: () =>
                   context.read<WorkflowBloc>().add(const LoadWorkflow()),
             ),
+          ),
+          BlocProvider<ThinkBloc>(
+            create: (context) => ThinkBloc(
+              journalRepository: context.read<JournalRepository>(),
+              analysisRepository: context.read<EmotionAnalysisRepository>(),
+              llm: context.read<LLMClient>(),
+            )..add(const LoadJournals()),
           ),
         ],
         child: child,

@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import '../models/analysis.dart';
+import '../models/emotion.dart';
 
 /// LLM 配置
 class LLMConfig {
@@ -64,38 +65,10 @@ class LLMClient {
     required String content,
     required List<String> previousSuggestions,
   }) async {
-    final prompt = _buildPrompt(stageId, content, previousSuggestions);
-    final body = jsonEncode({
-      'model': config.model,
-      'messages': [
-        {
-          'role': 'system',
-          'content': _systemPrompt(stageId),
-        },
-        {'role': 'user', 'content': prompt},
-      ],
-      'temperature': 0.2,
-      'stream': false,
-    });
-
-    final resp = await _client
-        .post(
-          Uri.parse('${config.baseUrl}/chat/completions'),
-          headers: {
-            'Content-Type': 'application/json',
-            if (config.apiKey.isNotEmpty) 'Authorization': 'Bearer ${config.apiKey}',
-          },
-          body: body,
-        )
-        .timeout(const Duration(seconds: 180));
-
-    if (resp.statusCode != 200) {
-      throw Exception('LLM 请求失败: HTTP ${resp.statusCode} ${resp.body}');
-    }
-
-    final decoded = jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
-    final contentStr = (decoded['choices'] as List).first['message']['content'] as String;
-    final parsed = _extractJson(contentStr);
+    final parsed = await _chat(
+      system: _systemPrompt(stageId),
+      user: _buildPrompt(stageId, content, previousSuggestions),
+    );
 
     return ChapterAnalysis(
       chapterId: chapterId,
@@ -120,6 +93,64 @@ class LLMClient {
       analyzedAt: DateTime.now(),
       model: config.model,
     );
+  }
+
+  /// 情绪结构化处理：把一天日志拆成 事实/感受/需要/行动 四类。
+  /// 硬性原则：不做判断、不替用户扛——只分类，绝不改写原文。
+  Future<EmotionAnalysis> structureEmotion({
+    required String journalPath,
+    required String date,
+    required String content,
+  }) async {
+    final parsed = await _chat(
+      system: _emotionSystemPrompt,
+      user: _buildEmotionPrompt(content),
+    );
+
+    return EmotionAnalysis(
+      journalPath: journalPath,
+      date: date,
+      entries: ((parsed['entries'] as List?) ?? const [])
+          .map((e) => EmotionEntry.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      analyzedAt: DateTime.now(),
+      model: config.model,
+    );
+  }
+
+  /// 统一 chat 请求：发送 system+user，返回解析后的 JSON。
+  Future<Map<String, dynamic>> _chat({
+    required String system,
+    required String user,
+  }) async {
+    final body = jsonEncode({
+      'model': config.model,
+      'messages': [
+        {'role': 'system', 'content': system},
+        {'role': 'user', 'content': user},
+      ],
+      'temperature': 0.2,
+      'stream': false,
+    });
+
+    final resp = await _client
+        .post(
+          Uri.parse('${config.baseUrl}/chat/completions'),
+          headers: {
+            'Content-Type': 'application/json',
+            if (config.apiKey.isNotEmpty) 'Authorization': 'Bearer ${config.apiKey}',
+          },
+          body: body,
+        )
+        .timeout(const Duration(seconds: 180));
+
+    if (resp.statusCode != 200) {
+      throw Exception('LLM 请求失败: HTTP ${resp.statusCode} ${resp.body}');
+    }
+
+    final decoded = jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
+    final contentStr = (decoded['choices'] as List).first['message']['content'] as String;
+    return _extractJson(contentStr);
   }
 
   /// 从 LLM 回复中提取 JSON（容忍 markdown 代码块包裹）
@@ -195,6 +226,38 @@ $truncated
 }
 
 待分析文本（行号从1开始）：
+$truncated
+''';
+  }
+
+  /// 情绪结构化 system prompt——不做判断，只把混沌拆开
+  String get _emotionSystemPrompt => '''
+你是情绪结构化处理器。任务：把自由记录的思绪/情绪拆成四类：事实、感受、需要、行动。
+硬性规则：
+1. 不做判断、不评价、不建议——只分类，不替用户扛
+2. 绝不改写、重写、润色原文的任何字符
+3. 每条目用原文中的词汇提炼，不发明原文没有的内容
+4. 每条目必须引用原文行号范围
+5. 输出纯 JSON，不要 markdown 代码块，不要任何解释
+''';
+
+  String _buildEmotionPrompt(String content) {
+    final truncated = content.length > 8000 ? content.substring(0, 8000) : content;
+    return '''
+分类定义：
+- fact（事实）：发生了什么——事件、状态、已做的决定
+- feeling（感受）：情绪如何——困惑、疲惫、压力、方向感等
+- need（需要）：真正想要什么——显性或隐性的需求
+- action（行动）：下一步行动——具体可执行的下一步
+
+输出 JSON 结构：
+{
+  "entries": [
+    {"category": "fact|feeling|need|action", "text": "一句话提炼（原文词汇）", "start_line": 1, "end_line": 2}
+  ]
+}
+
+待分析的日志（行号从1开始）：
 $truncated
 ''';
   }

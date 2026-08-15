@@ -9,6 +9,7 @@ import 'package:path/path.dart' as path;
 import 'package:qtfounder_studio/bloc/analyze/analyze_bloc.dart';
 import 'package:qtfounder_studio/models/analysis.dart';
 import 'package:qtfounder_studio/models/chapter.dart';
+import 'package:qtfounder_studio/models/emotion.dart';
 import 'package:qtfounder_studio/repositories/analysis_repository.dart';
 import 'package:qtfounder_studio/repositories/chapter_repository.dart';
 import 'package:qtfounder_studio/services/llm_client.dart';
@@ -44,6 +45,15 @@ class _FakeLLMClient implements LLMClient {
       analyzedAt: DateTime(2026, 8, 15),
       model: 'fake-model',
     );
+  }
+
+  @override
+  Future<EmotionAnalysis> structureEmotion({
+    required String journalPath,
+    required String date,
+    required String content,
+  }) {
+    throw UnimplementedError();
   }
 
   @override
