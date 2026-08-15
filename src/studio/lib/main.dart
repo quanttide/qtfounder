@@ -49,9 +49,9 @@ class Shell extends StatelessWidget {
                 children: [
                   const SizedBox(height: 20),
                   const Text(
-                    '量',
+                    '量潮',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF4F46E5),
                     ),
