@@ -28,9 +28,9 @@ void main() {
             find.byType(CircularProgressIndicator).evaluate().isNotEmpty;
     expect(created, isTrue);
 
-    // 切到情绪（占位页）
-    await tester.tap(find.byTooltip('情绪'));
+    // 切到思考（占位页）
+    await tester.tap(find.byTooltip('思考'));
     await tester.pumpAndSettle();
-    expect(find.text('情绪状态（cli 数据接入，规划中）'), findsOneWidget);
+    expect(find.text('思绪结构化（思考云原型，规划中）'), findsOneWidget);
   });
 }

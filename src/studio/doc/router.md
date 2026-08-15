@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-**无路由**——单页应用（Shell + CreativeDesk）。起步形态合理：单页无需路由。
+**无路由**——单页应用（Shell 内职能切换）。起步形态合理。
 
 ## 规划目标
 
@@ -22,8 +22,8 @@
 | 路径 | 页面 | 状态 |
 | --- | --- | --- |
 | `/assets` | 资产职能（聚合入口） | 规划 |
-| `/create` | 创作职能 | 规划 |
-| `/emotion` | 情绪职能 | 规划 |
+| `/write` | 写作职能（创作工作流） | 规划 |
+| `/think` | 思考职能（思绪结构化） | 规划 |
 
 ### 二级路由（资产内部）
 
@@ -65,8 +65,8 @@ GoRouter
         ├── /assets（资产职能）
         │   ├── /assets/fiction（小说资产）
         │   └── /assets/memory（记忆资产）
-        ├── /create（创作职能）
-        └── /emotion（情绪职能）
+        ├── /write（写作职能）
+        └── /think（思考职能）
 ```
 
 ## Web 路由行为
@@ -82,7 +82,7 @@ GoRouter
 1. 引入 GoRouter，定义职能路由表（一级 + 壳）
 2. `/assets` + `/assets/fiction`（小说资产目录树，替换 CreativeDesk）
 3. `/assets/memory`（记忆资产）
-4. `/create`、`/emotion` 随功能接入
+4. `/write`、`/think` 随功能接入
 
 ## 关联文档
 

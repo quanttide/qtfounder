@@ -58,13 +58,13 @@ class _ShellState extends State<Shell> {
     ),
     _NavItem(
       icon: Icons.edit_outlined,
-      label: '创作',
+      label: '写作',
       buildPage: () => const CreateScreen(),
     ),
     _NavItem(
       icon: Icons.insights_outlined,
-      label: '情绪',
-      buildPage: () => const _PlaceholderPage(title: '情绪', subtitle: '情绪状态（cli 数据接入，规划中）'),
+      label: '思考',
+      buildPage: () => const _PlaceholderPage(title: '思考', subtitle: '思绪结构化（思考云原型，规划中）'),
     ),
   ];
 
