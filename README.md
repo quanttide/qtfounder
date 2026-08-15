@@ -41,6 +41,9 @@ flutter run \
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 数据源配置方法、贡献流程 |
 | [AGENTS.md](AGENTS.md) | AI 工作指南 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更记录 |
+| [docs/user-guide/index.md](docs/user-guide/index.md) | 用户指南（产品使用） |
+| [docs/dev-guide/index.md](docs/dev-guide/index.md) | 开发指南（模块/配置/验证） |
+| [docs/api-reference/index.md](docs/api-reference/index.md) | API 参考（provider 端点） |
 | 各模块 ROADMAP | `src/studio/ROADMAP.md` · `src/provider/ROADMAP.md` · `src/cli/ROADMAP.md` |
 
 ## 许可
