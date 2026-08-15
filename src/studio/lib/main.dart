@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'config.dart';
+import 'data/creative_repository.dart';
+
 void main() {
   runApp(const FounderApp());
 }
@@ -80,12 +83,53 @@ class Shell extends StatelessWidget {
   }
 }
 
-/// 创作现场——工作台主界面
-class CreativeDesk extends StatelessWidget {
-  const CreativeDesk({super.key});
+/// 创作现场——工作台主界面（数据源：fiction + memory）
+class CreativeDesk extends StatefulWidget {
+  /// 测试/定制用 loader 注入（默认读真实数据源）
+  final Future<List<CreativeItem>> Function()? chaptersLoader;
+  final Future<List<CreativeItem>> Function()? memoryLoader;
+
+  const CreativeDesk({super.key, this.chaptersLoader, this.memoryLoader});
+
+  @override
+  State<CreativeDesk> createState() => _CreativeDeskState();
+}
+
+class _CreativeDeskState extends State<CreativeDesk> {
+  List<CreativeItem> _chapters = [];
+  List<CreativeItem> _memoryDocs = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final chapters =
+          await (widget.chaptersLoader ?? loadRevisionChapters)();
+      final docs = await (widget.memoryLoader ?? loadMemoryDocs)();
+      setState(() {
+        _chapters = chapters;
+        _memoryDocs = docs;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = '数据源加载失败：$e';
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 28, 28, 0),
       child: Column(
@@ -100,30 +144,36 @@ class CreativeDesk extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            '创作现场——创作流时间线 · 创作域矩阵 · 改稿轨迹',
-            style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+          Text(
+            dataSourceAvailable
+                ? '数据源：$fictionPath\n          $memoryPath'
+                : '数据源：fiction + memory（内置示例，Web 无文件系统）',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
           ),
           const SizedBox(height: 20),
           Expanded(
             child: ListView(
-              children: const [
+              children: [
+                if (_error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(color: Color(0xFFEF4444)),
+                    ),
+                  ),
                 _SectionCard(
                   icon: Icons.timeline,
-                  title: '创作流时间线',
-                  items: ['小说创作（职场言情 11_x 进行中）', '创始人官网（创作现场转向）', 'qtfounder CLI（health 情绪分析）'],
+                  title: '改稿轨迹（fiction · 4_改稿）',
+                  items: _chapters.map((c) => c.name).toList(),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 _SectionCard(
                   icon: Icons.grid_view_outlined,
-                  title: '创作域矩阵',
-                  items: ['fiction：职场言情 / 校园言情 / 重生言情', 'site：官网（作品集 → 创作现场）', 'cli：health check / track / history / profile'],
-                ),
-                SizedBox(height: 12),
-                _SectionCard(
-                  icon: Icons.difference_outlined,
-                  title: '改稿轨迹',
-                  items: ['1_1 咖啡厅重逢（成稿）', '2_2 男主演讲（脚本待改稿）', '11_x 世界扩张（规划中）'],
+                  title: '创作域矩阵（memory）',
+                  items: _memoryDocs
+                      .map((d) => '[${d.category}] ${d.name}')
+                      .toList(),
                 ),
               ],
             ),
@@ -161,12 +211,14 @@ class _SectionCard extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: const Color(0xFF4F46E5)),
               const SizedBox(width: 6),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1E293B),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E293B),
+                  ),
                 ),
               ),
             ],
