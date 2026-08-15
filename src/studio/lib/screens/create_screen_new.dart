@@ -10,9 +10,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/analyze/analyze_bloc.dart';
 import '../bloc/editor/editor_bloc.dart';
 import '../bloc/workflow/workflow_bloc.dart';
+import '../models/analysis.dart';
 import '../models/chapter.dart';
 import '../models/workflow.dart';
 import 'analysis_panel.dart';
+import 'annotation_overlay.dart';
 
 class CreateScreenNew extends StatefulWidget {
   const CreateScreenNew({super.key});
@@ -50,7 +52,7 @@ class _CreateScreenNewState extends State<CreateScreenNew> {
     );
   }
 
-  /// 构建章节导航侧边栏
+  /// 构建章节导航侧边栏（阶段分组树）
   Widget _buildChapterNavigator(BuildContext context) {
     return Container(
       color: Colors.white,
@@ -121,9 +123,10 @@ class _CreateScreenNewState extends State<CreateScreenNew> {
     );
   }
 
-  /// 构建单个阶段分组
+  /// 构建单个阶段分组（含阶段区分：语义 + 计数）
   Widget _buildStageGroup(BuildContext context, Stage stage) {
     return ExpansionTile(
+      initiallyExpanded: stage.order == 0,
       title: Row(
         children: [
           Text(
@@ -164,6 +167,7 @@ class _CreateScreenNewState extends State<CreateScreenNew> {
     return ListTile(
       dense: true,
       selected: isSelected,
+      selectedTileColor: Colors.indigo.shade50,
       title: Text(
         chapter.title,
         style: const TextStyle(fontSize: 12),
@@ -353,15 +357,23 @@ class _CreateScreenNewState extends State<CreateScreenNew> {
 
   /// 构建编辑器内容
   Widget _buildEditorContent(BuildContext context, EditorState state) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: _EditorArea(
-        key: ValueKey(state.chapterId),
-        initialContent: state.content,
-        onChanged: (value) {
-          context.read<EditorBloc>().add(UpdateContent(value));
-        },
-      ),
+    // 从分析层读取标注（拆分建议 + 场景）——只读 overlay，不进入文本
+    return BlocBuilder<AnalyzeBloc, AnalysisState>(
+      builder: (context, analysisState) {
+        final analysis = analysisState.analysis;
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: _EditorArea(
+            key: ValueKey(state.chapterId),
+            initialContent: state.content,
+            splitPoints: analysis?.splitPoints ?? const [],
+            scenes: analysis?.scenes ?? const [],
+            onChanged: (value) {
+              context.read<EditorBloc>().add(UpdateContent(value));
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -392,17 +404,22 @@ class _CreateScreenNewState extends State<CreateScreenNew> {
   }
 }
 
-/// 编辑器内容区——持有稳定的 TextEditingController。
+/// 编辑器内容区——持有稳定的 TextEditingController + 只读标注层。
 ///
-/// 关键：controller 只在章节切换时重建（didUpdateWidget），
+/// 关键：controller 只在章节切换时重建（ValueKey 驱动），
 /// 避免每次 build 新建导致光标丢失、输入中断。
+/// 标注层（拆分点虚线/场景色条）叠加在文本之上，点击跳转对应行。
 class _EditorArea extends StatefulWidget {
   final String initialContent;
+  final List<SplitPoint> splitPoints;
+  final List<Scene> scenes;
   final void Function(String) onChanged;
 
   const _EditorArea({
     super.key,
     required this.initialContent,
+    required this.splitPoints,
+    required this.scenes,
     required this.onChanged,
   });
 
@@ -411,12 +428,21 @@ class _EditorArea extends StatefulWidget {
 }
 
 class _EditorAreaState extends State<_EditorArea> {
+  static const _fontSize = 16.0;
+  static const _lineHeight = _fontSize * 1.8; // 与编辑器 style 一致
+
   late final TextEditingController _controller;
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode();
+  double _scrollOffset = 0;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialContent);
+    _scrollController.addListener(() {
+      setState(() => _scrollOffset = _scrollController.offset);
+    });
   }
 
   @override
@@ -429,25 +455,94 @@ class _EditorAreaState extends State<_EditorArea> {
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  /// 行号 → 字符 offset（按 \n 累计）
+  int _offsetOfLine(int line) {
+    final lines = _controller.text.split('\n');
+    if (line < 1 || line > lines.length) return -1;
+    var offset = 0;
+    for (var i = 0; i < line - 1; i++) {
+      offset += lines[i].length + 1;
+    }
+    return offset;
+  }
+
+  void _jumpToLine(int line) {
+    final offset = _offsetOfLine(line);
+    if (offset < 0) return;
+    // 光标跳转
+    _controller.selection = TextSelection.collapsed(offset: offset);
+    _focusNode.requestFocus();
+    // 滚动到目标行（上方留 60px 余量）
+    if (_scrollController.hasClients) {
+      final target = ((line - 1) * _lineHeight) - 60;
+      final max = _scrollController.position.maxScrollExtent;
+      _scrollController.jumpTo(target.clamp(0.0, max));
+    }
+  }
+
+  void _onSplitTap(SplitPoint sp) {
+    _jumpToLine(sp.line);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text('拆分建议 L${sp.line}：${sp.reason}'),
+        duration: const Duration(seconds: 3),
+      ));
+  }
+
+  void _onSceneTap(Scene s) {
+    _jumpToLine(s.startLine);
+    final chars = s.characters.isEmpty ? '' : '（${s.characters.join('、')}）';
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text('场景 L${s.startLine}-L${s.endLine}$chars：${s.summary}'),
+        duration: const Duration(seconds: 3),
+      ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      maxLines: null,
-      expands: true,
-      textAlignVertical: TextAlignVertical.top,
-      decoration: const InputDecoration(
-        border: InputBorder.none,
-        hintText: '开始写作...',
-      ),
-      style: const TextStyle(
-        fontSize: 16,
-        height: 1.8,
-      ),
-      onChanged: widget.onChanged,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            TextField(
+              controller: _controller,
+              scrollController: _scrollController,
+              focusNode: _focusNode,
+              maxLines: null,
+              expands: true,
+              textAlignVertical: TextAlignVertical.top,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: '开始写作...',
+              ),
+              style: const TextStyle(
+                fontSize: _fontSize,
+                height: 1.8,
+              ),
+              onChanged: widget.onChanged,
+            ),
+            Positioned.fill(
+              child: AnnotationOverlay(
+                splitPoints: widget.splitPoints,
+                scenes: widget.scenes,
+                lineHeight: _lineHeight,
+                scrollOffset: _scrollOffset,
+                viewportHeight: constraints.maxHeight,
+                onSplitTap: _onSplitTap,
+                onSceneTap: _onSceneTap,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
