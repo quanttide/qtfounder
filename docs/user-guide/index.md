@@ -1,40 +1,65 @@
 # 用户指南
 
-面向 qtfounder 的使用者：如何访问与使用创始人工作台与官网。
+欢迎使用量潮创始人工作台——你的**创作现场**。
 
-## 产品入口
+## 这是什么
 
-| 产品 | 访问方式 | 说明 |
-|------|---------|------|
-| 创始人官网（site） | `https://qtfounder.site`（部署后） | 创作现场展示：创作流时间线 / 创作域矩阵 / 改稿轨迹 |
-| 创始人工作台（studio） | 本地运行（见下） | 以 fiction + memory 为数据源的工作台 |
+创作现场把散落在各处的创作痕迹（小说改稿、方向文档、方法笔记）汇集到一个屏幕里，让你一眼看到：
 
-## 创始人工作台使用
+```
+改稿轨迹     → 小说写到哪了（19 个章节，从重逢到看星星）
+创作域矩阵   → 方向与方法文档（roadmap 蓝图 + context 心得）
+创作流时间线 → 各条创作线的最新状态
+```
 
-### 桌面端（推荐）
+## 你能用它做什么
+
+- **看进度**：打开就知道职场言情写到哪个章节（1_1 咖啡厅重逢 → 12_3 阳台看星星）
+- **找素材**：创作方法文档（情节组织、素材转化规律）随时可查
+- **规划下一步**：11_x 缺口、素材池清单都在 roadmap 里可见
+
+## 怎么打开
+
+### 桌面端（推荐，能看到真实数据）
 
 ```bash
 cd src/studio
-flutter run \
-  --dart-define=QTFOUNDER_FICTION_PATH=$HOME/repos/quanttide-founder/assets/fiction \
-  --dart-define=QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/assets/memory
+flutter run
 ```
 
-打开后即可看到：
-- **改稿轨迹**：fiction 改稿章节列表（职场言情/4_改稿）
-- **创作域矩阵**：memory 文档（roadmap 方向 + context 方法）
+> 如果打开后没有数据，说明数据源路径未配置——告诉开发者（或见 CONTRIBUTING.md）配置 fiction/memory 路径即可。
 
-### Web 端
+### 网页版
 
 ```bash
-cd src/studio && flutter run -d chrome
+cd src/studio
+flutter run -d chrome
 ```
 
-Web 端无文件系统，显示内置示例数据；如需真实数据，需启动 provider API（见 [API 参考](../api-reference/index.md)）并配置接入。
+网页版打开是示例数据（网页无法直接读本地文件）。想要真实数据，需要先启动数据服务：
 
-## 数据源说明
+```bash
+# 启动数据服务（另一个终端）
+cd src/provider
+QTFOUNDER_FICTION_PATH=$HOME/repos/quanttide-founder/assets/fiction \
+QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/assets/memory \
+go run ./cmd/server
+```
 
-- **fiction**：小说创作仓库（职场言情 19 章节等）
-- **memory**：创始人记忆仓库（roadmap 方向层 + context 方法层）
+## 打开后你会看到
 
-数据源布局与配置详见 [开发指南](dev-guide/index.md) 与 [CONTRIBUTING](../../CONTRIBUTING.md)。
+| 区域 | 内容 | 例子 |
+|------|------|------|
+| 改稿轨迹 | 小说章节清单（按顺序） | 1_1 咖啡厅重逢 · 7_1 酒吧表白 · 12_3 阳台看星星 |
+| 创作域矩阵 | 方向文档（roadmap）+ 方法文档（context） | fiction 路线图 · 情节组织 · 转化方法论 |
+
+## 常见问题
+
+**问：网页版为什么看不到我的数据？**
+答：网页不能直接读电脑上的文件。两个选择：用桌面版；或启动数据服务后访问。
+
+**问：改了小说章节，工作台没变化？**
+答：数据是实时读文件的——重启工作台即可看到最新内容。
+
+**问：更多功能在哪？**
+答：章节详情、创作轨迹视图正在开发中（见项目 ROADMAP）。
