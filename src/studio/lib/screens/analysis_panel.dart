@@ -24,7 +24,7 @@ class AnalysisPanel extends StatelessWidget {
       child: BlocBuilder<AnalyzeBloc, AnalysisState>(
         builder: (context, state) {
           if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const _LoadingView();
           }
           if (state.error != null) {
             return _ErrorView(
@@ -51,6 +51,34 @@ class AnalysisPanel extends StatelessWidget {
           }
           return _AnalysisContent(analysis: analysis);
         },
+      ),
+    );
+  }
+}
+
+class _LoadingView extends StatelessWidget {
+  const _LoadingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          const Text(
+            '正在分析...',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '首次分析约需 20-40 秒\n（全文发送给 LLM，仅结构输出）',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
+        ],
       ),
     );
   }
@@ -155,25 +183,83 @@ class _AnalysisContent extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // 阶段归类建议
-        if (analysis.suggestedStageId != null) ...[
-          const _SectionTitle('阶段归类建议'),
-          _Card(
-            child: Row(
-              children: [
-                Icon(Icons.flag_outlined, size: 14, color: Colors.indigo.shade400),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    '建议归入: ${analysis.suggestedStageId}',
-                    style: const TextStyle(fontSize: 12),
+        // 0_日志：灵感分解（分阶段方法）
+        if (analysis.stageId == '0_日志') ...[_buildInspirationSection(context)],
+
+        // 其他阶段：结构分析
+        if (analysis.stageId != '0_日志') ...[_buildStructureSection(context)],
+      ],
+    );
+  }
+
+  /// 0_日志：灵感片段区块（采纳 → 生成 1_灵感 文件）
+  Widget _buildInspirationSection(BuildContext context) {
+    if (analysis.inspirationSplits.isEmpty) {
+      return const _Card(child: Text('未发现可分解的灵感片段', style: TextStyle(fontSize: 12)));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('灵感片段（可采纳为 1_灵感）'),
+        ...analysis.inspirationSplits.map((split) => _Card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          split.title,
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      Text(
+                        'L${split.startLine}-L${split.endLine}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.indigo.shade600,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
+                  const SizedBox(height: 4),
+                  Text(
+                    split.summary,
+                    style: const TextStyle(fontSize: 12, height: 1.5),
+                  ),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: FilledButton.tonalIcon(
+                      onPressed: () {
+                        context
+                            .read<AnalyzeBloc>()
+                            .add(ApplyInspiration(split));
+                      },
+                      icon: const Icon(Icons.add, size: 14),
+                      label: const Text('采纳为灵感', style: TextStyle(fontSize: 11)),
+                      style: FilledButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+      ],
+    );
+  }
+
+  /// 其他阶段：结构分析区块
+  Widget _buildStructureSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 阶段归类建议
+        if (analysis.suggestedStageId != null) ...[_buildStageSuggestion()],
 
         // 标签
         const _SectionTitle('标签'),
@@ -257,6 +343,31 @@ class _AnalysisContent extends StatelessWidget {
                 ),
               )),
         ],
+      ],
+    );
+  }
+
+  /// 阶段归类建议卡片
+  Widget _buildStageSuggestion() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('阶段归类建议'),
+        _Card(
+          child: Row(
+            children: [
+              Icon(Icons.flag_outlined, size: 14, color: Colors.indigo.shade400),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '建议归入: ${analysis.suggestedStageId}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
       ],
     );
   }

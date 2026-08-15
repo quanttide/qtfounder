@@ -59,6 +59,8 @@ class AppBlocProvider extends StatelessWidget {
               chapterRepository: context.read<ChapterRepository>(),
               analysisRepository: context.read<ChapterAnalysisRepository>(),
               llm: context.read<LLMClient>(),
+              onInspirationApplied: () =>
+                  context.read<WorkflowBloc>().add(const LoadWorkflow()),
             ),
           ),
         ],

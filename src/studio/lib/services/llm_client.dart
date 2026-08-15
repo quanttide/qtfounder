@@ -1,15 +1,16 @@
-/// LLM 客户端——OpenAI 兼容协议（ollama / 任意兼容服务）。
+/// LLM 客户端——OpenAI 兼容协议（DeepSeek API）。
 ///
-/// 默认指向本地 ollama（http://localhost:11434/v1），隐私优先：
-/// 创作文本默认不离开本机。可通过 dart-define 覆盖：
+/// API key 从运行时环境变量 QTFOUNDER_LLM_API_KEY 读取（桌面端）：
 /// ```bash
-/// flutter run --dart-define=QTFOUNDER_LLM_BASE_URL=http://localhost:11434/v1 \
-///             --dart-define=QTFOUNDER_LLM_MODEL=qwen2.5
+/// QTFOUNDER_LLM_API_KEY=sk-xxx flutter run -d linux
 /// ```
+/// 可通过 QTFOUNDER_LLM_BASE_URL / QTFOUNDER_LLM_MODEL（环境变量或 dart-define）覆盖。
 library;
 
 import 'dart:convert';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import '../models/analysis.dart';
@@ -26,13 +27,21 @@ class LLMConfig {
     this.apiKey = '',
   });
 
-  /// 默认配置：本地 ollama
+  /// 默认配置：DeepSeek API（https://api.deepseek.com/v1，模型 deepseek-v4-flash）。
+  /// API key 必须通过 QTFOUNDER_LLM_API_KEY 提供。
   factory LLMConfig.defaults() {
-    const fromEnv = String.fromEnvironment('QTFOUNDER_LLM_BASE_URL');
-    const fromEnvModel = String.fromEnvironment('QTFOUNDER_LLM_MODEL');
+    const dartUrl = String.fromEnvironment('QTFOUNDER_LLM_BASE_URL');
+    const dartModel = String.fromEnvironment('QTFOUNDER_LLM_MODEL');
+
+    // 运行时环境变量（桌面端；Web 无环境变量，回退 dart-define）
+    final apiKey = kIsWeb ? '' : (Platform.environment['QTFOUNDER_LLM_API_KEY'] ?? '');
+    final envUrl = kIsWeb ? null : Platform.environment['QTFOUNDER_LLM_BASE_URL'];
+    final envModel = kIsWeb ? null : Platform.environment['QTFOUNDER_LLM_MODEL'];
+
     return LLMConfig(
-      baseUrl: fromEnv.isNotEmpty ? fromEnv : 'http://localhost:11434/v1',
-      model: fromEnvModel.isNotEmpty ? fromEnvModel : 'qwen2.5',
+      baseUrl: (envUrl ?? dartUrl).isNotEmpty ? (envUrl ?? dartUrl) : 'https://api.deepseek.com/v1',
+      model: (envModel ?? dartModel).isNotEmpty ? (envModel ?? dartModel) : 'deepseek-v4-flash',
+      apiKey: apiKey,
     );
   }
 }
@@ -47,19 +56,21 @@ class LLMClient {
 
   /// 分析文本结构，返回结构化整理结果。
   /// 协议约束：输出纯 JSON，绝不返回改写后的文本。
+  /// [stageId] 决定分析方法：0_日志 → 灵感分解；其他阶段 → 结构分析。
   Future<ChapterAnalysis> analyzeStructure({
     required String chapterId,
     required String chapterPath,
+    required String stageId,
     required String content,
     required List<String> previousSuggestions,
   }) async {
-    final prompt = _buildPrompt(content, previousSuggestions);
+    final prompt = _buildPrompt(stageId, content, previousSuggestions);
     final body = jsonEncode({
       'model': config.model,
       'messages': [
         {
           'role': 'system',
-          'content': _systemPrompt,
+          'content': _systemPrompt(stageId),
         },
         {'role': 'user', 'content': prompt},
       ],
@@ -76,7 +87,7 @@ class LLMClient {
           },
           body: body,
         )
-        .timeout(const Duration(seconds: 120));
+        .timeout(const Duration(seconds: 180));
 
     if (resp.statusCode != 200) {
       throw Exception('LLM 请求失败: HTTP ${resp.statusCode} ${resp.body}');
@@ -89,6 +100,7 @@ class LLMClient {
     return ChapterAnalysis(
       chapterId: chapterId,
       chapterPath: chapterPath,
+      stageId: stageId,
       suggestedStageId: parsed['suggested_stage_id'] as String?,
       tags: ((parsed['tags'] as List?) ?? const []).map((e) => e.toString()).toList(),
       summary: (parsed['summary'] as String?) ?? '',
@@ -102,6 +114,9 @@ class LLMClient {
           .map((e) => e.toString())
           .toList(),
       ignoredSuggestions: previousSuggestions,
+      inspirationSplits: ((parsed['inspiration_splits'] as List?) ?? const [])
+          .map((e) => InspirationSplit.fromJson(e as Map<String, dynamic>))
+          .toList(),
       analyzedAt: DateTime.now(),
       model: config.model,
     );
@@ -124,7 +139,16 @@ class LLMClient {
     return jsonDecode(candidate) as Map<String, dynamic>;
   }
 
-  String get _systemPrompt => '''
+  String _systemPrompt(String stageId) => stageId == '0_日志'
+      ? '''
+你是创作灵感分解助手。任务：把自由日志分解为多个灵感片段。
+硬性规则：
+1. 绝不改写、重写、润色原文的任何字符
+2. 每个片段必须引用原文行号范围
+3. 片段标题与提炼使用原文中的词汇，不发明原文没有的内容
+4. 输出纯 JSON，不要 markdown 代码块，不要任何解释
+'''
+      : '''
 你是文本整理助手。任务：分析文本结构，输出 JSON。
 硬性规则：
 1. 绝不改写、重写、润色、翻译原文的任何字符
@@ -134,11 +158,28 @@ class LLMClient {
 5. 输出纯 JSON，不要 markdown 代码块，不要任何解释
 ''';
 
-  String _buildPrompt(String content, List<String> previousSuggestions) {
+  String _buildPrompt(String stageId, String content, List<String> previousSuggestions) {
     final ignored = previousSuggestions.isEmpty
         ? '（无）'
         : previousSuggestions.join('；');
     final truncated = content.length > 8000 ? content.substring(0, 8000) : content;
+
+    if (stageId == '0_日志') {
+      return '''
+已忽略的建议（不要再提出）：$ignored
+
+输出 JSON 结构：
+{
+  "inspiration_splits": [
+    {"title": "片段标题", "start_line": 1, "end_line": 3, "summary": "一句话提炼"}
+  ]
+}
+
+待分析的日志（行号从1开始）：
+$truncated
+''';
+    }
+
     return '''
 工作流阶段（小说创作）：0_日志（动机心境）/ 1_灵感（源头）/ 2_脚本（素材）/ 3_初稿（成文）/ 4_改稿（定稿）。
 已忽略的建议（不要再提出）：$ignored

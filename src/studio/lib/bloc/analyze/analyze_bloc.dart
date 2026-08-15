@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/analysis.dart';
@@ -44,6 +45,16 @@ class IgnoreSuggestion extends AnalyzeEvent {
 
   @override
   List<Object?> get props => [suggestionId];
+}
+
+/// 采纳灵感片段：在 1_灵感 阶段创建新文件（内容 = 日志原样摘录）
+class ApplyInspiration extends AnalyzeEvent {
+  final InspirationSplit split;
+
+  const ApplyInspiration(this.split);
+
+  @override
+  List<Object?> get props => [split];
 }
 
 /// 清除分析状态（切换章节时）
@@ -101,18 +112,22 @@ class AnalyzeBloc extends Bloc<AnalyzeEvent, AnalysisState> {
   final ChapterAnalysisRepository _analysisRepository;
   final LLMClient _llm;
   final Set<String> _pendingIds = {}; // 分析中去重
+  final VoidCallback? _onInspirationApplied; // 采纳灵感后刷新工作流
 
   AnalyzeBloc({
     required ChapterRepository chapterRepository,
     required ChapterAnalysisRepository analysisRepository,
     required LLMClient llm,
+    VoidCallback? onInspirationApplied,
   })  : _chapterRepository = chapterRepository,
         _analysisRepository = analysisRepository,
         _llm = llm,
+        _onInspirationApplied = onInspirationApplied,
         super(const AnalysisState.initial()) {
     on<AnalyzeChapter>(_onAnalyzeChapter);
     on<RefreshAnalysis>(_onRefreshAnalysis);
     on<IgnoreSuggestion>(_onIgnoreSuggestion);
+    on<ApplyInspiration>(_onApplyInspiration);
     on<ClearAnalysis>(_onClearAnalysis);
   }
 
@@ -170,6 +185,7 @@ class AnalyzeBloc extends Bloc<AnalyzeEvent, AnalysisState> {
       final analysis = await _llm.analyzeStructure(
         chapterId: chapterId,
         chapterPath: chapter.path,
+        stageId: chapter.stageId,
         content: content,
         previousSuggestions: previous?.ignoredSuggestions ?? const [],
       );
@@ -187,6 +203,45 @@ class AnalyzeBloc extends Bloc<AnalyzeEvent, AnalysisState> {
       ));
     } finally {
       _pendingIds.remove(chapterId);
+    }
+  }
+
+  Future<void> _onApplyInspiration(
+    ApplyInspiration event,
+    Emitter<AnalysisState> emit,
+  ) async {
+    final analysis = state.analysis;
+    if (analysis == null) return;
+    final split = event.split;
+
+    try {
+      // 1. 读日志原文，按行号范围原样摘录（字符零改动）
+      final content = await _chapterRepository.getChapterContent(analysis.chapterId);
+      final lines = content.split('\n');
+      final start = split.startLine.clamp(1, lines.length);
+      final end = split.endLine.clamp(start, lines.length);
+      final excerpt = lines.sublist(start - 1, end).join('\n');
+
+      // 2. 在 1_灵感 创建新文件（标题行 + 原样摘录）
+      final chapter = await _chapterRepository.createChapter('1_灵感', split.title);
+      await _chapterRepository.saveChapter(chapter.id, '# ${split.title}\n\n$excerpt');
+
+      // 3. 标记已采纳（负反馈：不再重复建议）
+      final updated = analysis.copyWith(
+        ignoredSuggestions: [
+          ...analysis.ignoredSuggestions,
+          'inspiration_${split.title}_${split.startLine}',
+        ],
+        inspirationSplits: analysis.inspirationSplits
+            .where((s) => !(s.title == split.title && s.startLine == split.startLine))
+            .toList(),
+      );
+      await _analysisRepository.saveAnalysis(updated);
+      emit(state.copyWith(analysis: updated));
+
+      _onInspirationApplied?.call();
+    } catch (e) {
+      emit(state.copyWith(error: '采纳失败: $e'));
     }
   }
 

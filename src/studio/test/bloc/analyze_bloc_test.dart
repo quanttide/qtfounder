@@ -27,6 +27,7 @@ class _FakeLLMClient implements LLMClient {
   Future<ChapterAnalysis> analyzeStructure({
     required String chapterId,
     required String chapterPath,
+    required String stageId,
     required String content,
     required List<String> previousSuggestions,
   }) async {
@@ -35,6 +36,7 @@ class _FakeLLMClient implements LLMClient {
     return ChapterAnalysis(
       chapterId: chapterId,
       chapterPath: chapterPath,
+      stageId: stageId,
       suggestedStageId: '4_改稿',
       tags: const ['测试标签'],
       summary: '测试摘要',
@@ -53,6 +55,7 @@ class _TempFileRepository implements ChapterRepository {
   final Directory dir;
   late final Chapter _chapter;
   late final File _file;
+  final Map<String, Chapter> _extra = {}; // 创建的文件（按 id）
   String content;
 
   _TempFileRepository({required this.dir, required this.content})
@@ -70,22 +73,44 @@ class _TempFileRepository implements ChapterRepository {
   }
 
   @override
-  Future<List<Chapter>> getChapters() async => [_chapter];
+  Future<List<Chapter>> getChapters() async => [_chapter, ..._extra.values];
 
   @override
-  Future<Chapter?> getChapter(String id) async =>
-      id == _chapter.id ? _chapter : null;
+  Future<Chapter?> getChapter(String id) async {
+    if (id == _chapter.id) return _chapter;
+    return _extra[id];
+  }
 
   @override
-  Future<String> getChapterContent(String id) async => _file.readAsString();
+  Future<String> getChapterContent(String id) async {
+    final chapter = await getChapter(id);
+    if (chapter == null) return '';
+    return File(chapter.path).readAsString();
+  }
 
   @override
-  Future<void> saveChapter(String id, String content) async =>
-      _file.writeAsString(content);
+  Future<void> saveChapter(String id, String content) async {
+    final chapter = await getChapter(id);
+    if (chapter == null) return;
+    await File(chapter.path).writeAsString(content);
+  }
 
   @override
-  Future<Chapter> createChapter(String stageId, String title) async =>
-      throw UnimplementedError();
+  Future<Chapter> createChapter(String stageId, String title) async {
+    final file = File(path.join(dir.path, stageId, '$title.md'));
+    await file.parent.create(recursive: true);
+    await file.writeAsString('# $title\n\n');
+    final chapter = Chapter(
+      id: title,
+      title: title,
+      stageId: stageId,
+      path: file.path,
+      createdAt: DateTime(2026, 8, 15),
+      updatedAt: DateTime(2026, 8, 15),
+    );
+    _extra[title] = chapter;
+    return chapter;
+  }
 
   @override
   Future<void> deleteChapter(String id) async =>
@@ -187,6 +212,57 @@ void main() {
     await bloc.stream.firstWhere((s) => s.error != null);
     expect(bloc.state.error, contains('章节不存在'));
     expect(bloc.state.isLoading, isFalse);
+
+    await bloc.close();
+  });
+
+  test('0_日志：采纳灵感片段 → 创建 1_灵感 文件（原样摘录，日志原文不变）', () async {
+    final repo = _TempFileRepository(dir: tempDir, content: originalContent);
+    final analysisRepo = FileAnalysisRepository();
+    final llm = _FakeLLMClient();
+    var refreshCalled = false;
+    final bloc = AnalyzeBloc(
+      chapterRepository: repo,
+      analysisRepository: analysisRepo,
+      llm: llm,
+      onInspirationApplied: () => refreshCalled = true,
+    );
+
+    // 预置分析结果（含灵感片段）
+    final split = const InspirationSplit(
+        title: '灵感A', startLine: 2, endLine: 3, summary: '提炼');
+    final analysis = ChapterAnalysis(
+      chapterId: '1_1_章节',
+      chapterPath: path.join(tempDir.path, '3_初稿', '1_1_章节.md'),
+      stageId: '0_日志',
+      inspirationSplits: [split],
+      analyzedAt: DateTime(2026, 8, 15),
+      model: 'fake-model',
+    );
+    await analysisRepo.saveAnalysis(analysis);
+
+    // 打开章节 → 缓存命中（拿到含片段的 analysis）
+    bloc.add(const AnalyzeChapter('1_1_章节'));
+    await bloc.stream.firstWhere((s) => s.analysis != null);
+
+    // 采纳片段
+    bloc.add(ApplyInspiration(split));
+    await bloc.stream.firstWhere((s) =>
+        s.analysis != null && s.analysis!.inspirationSplits.isEmpty);
+
+    // 回调触发
+    expect(refreshCalled, isTrue);
+    // 日志原文不变（核心验收）
+    expect(await repo.getChapterContent('1_1_章节'), originalContent);
+    // 创建了 1_灵感 文件
+    final chapters = await repo.getChapters();
+    expect(chapters.where((c) => c.stageId == '1_灵感').length, 1);
+    final created = chapters.firstWhere((c) => c.stageId == '1_灵感');
+    final createdContent = await repo.getChapterContent(created.id);
+    // 内容 = 标题行 + 原样摘录（原文第 2-3 行）
+    expect(createdContent, contains('灵感A'));
+    expect(createdContent, contains(originalContent.split('\n')[1]));
+    expect(createdContent, contains(originalContent.split('\n')[2]));
 
     await bloc.close();
   });
