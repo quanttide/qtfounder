@@ -1,36 +1,31 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:qtfounder_studio/data/creative_repository.dart';
 import 'package:qtfounder_studio/main.dart';
 
 void main() {
-  testWidgets('量潮创始人工作台可渲染创作现场（注入数据）', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: CreativeDesk(
-            chaptersLoader: _fakeChapters,
-            memoryLoader: _fakeMemory,
-          ),
-        ),
-      ),
-    );
+  testWidgets('量潮创始人工作台可渲染资产职能', (WidgetTester tester) async {
+    await tester.pumpWidget(const FounderApp());
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('改稿轨迹'), findsOneWidget);
-    expect(find.textContaining('创作域矩阵'), findsOneWidget);
-    expect(find.text('1_1_咖啡厅重逢'), findsOneWidget);
-    expect(find.text('[context] fiction-plot'), findsOneWidget);
+    // 品牌 + 导航
+    expect(find.text('量潮'), findsOneWidget);
+    expect(find.text('资产'), findsWidgets);
+    expect(find.text('小说'), findsOneWidget);
+    expect(find.text('记忆'), findsOneWidget);
+  });
+
+  testWidgets('导航栏三职能可切换', (WidgetTester tester) async {
+    await tester.pumpWidget(const FounderApp());
+    await tester.pumpAndSettle();
+
+    // 切到创作（占位页）
+    await tester.tap(find.byTooltip('创作'));
+    await tester.pumpAndSettle();
+    expect(find.text('写作/改稿工作流（规划中）'), findsOneWidget);
+
+    // 切到情绪（占位页）
+    await tester.tap(find.byTooltip('情绪'));
+    await tester.pumpAndSettle();
+    expect(find.text('情绪状态（cli 数据接入，规划中）'), findsOneWidget);
   });
 }
-
-Future<List<CreativeItem>> _fakeChapters() async => const [
-      CreativeItem(name: '1_1_咖啡厅重逢', path: 'test', category: '改稿'),
-      CreativeItem(name: '7_1_酒吧表白', path: 'test', category: '改稿'),
-    ];
-
-Future<List<CreativeItem>> _fakeMemory() async => const [
-      CreativeItem(name: 'fiction', path: 'test', category: 'roadmap'),
-      CreativeItem(name: 'fiction-plot', path: 'test', category: 'context'),
-    ];

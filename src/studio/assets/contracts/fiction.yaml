@@ -1,0 +1,20 @@
+# 小说资产契约
+# 语义规则声明：一级文件夹=一本小说，二级文件夹=一个阶段，文件编号=排序，无编号=未排序
+asset: fiction
+label: 小说
+root: fiction
+ignore:
+  - README.md
+  - CHANGELOG.md
+  - myst.yml
+levels:
+  - key: novel
+    label: 小说
+  - key: stage
+    label: 阶段
+naming:
+  pattern: '^(\d+)_(\d+)(?:_(.*?))?(?: (\d+))?$'
+  title: '$3'
+  sortKey: ['$1', '$2']
+  version: '$4'
+  unsorted: last

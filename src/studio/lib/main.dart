@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'config.dart';
-import 'data/creative_repository.dart';
+import 'screens/asset_catalog_screen.dart';
+import 'screens/assets_screen.dart';
 
 void main() {
   runApp(const FounderApp());
@@ -30,9 +30,54 @@ class FounderApp extends StatelessWidget {
   }
 }
 
-/// 应用壳：品牌侧边栏 + 内容区
-class Shell extends StatelessWidget {
+/// 应用壳：品牌侧边栏（量潮 logo + 职能导航）+ 内容区
+class Shell extends StatefulWidget {
   const Shell({super.key});
+
+  @override
+  State<Shell> createState() => _ShellState();
+}
+
+/// 职能导航项
+class _NavItem {
+  final IconData icon;
+  final String label;
+  final Widget Function() buildPage;
+
+  const _NavItem({required this.icon, required this.label, required this.buildPage});
+}
+
+class _ShellState extends State<Shell> {
+  int _selectedIndex = 0;
+  late final List<_NavItem> _navItems = [
+    _NavItem(
+      icon: Icons.folder_outlined,
+      label: '资产',
+      buildPage: () => AssetsScreen(onOpen: _openAsset),
+    ),
+    _NavItem(
+      icon: Icons.edit_outlined,
+      label: '创作',
+      buildPage: () => const _PlaceholderPage(title: '创作', subtitle: '写作/改稿工作流（规划中）'),
+    ),
+    _NavItem(
+      icon: Icons.insights_outlined,
+      label: '情绪',
+      buildPage: () => const _PlaceholderPage(title: '情绪', subtitle: '情绪状态（cli 数据接入，规划中）'),
+    ),
+  ];
+
+  void _openAsset(AssetEntry entry) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AssetCatalogScreen(
+          assetId: entry.id,
+          label: entry.label,
+          contractPath: 'assets/contracts/${entry.id}.yaml',
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,25 +102,40 @@ class Shell extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0E7FF),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.auto_stories_outlined,
-                      size: 20,
-                      color: Color(0xFF4F46E5),
-                    ),
-                  ),
+                  ..._navItems.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final item = entry.value;
+                    final selected = i == _selectedIndex;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Tooltip(
+                        message: item.label,
+                        child: InkWell(
+                          onTap: () => setState(() => _selectedIndex = i),
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: selected ? const Color(0xFFE0E7FF) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              item.icon,
+                              size: 20,
+                              color: selected ? const Color(0xFF4F46E5) : const Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                   const Spacer(),
                   const SizedBox(height: 20),
                 ],
               ),
             ),
-            const Expanded(child: CreativeDesk()),
+            Expanded(child: _navItems[_selectedIndex].buildPage()),
           ],
         ),
       ),
@@ -83,164 +143,26 @@ class Shell extends StatelessWidget {
   }
 }
 
-/// 创作现场——工作台主界面（数据源：fiction + memory）
-class CreativeDesk extends StatefulWidget {
-  /// 测试/定制用 loader 注入（默认读真实数据源）
-  final Future<List<CreativeItem>> Function()? chaptersLoader;
-  final Future<List<CreativeItem>> Function()? memoryLoader;
+/// 占位页（创作/情绪等未实现职能）
+class _PlaceholderPage extends StatelessWidget {
+  final String title;
+  final String subtitle;
 
-  const CreativeDesk({super.key, this.chaptersLoader, this.memoryLoader});
-
-  @override
-  State<CreativeDesk> createState() => _CreativeDeskState();
-}
-
-class _CreativeDeskState extends State<CreativeDesk> {
-  List<CreativeItem> _chapters = [];
-  List<CreativeItem> _memoryDocs = [];
-  bool _loading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    try {
-      final chapters =
-          await (widget.chaptersLoader ?? loadRevisionChapters)();
-      final docs = await (widget.memoryLoader ?? loadMemoryDocs)();
-      setState(() {
-        _chapters = chapters;
-        _memoryDocs = docs;
-        _loading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = '数据源加载失败：$e';
-        _loading = false;
-      });
-    }
-  }
+  const _PlaceholderPage({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
     return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 28, 28, 0),
+      padding: const EdgeInsets.all(28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '量潮创始人工作台',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1E293B),
-            ),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
           ),
           const SizedBox(height: 4),
-          Text(
-            dataSourceAvailable
-                ? '数据源：$fictionPath\n          $memoryPath'
-                : '数据源：fiction + memory（内置示例，Web 无文件系统）',
-            style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ListView(
-              children: [
-                if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      _error!,
-                      style: const TextStyle(color: Color(0xFFEF4444)),
-                    ),
-                  ),
-                _SectionCard(
-                  icon: Icons.timeline,
-                  title: '改稿轨迹（fiction · 4_改稿）',
-                  items: _chapters.map((c) => c.name).toList(),
-                ),
-                const SizedBox(height: 12),
-                _SectionCard(
-                  icon: Icons.grid_view_outlined,
-                  title: '创作域矩阵（memory）',
-                  items: _memoryDocs
-                      .map((d) => '[${d.category}] ${d.name}')
-                      .toList(),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 分区卡片
-class _SectionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final List<String> items;
-
-  const _SectionCard({
-    required this.icon,
-    required this.title,
-    required this.items,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: const Color(0xFF4F46E5)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('· ', style: TextStyle(color: Color(0xFF4F46E5))),
-                  Expanded(
-                    child: Text(
-                      item,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          Text(subtitle, style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
         ],
       ),
     );
