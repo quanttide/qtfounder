@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'screens/asset_catalog_screen.dart';
 import 'screens/assets_screen.dart';
+import 'screens/create_screen.dart';
 
 void main() {
   runApp(const FounderApp());
@@ -58,7 +59,7 @@ class _ShellState extends State<Shell> {
     _NavItem(
       icon: Icons.edit_outlined,
       label: '创作',
-      buildPage: () => const _PlaceholderPage(title: '创作', subtitle: '写作/改稿工作流（规划中）'),
+      buildPage: () => const CreateScreen(),
     ),
     _NavItem(
       icon: Icons.insights_outlined,
