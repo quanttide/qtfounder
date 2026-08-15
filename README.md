@@ -18,6 +18,27 @@
 | `src/site/` | 创始人官网 | `cd src/site && npm run dev` |
 | `src/cli/` | CLI 工具 | `cd src/cli && cargo run` |
 | `src/studio/` | 创始人工作台 | `cd src/studio && flutter run` |
+| `src/provider/` | 创作数据 API（Go） | `cd src/provider && go run ./cmd/server` |
+
+## src/provider 创作数据 API
+
+Go 服务端，为 Studio 提供创作数据（fiction 章节 + memory 文档）。数据源与 Studio 共用环境变量：
+
+```bash
+cd src/provider
+QTFOUNDER_FICTION_PATH=$HOME/repos/quanttide-founder/assets/fiction \
+QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/assets/memory \
+QTFOUNDER_ADDR=:8080 \
+  go run ./cmd/server
+```
+
+| API | 说明 |
+|-----|------|
+| `GET /api/chapters` | 改稿章节列表（fiction/职场言情/4_改稿，按编号排序） |
+| `GET /api/memory` | memory 文档列表（roadmap/ + context/） |
+| `GET /health` | 健康检查 |
+
+这是 Studio **Web 端读取真实数据**的通道（Web 无文件系统，经 API 转发）。
 
 ## src/studio 数据源配置
 
