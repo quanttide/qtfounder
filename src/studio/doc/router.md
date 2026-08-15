@@ -87,5 +87,5 @@ GoRouter
 ## 关联文档
 
 - [navigation.md](navigation.md)：导航栏设计
-- [screens.md](screens.md)：页面设计
-- [fiction-asset.md](fiction-asset.md)：小说资产页
+- [screens/index.md](screens/index.md)：页面设计
+- [screens/fiction-asset.md](screens/fiction-asset.md)：小说资产页

@@ -57,7 +57,7 @@
 
 - 资产（记忆/小说等）是**数据源集合**——聚合为一个职能入口，内部按资产类型导航
 - 与创作（做）、情绪（状态）平级：三个职能回答三个问题——**有什么 / 怎么写 / 状态如何**
-- 资产内部结构即仓库结构：不发明视图（见 fiction-asset.md）
+- 资产内部结构即仓库结构：不发明视图（见 [screens/fiction-asset.md](screens/fiction-asset.md)）
 
 ### 3. 选中态设计
 
@@ -90,5 +90,5 @@
 ## 关联文档
 
 - [router.md](router.md)：路由规划
-- [screens.md](screens.md)：页面设计
-- [fiction-asset.md](fiction-asset.md)：小说资产页
+- [screens/index.md](screens/index.md)：页面设计
+- [screens/fiction-asset.md](screens/fiction-asset.md)：小说资产页

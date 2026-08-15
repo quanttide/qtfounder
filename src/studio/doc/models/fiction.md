@@ -1,6 +1,6 @@
 # 小说资产数据模型
 
-对应 fiction 仓库的资产结构规则（见 [fiction-asset.md](fiction-asset.md)）：
+对应 fiction 仓库的资产结构规则（见 [../screens/fiction-asset.md](../screens/fiction-asset.md)）：
 
 ```
 一级文件夹 = 一本小说（Novel）

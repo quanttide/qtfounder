@@ -1,6 +1,6 @@
 # Screens 页面设计思路
 
-量潮创始人工作台各页面的设计思路。页面按**职能**组织（资产 / 创作 / 情绪），与 [navigation.md](navigation.md) 和 [router.md](router.md) 对应。
+量潮创始人工作台各页面的设计思路。页面按**职能**组织（资产 / 创作 / 情绪），与 [../navigation.md](../navigation.md) 和 [../router.md](../router.md) 对应。
 
 ## 页面总览
 
