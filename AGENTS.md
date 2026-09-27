@@ -20,7 +20,7 @@
 | `src/site/` | React + Vite | 创始人官网（创作现场展示） |
 | `src/studio/` | Flutter | 创始人工作台（数据源：fiction + memory） |
 | `src/provider/` | Go | 创作数据 API（chapters / memory / health） |
-| `src/cli/` | Rust | CLI 工具（health 情绪分析） |
+| `src/cli/` | Rust | CLI 工具（脚手架，待新功能） |
 
 ## 工作原则
 

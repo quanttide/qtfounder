@@ -14,7 +14,7 @@
 | `src/site/` | 创始人官网（React + Vite） | v0.1.0-beta.1 | ✅ 从"作品集"转向"创作现场"（时间线/矩阵/改稿轨迹） |
 | `src/studio/` | 创始人工作台（Flutter） | 1.0.0+1 | ✅ 壳 + 数据源（fiction/memory 环境变量配置） |
 | `src/provider/` | 创作数据 API（Go） | v0.1.0 | ✅ chapters/memory/health 三 API，真实数据源测试通过 |
-| `src/cli/` | CLI 工具（Rust） | v0.1.0 | ✅ health 子命令（check/track/history/profile，git 历史 + LLM 情绪维度） |
+| `src/cli/` | CLI 工具（Rust） | — | 🔶 脚手架：入口与结构保留，health 功能已移除，待新功能 |
 
 ## 数据源
 
@@ -37,12 +37,12 @@
 ```
 fiction + memory（数据源，环境变量配置）
     ├── → src/studio（桌面端直接读文件系统）
-    ├── → src/provider（API：/api/chapters /api/memory）→ src/studio Web 端
-    └── → src/cli（health 情绪分析）
+    └── → src/provider（API：/api/chapters /api/memory）→ src/studio Web 端
 ```
 
 ## 最近进展
 
+- 2026-09-27：src/cli 精简为脚手架（移除 health 功能，情绪画像归 memory 五轴档案）
 - 2026-08-15：src/provider Go 初始化（创作数据 API）+ src/studio 数据源配置
 - 2026-08-15：src/studio Flutter 初始化（量潮创始人工作台·创作现场）
 - 2026-08-14：site v0.1.0-alpha.4（创作现场转向 + CLI health）

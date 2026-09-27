@@ -1,8 +1,8 @@
 # API 参考
 
-qtfounder 的 API 总体构成——两类接口：
+qtfounder 的接口目前只有 Provider API 一类：
 
-## 1. Provider API（HTTP 服务）
+## Provider API（HTTP 服务）
 
 `src/provider/`（Go）——创作数据服务，供 Studio Web 端与外部调用方读取 fiction/memory 数据。
 
@@ -14,20 +14,8 @@ qtfounder 的 API 总体构成——两类接口：
 
 详细定义见 [provider.md](provider.md)。
 
-## 2. CLI 命令（qtfounder-cli）
+## 数据源
 
-`src/cli/`（Rust）——本地命令行工具，基于 git commit 历史与 LLM 做情绪维度分析。
+fiction + memory（环境变量 `QTFOUNDER_FICTION_PATH` / `QTFOUNDER_MEMORY_PATH`）。
 
-| 命令 | 说明 |
-|------|------|
-| `qtfounder-cli health check` | 情绪状态检查（近 N 天） |
-| `qtfounder-cli health track` | 情绪追踪（CSV 输出） |
-| `qtfounder-cli health history` | 历史情绪查询 |
-| `qtfounder-cli health profile` | 情绪画像生成 |
-
-详细定义见 [cli.md](cli.md)。
-
-## 共同点
-
-- 数据源均为 fiction + memory（环境变量 QTFOUNDER_FICTION_PATH / QTFOUNDER_MEMORY_PATH）
-- 服务型（provider）面向外部调用，工具型（cli）面向本地使用
+CLI（`src/cli/`）现为脚手架、暂无子命令，新功能上线后再补参考页。

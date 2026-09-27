@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Removed
+
+- CLI `health` 子命令（check/track/history/profile）：默认路径随 `docs/` → `assets/` 迁移失效、无使用痕迹，情绪画像归 memory 五轴档案（`profile/emotions.md`）维护；`src/cli` 保留入口与结构作为新功能脚手架，API 参考 CLI 页与 README/STATUS/AGENTS/开发指南索引同步移除
+
 ## [0.1.0] - 2026-08-14
 
 结构类变更：仓库从纯官网仓库重构为"官网（`src/site`）+ CLI 工具（`src/cli`）"双模块结构。

@@ -16,7 +16,7 @@
 | `src/site/` | React + Vite | 创始人官网（创作现场展示） | [site docs](../../src/site/docs/index.md) |
 | `src/studio/` | Flutter | 创始人工作台 | [studio ROADMAP](../../src/studio/ROADMAP.md) |
 | `src/provider/` | Go | 创作数据 API | [provider ROADMAP](../../src/provider/ROADMAP.md) |
-| `src/cli/` | Rust | CLI 工具（health 情绪分析） | [cli ROADMAP](../../src/cli/ROADMAP.md) |
+| `src/cli/` | Rust | CLI 工具（脚手架，待新功能） | [cli ROADMAP](../../src/cli/ROADMAP.md) |
 
 ## 开发环境搭建
 
@@ -75,8 +75,7 @@ cd src/site && npm run build
 ```
 fiction + memory（数据源）
     ├── → src/studio（桌面端直接读文件系统）
-    ├── → src/provider（API）→ studio Web 端
-    └── → src/cli（情绪分析）
+    └── → src/provider（API）→ studio Web 端
 ```
 
 ## 调试提示

@@ -8,18 +8,9 @@
 
 ## 当前状态
 
-### 已实现：`health` 子命令
+脚手架：入口与结构保留，暂无子命令。原 `health` 情绪分析（check/track/history/profile）已移除——默认数据路径随 `docs/` → `assets/` 迁移失效、无使用痕迹，情绪画像归 memory 五轴档案（`profile/emotions.md`）维护。
 
-从 journal（memory）与小说（fiction）仓库的 commit 历史提取内容，经 LLM 抽取情绪维度（valence/arousal/warning_signs），输出心理健康画像。
-
-| 命令 | 功能 |
-|------|------|
-| `health check` | 对比近 N 天现实情绪与创作情绪差距 |
-| `health track` | 每周情绪追踪，追加 CSV 记录 |
-| `health history` | 查看 CSV 历史与均值 |
-| `health profile` | 生成情绪基线（均值/波动/预警阈值）到 profile.yaml |
-
-依赖：git2（读取 commit blob）、quanttide-agent（LLM 抽取）。
+新功能接入：`src/` 下新增模块 → `CliCommand` 注册 → 依赖加回 `Cargo.toml`。
 
 ---
 
