@@ -1,0 +1,62 @@
+# 发布 lite 微信小程序：推送 lite tag（如 lite/v1.0.0）时，
+# 构建 Taro 产物并用 miniprogram-ci 上传体验版，随后在微信公众平台「版本管理」验收。
+#
+# 触发说明：
+#   lite/v* 与 v*.*.* 两种 tag 均可触发；日常 push 不触发，避免污染开发版本列表。
+#   亦可在 Actions 页面手动触发（可指定版本号，缺省回退 package.json 版本）。
+#
+# 版本号取 tag 最后一段并去掉 v 前缀（lite/v1.0.0 → 1.0.0），保证与代码版本一一对应。
+#
+# 所需 GitHub secrets（仓库级）：
+#   - MINIPROGRAM_PRIVATE_KEY：小程序代码上传密钥文件全文（公众平台「开发设置」下载）
+#   - MINIPROGRAM_APPID：小程序 AppID
+#   - MINIPROGRAM_ROBOT：机器人编号 1-30（可选，默认 1，不同编号互不覆盖）
+# 若公众平台开启了 IP 白名单，需关闭或加入 GitHub Actions 出口 IP（出口 IP 不固定，建议关闭）。
+
+name: Deploy Lite
+
+on:
+  push:
+    tags:
+      - 'lite/v*'
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '上传版本号 x.y.z，留空时按 tag 或 package.json 推断'
+        required: false
+
+concurrency:
+  group: deploy-lite
+  cancel-in-progress: false
+
+jobs:
+  build-and-upload:
+    name: Build Taro & Upload MiniProgram
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: src/lite/package-lock.json
+
+      - name: Install & Build
+        working-directory: src/lite
+        # 锁文件在 npmmirror 下生成，CI 改用 npmjs 拉取，避免依赖国内镜像的可达性
+        run: |
+          npm ci --registry=https://registry.npmjs.org --replace-registry-host=always
+          npm run build:weapp
+
+      - name: Upload to WeChat
+        working-directory: src/lite
+        env:
+          MINIPROGRAM_PRIVATE_KEY: ${{ secrets.MINIPROGRAM_PRIVATE_KEY }}
+          MINIPROGRAM_APPID: ${{ secrets.MINIPROGRAM_APPID }}
+          MINIPROGRAM_ROBOT: ${{ secrets.MINIPROGRAM_ROBOT }}
+          RELEASE_VERSION: ${{ inputs.version || github.ref_name }}
+        run: node scripts/upload.js
