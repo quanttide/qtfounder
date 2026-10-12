@@ -35,13 +35,13 @@
 
 ```bash
 export QTFOUNDER_FICTION_PATH=$HOME/repos/quanttide-founder/assets/fiction
-export QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/assets/context
+export QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/data/context
 ```
 
 | 变量 | 用途 | 默认值（桌面端） |
 |------|------|-----------------|
 | `QTFOUNDER_FICTION_PATH` | fiction 仓库根 | `~/repos/quanttide-founder/assets/fiction` |
-| `QTFOUNDER_MEMORY_PATH` | memory 仓库根 | `~/repos/quanttide-founder/assets/context` |
+| `QTFOUNDER_MEMORY_PATH` | memory 仓库根 | `~/repos/quanttide-founder/data/context` |
 | `QTFOUNDER_ADDR` | provider 监听地址 | `:8080` |
 
 数据源布局约定：

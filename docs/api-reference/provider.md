@@ -7,7 +7,7 @@
 ```bash
 cd src/provider
 QTFOUNDER_FICTION_PATH=$HOME/repos/quanttide-founder/assets/fiction \
-QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/assets/context \
+QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/data/context \
 QTFOUNDER_ADDR=:8080 \
   go run ./cmd/server
 ```
