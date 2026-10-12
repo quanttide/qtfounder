@@ -42,7 +42,7 @@ flutter run -d chrome
 # 启动数据服务（另一个终端）
 cd src/provider
 QTFOUNDER_FICTION_PATH=$HOME/repos/quanttide-founder/assets/fiction \
-QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/assets/memory \
+QTFOUNDER_MEMORY_PATH=$HOME/repos/quanttide-founder/assets/context \
 go run ./cmd/server
 ```
 

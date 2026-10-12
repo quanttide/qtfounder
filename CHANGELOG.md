@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 数据源同步：主仓库子模块 `assets/memory` → `assets/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
+
 ### Removed
 
 - CLI `health` 子命令（check/track/history/profile）：默认路径随 `docs/` → `assets/` 迁移失效、无使用痕迹，情绪画像归 memory 五轴档案（`profile/emotions.md`）维护；`src/cli` 保留入口与结构作为新功能脚手架，API 参考 CLI 页与 README/STATUS/AGENTS/开发指南索引同步移除

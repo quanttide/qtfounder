@@ -24,7 +24,7 @@ export const activities: Activity[] = [
     date: '2026-08-14',
     title: 'qtfounder-cli v0.1.0',
     note: '健康检查子命令发布，基于 git 历史与 LLM 抽取情绪维度。',
-    link: 'https://github.com/quanttide-founder/qtfounder',
+    link: 'https://github.com/quanttide/qtfounder',
   },
   {
     id: 'war-intent-action',
@@ -32,7 +32,7 @@ export const activities: Activity[] = [
     date: '2026-08',
     title: '战争游戏 · 意图到行动',
     note: '新增 intent-to-action 示例，推进玩法机制实验。',
-    link: 'https://github.com/quanttide-founder/qtgame-war',
+    link: 'https://github.com/quanttide/qtgame-war',
   },
   {
     id: 'weiqi-v012',
@@ -40,7 +40,7 @@ export const activities: Activity[] = [
     date: '2026-06-27',
     title: '围棋 · v0.1.2',
     note: '连 Pass 终局与胜负判定完成，AI 能完整下完一盘棋。',
-    link: 'https://github.com/quanttide-founder/qtgame-weiqi',
+    link: 'https://github.com/quanttide/qtgame-weiqi',
   },
   {
     id: 'second-brain',
@@ -62,7 +62,7 @@ export const activities: Activity[] = [
     date: '2026-04-30',
     title: '经营游戏 · v0.0.1',
     note: '初始项目结构与游戏入口，迭代闭环建立。',
-    link: 'https://github.com/quanttide-founder/qtgame-tycoon',
+    link: 'https://github.com/quanttide/qtgame-tycoon',
   },
   {
     id: 'essay-cognitive-engineering',

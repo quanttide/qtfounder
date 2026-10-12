@@ -239,37 +239,37 @@ export const works: Work[] = [
   {
     slug: 'cognitive-engineering', title: '认知工程', type: '文章', date: '2026-04',
     description: '认知外化、重构与减负——系统性地降低 AI 原生时代的认知负担。',
-    link: 'https://github.com/quanttide-founder/quanttide-archive-of-founder',
+    link: 'https://github.com/quanttide/quanttide-archive-of-founder',
   },
   {
     slug: 'qtgame-weiqi', title: '围棋 · v0.1.2', type: '游戏', date: '2026-06',
     description: '连 Pass 终局与胜负判定完成，AI 可以完整下完一盘棋。',
-    link: 'https://github.com/quanttide-founder/qtgame-weiqi',
+    link: 'https://github.com/quanttide/qtgame-weiqi',
   },
   {
     slug: 'qtgame-war', title: '战争游戏 · 实验期', type: '游戏', date: '2026-08',
     description: '意图到行动的示例实验，推进玩法机制定型。',
-    link: 'https://github.com/quanttide-founder/qtgame-war',
+    link: 'https://github.com/quanttide/qtgame-war',
   },
   {
     slug: 'qtgame-tycoon', title: '经营游戏 · v0.0.1', type: '游戏', date: '2026-04',
     description: '初始项目结构与游戏入口，建立基础迭代闭环。',
-    link: 'https://github.com/quanttide-founder/qtgame-tycoon',
+    link: 'https://github.com/quanttide/qtgame-tycoon',
   },
   {
     slug: 'voice-input', title: '语音输入工作流', type: '工具', date: '2026-08',
     description: '以语音降低记录成本，把口头想法直接转成可整理的文本。',
-    link: 'https://github.com/quanttide-founder/quanttide-memory-of-founder',
+    link: 'https://github.com/quanttide/quanttide-context-of-founder',
   },
   {
     slug: 'qtfounder-cli', title: 'qtfounder-cli', type: '工具', date: '2026-08',
     description: '把健康检查、提交、审查等 DevOps 流程固化为命令行工具。',
-    link: 'https://github.com/quanttide-founder/qtfounder',
+    link: 'https://github.com/quanttide/qtfounder',
   },
   {
     slug: 'second-brain', title: '第二大脑', type: '工具', date: '2026-06',
     description: '以可版本化、可追溯、可复用的方式管理认知资产。',
-    link: 'https://github.com/quanttide-founder/quanttide-memory-of-founder',
+    link: 'https://github.com/quanttide/quanttide-context-of-founder',
   },
 ]
 

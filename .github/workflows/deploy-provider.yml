@@ -43,13 +43,13 @@ jobs:
       - name: Checkout fiction
         uses: actions/checkout@v4
         with:
-          repository: quanttide-founder/quanttide-fiction-of-founder
+          repository: quanttide/quanttide-fiction-of-founder
           path: data/fiction
 
       - name: Checkout memory
         uses: actions/checkout@v4
         with:
-          repository: quanttide-founder/quanttide-memory-of-founder
+          repository: quanttide/quanttide-context-of-founder
           path: data/memory
 
       - name: Setup Go
