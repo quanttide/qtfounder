@@ -1,5 +1,7 @@
 # qtfounder_studio
 
+> 当前为骨架：业务代码（`bloc` / `models` / `repositories` / `screens` / `services` / `config`）与测试已归档至 `data/archive/platform/qtfounder/studio/`，仅保留入口 `lib/main.dart` 与最小壳。重建时按原分层添加。
+
 A new Flutter project.
 
 ## Getting Started

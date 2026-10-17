@@ -8,6 +8,7 @@
 
 ### Removed
 
+- Studio 业务代码（`src/studio/lib/bloc`、`models`、`repositories`、`screens`、`services`、`config.dart`）与测试归档至 `data/archive/platform/qtfounder/studio/`；`src/studio` 仅保留入口 `lib/main.dart` 与最小骨架
 - CLI `health` 子命令（check/track/history/profile）：默认路径随 `docs/` → `assets/` 迁移失效、无使用痕迹，情绪画像归 memory 五轴档案（`profile/emotions.md`）维护；`src/cli` 保留入口与结构作为新功能脚手架，API 参考 CLI 页与 README/STATUS/AGENTS/开发指南索引同步移除
 
 ## [0.1.0] - 2026-08-14
