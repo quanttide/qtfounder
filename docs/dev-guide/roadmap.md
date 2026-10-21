@@ -1,6 +1,6 @@
 # ROADMAP
 
-量潮创始人平台（qtfounder）路线图。状态报告见 [STATUS.md](STATUS.md)，模块级路线图见 `src/*/ROADMAP.md`。
+量潮创始人平台（qtfounder）路线图。状态报告见 [STATUS.md](../../STATUS.md)，模块级路线图见 `src/*/ROADMAP.md`。
 
 ## 迁移
 
