@@ -14,9 +14,9 @@
 | 模块 | 技术栈 | 职责 | ROADMAP |
 |------|--------|------|---------|
 | `src/site/` | React + Vite | 创始人官网（创作现场展示） | [site docs](../../src/site/docs/index.md) |
-| `src/studio/` | Flutter | 创始人工作台 | [studio ROADMAP](../../src/studio/ROADMAP.md) |
-| `src/provider/` | Go | 创作数据 API | [provider ROADMAP](../../src/provider/ROADMAP.md) |
-| `src/cli/` | Rust | CLI 工具（脚手架，待新功能） | [cli ROADMAP](../../src/cli/ROADMAP.md) |
+| `src/studio/` | Flutter | 创始人工作台 | [studio ROADMAP](../../src/studio/docs/dev-guide/roadmap.md) |
+| `src/provider/` | Go | 创作数据 API | [provider ROADMAP](../../src/provider/docs/dev-guide/roadmap.md) |
+| `src/cli/` | Rust | CLI 工具（脚手架，待新功能） | [cli ROADMAP](../../src/cli/docs/dev-guide/roadmap.md) |
 
 ## 开发环境搭建
 
