@@ -1,4 +1,4 @@
-//! 阈值全在 `resources/default-contract.toml`（本工具的软件工程契约，随代码走）。改口径不碰代码。
+//! 阈值全在 `manifests/default-contract.toml`（本工具的软件工程契约，随代码走）。改口径不碰代码。
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -10,7 +10,7 @@ pub const CONTRACT_FILE: &str = "default-contract.toml";
 /// 指定契约的环境变量。
 pub const CONTRACT_ENV: &str = "QTFOUNDER_CODE_CONTRACT";
 /// 相对路径：在仓里跑时用它。
-const CONTRACT_RELATIVE: [&str; 2] = ["resources/default-contract.toml", "src/cli/resources/default-contract.toml"];
+const CONTRACT_RELATIVE: [&str; 2] = ["manifests/default-contract.toml", "src/cli/manifests/default-contract.toml"];
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rules {
@@ -182,7 +182,7 @@ pub fn find_contract() -> Result<PathBuf, String> {
         }
     }
     Err(format!(
-        "找不到默认契约 {CONTRACT_FILE}：用 --rules 指定，或设 {CONTRACT_ENV}，或放在 resources/{CONTRACT_FILE}"
+        "找不到默认契约 {CONTRACT_FILE}：用 --rules 指定，或设 {CONTRACT_ENV}，或放在 manifests/{CONTRACT_FILE}"
     ))
 }
 

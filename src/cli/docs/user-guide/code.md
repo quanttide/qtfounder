@@ -73,13 +73,13 @@ Go／TypeScript／Dart 共用同一份提取器，差异全在 `specs.rs` 的一
 
 ## 三、契约在哪、怎么找
 
-默认契约是**一份磁盘上的配置文件**，不编译进二进制：`src/cli/resources/default-contract.toml`。
+默认契约是**一份磁盘上的配置文件**，不编译进二进制：`src/cli/manifests/default-contract.toml`。
 
 运行时按这个顺序找：
 
 1. `--rules <path>`；
 2. 环境变量 `QTFOUNDER_CODE_CONTRACT`；
-3. 从当前目录往上逐级找 `resources/default-contract.toml` 与 `src/cli/resources/default-contract.toml`。
+3. 从当前目录往上逐级找 `manifests/default-contract.toml` 与 `src/cli/manifests/default-contract.toml`。
 
 **刻意不内置兜底**：找不到就以退出码 2 报错，不会偷偷退回一份藏在二进制里的阈值。契约是显性文件，它的数值就是判定口径——改口径只改这份文件。
 
