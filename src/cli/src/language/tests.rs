@@ -9,10 +9,13 @@ fn contract() -> Contract {
 }
 
 fn kinds(text: &str, rel: &str) -> Vec<&'static str> {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static COUNTER: AtomicUsize = AtomicUsize::new(0);
     let contract = contract();
     let dir = std::env::temp_dir().join(format!("qfl-test-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
-    let path = dir.join("sample.md");
+    // 并行测试共用文件名会互相覆盖，用序号错开
+    let path = dir.join(format!("sample-{}.md", COUNTER.fetch_add(1, Ordering::Relaxed)));
     std::fs::write(&path, text).expect("写样本");
     let findings = scan::check_file(&path, &contract, Some(&dir));
     let _ = std::fs::remove_file(&path);
@@ -83,7 +86,7 @@ fn voice_reports_internal_id_wall() {
     let contract = contract();
     let dir = std::env::temp_dir().join(format!("qfl-voice-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
-    let path = dir.join("v.md");
+    let path = dir.join(format!("v-{}.md", std::process::id()));
     std::fs::write(&path, text).expect("写样本");
     let found = scan::check_file(&path, &contract, Some(&dir)).into_iter().any(|f| f.kind == Kind::Voice);
     let _ = std::fs::remove_file(&path);
@@ -101,7 +104,7 @@ fn a_changed_contract_changes_the_verdict() {
     let mut contract = contract();
     let dir = std::env::temp_dir().join(format!("qfl-change-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
-    let path = dir.join("c.md");
+    let path = dir.join(format!("c-{}.md", std::process::id()));
     std::fs::write(&path, &text).expect("写样本");
     assert!(scan::check_file(&path, &contract, Some(&dir)).iter().any(|f| f.kind == Kind::Syntax));
     contract.syntax.max_sentence_chars = 0;
