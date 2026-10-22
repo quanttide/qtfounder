@@ -5,7 +5,11 @@
 #   CLI 属于 founder 这一套（apps/qtfounder），所以落在 founder 名下的文档域名。
 #
 # 该域名需要独立的 DNS 记录、CDN 域名与证书（二级子域不在 *.quanttide.com 泛域名证书覆盖内）。
+# 2026-10-22 已建成：CNAME 到 docs.founder.quanttide.com.w.kunlunaq.com，源站 qtfounder-site，
+# 证书是 Let's Encrypt 单域名证书（到期 2027-01-20，需续期后重新上传到 CDN）。
 # 桶沿用 qtfounder-site，只按前缀区分：官网 SPA 在桶根，文档站在 /qtfounder-cli/。
+# 桶的静态托管开了 SupportSubDir=true，子目录才会落到各自的 index.html；不开则任何子路径
+# 都返回桶根那页。
 #
 # 缓存：静态资源长缓存，HTML 与入口不缓存——发版后读者拿到的必须是最新页面。
 #
