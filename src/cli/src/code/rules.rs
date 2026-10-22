@@ -1,12 +1,16 @@
 //! 阈值全在 `data/rules/default-contract.toml`（本工具的软件工程契约）。改口径不碰代码。
 
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
-/// 默认契约：编译进二进制，装出来的命令不依赖外部文件。
-const DEFAULT_RULES: &str = include_str!("../../data/rules/default-contract.toml");
+/// 契约文件名：一份显性的配置文件，不是编译进二进制的常量。
+pub const CONTRACT_FILE: &str = "default-contract.toml";
+/// 指定契约的环境变量。
+pub const CONTRACT_ENV: &str = "QTFOUNDER_CODE_CONTRACT";
+/// 相对路径：在仓里跑时用它。
+const CONTRACT_RELATIVE: [&str; 2] = ["data/rules/default-contract.toml", "src/cli/data/rules/default-contract.toml"];
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rules {
@@ -149,23 +153,49 @@ impl Default for PragmaticRules {
     }
 }
 
-impl Default for Rules {
-    fn default() -> Self {
-        toml::from_str(DEFAULT_RULES).expect("内嵌规则表必须是合法 TOML")
+/// 找默认契约：环境变量 → 当前目录往上找 → 都没有就报错。
+///
+/// 刻意**不**内置兜底：契约是显性文件，找不到就明说，而不是偷偷用一份藏在二进制里的阈值。
+pub fn find_contract() -> Result<PathBuf, String> {
+    if let Ok(from_env) = std::env::var(CONTRACT_ENV)
+        && !from_env.is_empty()
+    {
+        let path = PathBuf::from(&from_env);
+        if path.is_file() {
+            return Ok(path);
+        }
+        return Err(format!("{CONTRACT_ENV} 指向的契约不存在：{from_env}"));
     }
+
+    let start = std::env::current_dir().map_err(|err| format!("读不到当前目录：{err}"))?;
+    let mut dir = start.as_path();
+    loop {
+        for relative in CONTRACT_RELATIVE {
+            let candidate = dir.join(relative);
+            if candidate.is_file() {
+                return Ok(candidate);
+            }
+        }
+        match dir.parent() {
+            Some(parent) => dir = parent,
+            None => break,
+        }
+    }
+    Err(format!(
+        "找不到默认契约 {CONTRACT_FILE}：用 --rules 指定，或设 {CONTRACT_ENV}，或在仓根放 data/rules/{CONTRACT_FILE}"
+    ))
 }
 
 impl Rules {
-    /// 从文件读：给了路径就用它，否则用内嵌默认表。
+    /// 读契约：给了路径就用它，否则按 [`find_contract`] 查找。
     pub fn load(path: Option<&Path>) -> Result<Self, String> {
-        match path {
-            None => Ok(Rules::default()),
-            Some(target) => {
-                let text = std::fs::read_to_string(target)
-                    .map_err(|err| format!("规则表读不了 {}：{err}", target.display()))?;
-                toml::from_str(&text).map_err(|err| format!("规则表格式不对：{err}"))
-            }
-        }
+        let target = match path {
+            Some(given) => given.to_path_buf(),
+            None => find_contract()?,
+        };
+        let text = std::fs::read_to_string(&target)
+            .map_err(|err| format!("契约读不了 {}：{err}", target.display()))?;
+        toml::from_str(&text).map_err(|err| format!("契约 {} 格式不对：{err}", target.display()))
     }
 
     pub fn is_whitelisted(&self, name: &str) -> bool {

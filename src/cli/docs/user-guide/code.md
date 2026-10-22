@@ -71,9 +71,19 @@ Go／TypeScript／Dart 共用同一份提取器，差异全在 `specs.rs` 的一
 - **认知负荷公式**：Rust 版按嵌套深度加权累加；`qfc` 另把条件里的布尔并列、`break`／`continue` 也算进去，所以个别函数只有它报；
 - **`too_many_defs` 的行号**：Rust 版记 0（整文件级），`qfc` 指到超线的那一行。
 
-## 三、阈值在哪改
+## 三、契约在哪、怎么找
 
-内嵌默认表在 `src/cli/data/rules/default-contract.toml`（编译进二进制），`--rules` 可覆盖。
+默认契约是**一份磁盘上的配置文件**，不编译进二进制：`src/cli/data/rules/default-contract.toml`。
+
+运行时按这个顺序找：
+
+1. `--rules <path>`；
+2. 环境变量 `QTFOUNDER_CODE_CONTRACT`；
+3. 从当前目录往上逐级找 `data/rules/default-contract.toml` 与 `src/cli/data/rules/default-contract.toml`。
+
+**刻意不内置兜底**：找不到就以退出码 2 报错，不会偷偷退回一份藏在二进制里的阈值。契约是显性文件，它的数值就是判定口径——改口径只改这份文件。
+
+实测两条：把 `max_depth` 从 3 改成 10，同一批代码的深嵌套从三条降到零条；在仓外运行而不给 `--rules`，直接报「找不到默认契约」并列出三种给法。
 
 - `[lexical]` —— 万能名词表、短名长度、白名单、缩写表、同义组；
 - `[syntax]` —— 五个阈值：嵌套、行数、参数、认知负荷、链长；

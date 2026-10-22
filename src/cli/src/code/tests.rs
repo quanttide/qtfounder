@@ -14,12 +14,22 @@ fn facts_py(source: &str) -> Facts {
 }
 
 fn kinds(facts: &Facts, layer: Layer) -> Vec<&'static str> {
-    let rules = Rules::default();
+    let rules = Rules::load(None).expect("仓里应能找到默认契约");
     let findings = match layer {
         Layer::Lexical => lexical::check(facts, "t", &rules),
         Layer::Syntax => syntax::check(facts, "t", &rules),
         Layer::Structure => module::check(facts, "t", &rules),
         Layer::Pragmatic => pragmatic::check(facts, "t", &rules),
+    };
+    findings.iter().map(|finding| finding.kind).collect()
+}
+
+fn kinds_with(facts: &Facts, layer: Layer, rules: &Rules) -> Vec<&'static str> {
+    let findings = match layer {
+        Layer::Lexical => lexical::check(facts, "t", rules),
+        Layer::Syntax => syntax::check(facts, "t", rules),
+        Layer::Structure => module::check(facts, "t", rules),
+        Layer::Pragmatic => pragmatic::check(facts, "t", rules),
     };
     findings.iter().map(|finding| finding.kind).collect()
 }
@@ -256,11 +266,29 @@ fn five_languages_agree_on_the_same_defect() {
 }
 
 #[test]
-fn rules_come_from_the_embedded_table() {
-    let rules = Rules::default();
+fn contract_is_a_real_file_on_disk() {
+    let rules = Rules::load(None).expect("仓里应能找到默认契约");
     assert_eq!(rules.syntax.max_depth, 3);
     assert!(rules.lexical.abbreviations.contains_key("ctx"));
     assert!(rules.lexical.whitelist.iter().any(|item| item == "tz"));
+}
+
+#[test]
+fn a_changed_contract_changes_the_verdict() {
+    // 把嵌套阈值放到 10，同一份代码就不该再报深嵌套——证明「只改配置就能改行为」
+    let source = "fn f(a: bool, b: bool, c: bool, d: bool) -> u32 {\n    if a {\n        if b {\n            if c {\n                if d {\n                    return 1;\n                }\n            }\n        }\n    }\n    0\n}\n";
+    let facts = facts_rs(source);
+    let mut rules = Rules::load(None).expect("仓里应能找到默认契约");
+    assert!(kinds_with(&facts, Layer::Syntax, &rules).contains(&"deep_nesting"));
+    rules.syntax.max_depth = 10;
+    assert!(!kinds_with(&facts, Layer::Syntax, &rules).contains(&"deep_nesting"));
+}
+
+#[test]
+fn missing_contract_is_an_explicit_error() {
+    let missing = std::path::Path::new("/nonexistent/contract.toml");
+    let error = Rules::load(Some(missing)).expect_err("契约不存在时必须报错，不能偷偷用内置阈值");
+    assert!(error.contains("契约读不了"), "报错要说清是契约读不了：{error}");
 }
 
 #[test]
