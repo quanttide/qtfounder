@@ -11,7 +11,7 @@ mod language;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "qtfounder", about = "量潮创始人 CLI")]
+#[command(name = "qtfounder", version, about = "量潮创始人 CLI")]
 struct Cli {
     #[command(subcommand)]
     command: Option<CliCommand>,

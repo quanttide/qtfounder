@@ -23,11 +23,9 @@ qtfounder language [ROOT] [--scope SCOPE] [--kind KIND] [--rules PATH]
 
 ## 二、退出码
 
-| 码 | 含义 |
-|---|---|
-| 0 | 无命中 |
-| 1 | 有命中，或语义层判出「在记操作」的段 |
-| 2 | 用不了：契约读不到、`--scope`／`--kind` 取值不认识、有文件读不了 |
+- **0**：无命中。
+- **1**：有命中，或语义层判出「在记操作」的段。
+- **2**：用不了——契约读不到、`--scope`／`--kind` 取值不认识、有文件读不了。
 
 ## 三、JSON 结构
 
@@ -43,14 +41,14 @@ qtfounder language [ROOT] [--scope SCOPE] [--kind KIND] [--rules PATH]
       "advice": "要么逐个说明它是什么，要么这段该进日志"
     }
   ],
-  "banned_in_own_prose": ["判据"]
+  "banned_in_own_prose": ["验收标准"]
 }
 ```
 
 字段口径：
 
 - `kind` 是七层之一，稳定；`severity` 只有 `error` 与 `suspect` 两值，后者是嫌疑不是判决。
-- `excerpt` 是命中处的截断原文，最多九十汉字，用来定位，不要拿来当判据。
+- `excerpt` 是命中处的截断原文，最多九十汉字，用来定位，不要拿来当验收标准。
 - `banned_in_own_prose` 列出「你的文风里也在用的禁用词」，是自查提示，不参与退出码。
 
 **`--json` 与 `--sense` 不同时输出**：语义层的结果只在人读模式下打印。理由是全量扫描的 JSON 要可复跑，混入模型结论就不再可复跑。
