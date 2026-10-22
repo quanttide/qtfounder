@@ -7,5 +7,5 @@ src/cli/target
 src/site/dist
 src/site/node_modules
 
-# src/cli/data 是代码资源：默认契约随代码走，不进忽略
-!src/cli/data/
+# src/cli/resources 是代码资源：默认契约随代码走，data 留给生产数据
+!src/cli/resources/

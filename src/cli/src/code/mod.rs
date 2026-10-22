@@ -1,7 +1,7 @@
 //! `qtfounder code`：代码语用检查。
 //!
 //! 判的不是语法错、不是风格、不是圈复杂度，而是**下一个维护者能不能看懂**。
-//! 四层验收标准见 `docs/user-guide/code.md`；阈值全在 `data/rules/default-contract.toml`。
+//! 四层验收标准见 `docs/user-guide/code.md`；阈值全在 `resources/default-contract.toml`。
 
 pub mod extract;
 pub mod ir;
