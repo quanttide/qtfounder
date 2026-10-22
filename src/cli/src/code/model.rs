@@ -38,7 +38,12 @@ impl Layer {
         }
     }
 
-    pub const ALL: [Layer; 4] = [Layer::Lexical, Layer::Syntax, Layer::Structure, Layer::Pragmatic];
+    pub const ALL: [Layer; 4] = [
+        Layer::Lexical,
+        Layer::Syntax,
+        Layer::Structure,
+        Layer::Pragmatic,
+    ];
 }
 
 /// Grice 的四条合作原则：每条命中都要说清违反了哪一条。
@@ -83,6 +88,14 @@ impl Finding {
         principle: Principle,
         advice: &'static str,
     ) -> Self {
-        Self { layer, kind, path: path.to_string(), line, message, principle, advice }
+        Self {
+            layer,
+            kind,
+            path: path.to_string(),
+            line,
+            message,
+            principle,
+            advice,
+        }
     }
 }

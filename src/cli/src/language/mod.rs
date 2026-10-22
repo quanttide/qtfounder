@@ -12,7 +12,7 @@ pub mod sense;
 mod tests;
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::Args;
 
@@ -36,7 +36,10 @@ pub struct LanguageArgs {
     pub rules: Option<PathBuf>,
     /// 用户手写文字的目录，逗号分隔可给多个，用于「这个词你自己也在用」的自查
     /// 缺省按他 2026-10-22 的说法：侧写及以上是手写（初稿、改稿、定稿、成稿），提纲与场景里混着我写的批注
-    #[arg(long, default_value = "assets/fiction/职场言情/2_侧写,assets/fiction/职场言情/3_初稿,assets/fiction/职场言情/4_改稿,assets/fiction/职场言情/5_定稿,assets/fiction/校园言情/3_初稿,assets/fiction/校园言情/4_改稿,assets/fiction/重生言情/3_初稿,assets/fiction/重生言情/4_成稿,assets/fiction/观察站/1_情绪日记,assets/fiction/观察站/2_社会观察,assets/fiction/观察站/3_创业日记,assets/blog/2_draft,assets/blog/3_final")]
+    #[arg(
+        long,
+        default_value = "assets/fiction/职场言情/2_侧写,assets/fiction/职场言情/3_初稿,assets/fiction/职场言情/4_改稿,assets/fiction/职场言情/5_定稿,assets/fiction/校园言情/3_初稿,assets/fiction/校园言情/4_改稿,assets/fiction/重生言情/3_初稿,assets/fiction/重生言情/4_成稿,assets/fiction/观察站/1_情绪日记,assets/fiction/观察站/2_社会观察,assets/fiction/观察站/3_创业日记,assets/blog/2_draft,assets/blog/3_final"
+    )]
     pub pool: PathBuf,
     /// 最多列几个文件
     #[arg(long, default_value_t = 15)]
@@ -54,11 +57,14 @@ pub struct LanguageArgs {
 
 /// 禁用词也出现在用户手写的文字里，说明这个词他会用，该从词表出库。
 /// 基准只认手写的 assets/fiction 与 assets/blog；data/profile 混着我代笔的段落，不作数。
-fn own_usage_hint(contract: &Contract, pool: &PathBuf) -> Vec<String> {
+fn own_usage_hint(contract: &Contract, pool: &Path) -> Vec<String> {
     let (hits, chars, files) = own_usage_report(contract, pool);
     let mut out = Vec::new();
     if files == 0 {
-        out.push(format!("词表自查跳过：--pool 没读到 .md（当前 {}）", pool.display()));
+        out.push(format!(
+            "词表自查跳过：--pool 没读到 .md（当前 {}）",
+            pool.display()
+        ));
         return out;
     }
     // 报样本量：语料太小的时候「零命中」什么都不说明，不写出来就会被当成通过
@@ -72,7 +78,7 @@ fn own_usage_hint(contract: &Contract, pool: &PathBuf) -> Vec<String> {
 }
 
 /// 返回（命中的词及其出处，语料汉字数，读到的文件数）。
-fn own_usage_report(contract: &Contract, pool: &PathBuf) -> (Vec<String>, usize, usize) {
+fn own_usage_report(contract: &Contract, pool: &Path) -> (Vec<String>, usize, usize) {
     if contract.banned.is_empty() {
         return (Vec::new(), 0, 0);
     }
@@ -80,7 +86,10 @@ fn own_usage_report(contract: &Contract, pool: &PathBuf) -> (Vec<String>, usize,
     // 带文件与行号：同一个词的命中可能落在我的批注句里，只报个数分不出是谁写的。
     let mut bodies: Vec<(String, String)> = Vec::new();
     for dir in pool.display().to_string().split(',') {
-        for entry in walkdir::WalkDir::new(dir.trim()).into_iter().filter_map(Result::ok) {
+        for entry in walkdir::WalkDir::new(dir.trim())
+            .into_iter()
+            .filter_map(Result::ok)
+        {
             let path = entry.path();
             if path.extension().map(|ext| ext == "md").unwrap_or(false)
                 && let Ok(body) = std::fs::read_to_string(path)
@@ -91,7 +100,11 @@ fn own_usage_report(contract: &Contract, pool: &PathBuf) -> (Vec<String>, usize,
     }
     let chars: usize = bodies
         .iter()
-        .map(|(_, body)| body.chars().filter(|c| ('\u{4e00}'..='\u{9fa5}').contains(c)).count())
+        .map(|(_, body)| {
+            body.chars()
+                .filter(|c| ('\u{4e00}'..='\u{9fa5}').contains(c))
+                .count()
+        })
         .sum();
     let mut hits: Vec<String> = contract
         .banned
@@ -120,7 +133,10 @@ fn run_sense(findings: &[Finding], limit: usize) -> Result<usize, String> {
         println!("\n规则没有挑出可疑段：语义层用不上");
         return Ok(0);
     }
-    let process = results.iter().filter(|(_, verdict)| verdict.kind == "process").count();
+    let process = results
+        .iter()
+        .filter(|(_, verdict)| verdict.kind == "process")
+        .count();
     println!("\n送判 {} 段；判为「在记操作」{process} 段", results.len());
     for (segment, verdict) in &results {
         let mark = match verdict.kind.as_str() {
@@ -129,10 +145,19 @@ fn run_sense(findings: &[Finding], limit: usize) -> Result<usize, String> {
             other => other,
         };
         println!("\n  [{mark}] {}:{}", segment.path, segment.line);
-        println!("      {}", segment.text.chars().take(60).collect::<String>());
-        println!("      理由：{}", verdict.why.chars().take(100).collect::<String>());
+        println!(
+            "      {}",
+            segment.text.chars().take(60).collect::<String>()
+        );
+        println!(
+            "      理由：{}",
+            verdict.why.chars().take(100).collect::<String>()
+        );
         if !verdict.fix.is_empty() {
-            println!("      怎么改：{}", verdict.fix.chars().take(100).collect::<String>());
+            println!(
+                "      怎么改：{}",
+                verdict.fix.chars().take(100).collect::<String>()
+            );
         }
     }
     Ok(process)
@@ -154,8 +179,14 @@ fn json_escape(text: &str) -> String {
 
 /// 复核的汇总：真问题几处、规则误报几处、各是什么形态。
 fn judge_summary(findings: &[Finding]) -> String {
-    let real = findings.iter().filter(|f| !f.verdict.is_false_positive()).count();
-    let mut lines = vec![format!("复核：真问题 {real} 处，规则误报 {} 处", findings.len() - real)];
+    let real = findings
+        .iter()
+        .filter(|f| !f.verdict.is_false_positive())
+        .count();
+    let mut lines = vec![format!(
+        "复核：真问题 {real} 处，规则误报 {} 处",
+        findings.len() - real
+    )];
     for (label, count) in [
         ("提及不是使用", Verdict::Mention),
         ("标题并入句子", Verdict::LeadIn),
@@ -189,7 +220,10 @@ fn render_json(findings: &[Finding], hint: &[String], scanned: usize) {
             json_escape(&finding.advice),
         ));
     }
-    let hint_json: Vec<String> = hint.iter().map(|word| format!("\"{}\"", json_escape(word))).collect();
+    let hint_json: Vec<String> = hint
+        .iter()
+        .map(|word| format!("\"{}\"", json_escape(word)))
+        .collect();
     println!(
         "{{\n  \"scanned_files\": {},\n  \"findings\": [\n{}\n  ],\n  \"banned_in_own_prose\": [{}]\n}}",
         scanned,
@@ -202,7 +236,10 @@ fn render_json(findings: &[Finding], hint: &[String], scanned: usize) {
 pub fn run(args: &LanguageArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;
     if args.scope != "default" && args.scope != "all" {
-        return Err(format!("不认识的扫描范围：{}（只有 default 与 all）", args.scope));
+        return Err(format!(
+            "不认识的扫描范围：{}（只有 default 与 all）",
+            args.scope
+        ));
     }
 
     let (mut findings, broken, scanned) = scan::scan(&args.root, &contract, &args.scope);
@@ -222,15 +259,24 @@ pub fn run(args: &LanguageArgs) -> Result<i32, String> {
         if args.sense {
             eprintln!("JSON 模式下语义层不并输出：单独跑一次（不带 --json）看判读");
         }
-        return Ok(if broken.is_empty() { i32::from(!findings.is_empty()) } else { 2 });
+        return Ok(if broken.is_empty() {
+            i32::from(!findings.is_empty())
+        } else {
+            2
+        });
     }
 
     if findings.is_empty() {
-        println!("审了 {scanned} 个文件，没有命中：这批文字没有自造术语、体系词缺失、数字无据或落点违规");
+        println!(
+            "审了 {scanned} 个文件，没有命中：这批文字没有自造术语、体系词缺失、数字无据或落点违规"
+        );
     } else {
         let mut by_file: HashMap<&str, Vec<&Finding>> = HashMap::new();
         for finding in &findings {
-            by_file.entry(finding.path.as_str()).or_default().push(finding);
+            by_file
+                .entry(finding.path.as_str())
+                .or_default()
+                .push(finding);
         }
         let mut files: Vec<(&str, Vec<&Finding>)> = by_file.into_iter().collect();
         files.sort_by_key(|(_, group)| std::cmp::Reverse(group.len()));
@@ -254,9 +300,15 @@ pub fn run(args: &LanguageArgs) -> Result<i32, String> {
             }
         }
         let summary = scan::summarize(&findings);
-        let mut counts: Vec<(&str, usize)> = summary.iter().map(|(kind, count)| (*kind, *count)).collect();
+        let mut counts: Vec<(&str, usize)> = summary
+            .iter()
+            .map(|(kind, count)| (*kind, *count))
+            .collect();
         counts.sort();
-        let total: Vec<String> = counts.iter().map(|(kind, count)| format!("{kind} {count}")).collect();
+        let total: Vec<String> = counts
+            .iter()
+            .map(|(kind, count)| format!("{kind} {count}"))
+            .collect();
         println!(
             "\n合计 {} 处（{}）；审了 {} 个文件，其中 {} 个有命中",
             findings.len(),

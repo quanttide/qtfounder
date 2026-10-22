@@ -10,7 +10,10 @@ pub const CONTRACT_FILE: &str = "default-contract.toml";
 /// 指定契约的环境变量。
 pub const CONTRACT_ENV: &str = "QTFOUNDER_CODE_CONTRACT";
 /// 相对路径：在仓里跑时用它。
-const CONTRACT_RELATIVE: [&str; 2] = ["src/code/default-contract.toml", "src/cli/src/code/default-contract.toml"];
+const CONTRACT_RELATIVE: [&str; 2] = [
+    "src/code/default-contract.toml",
+    "src/cli/src/code/default-contract.toml",
+];
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rules {
@@ -69,18 +72,22 @@ pub struct PragmaticRules {
 }
 
 fn default_vague_names() -> Vec<String> {
-    ["data", "temp", "tmp", "flag", "val", "value", "res", "obj", "info", "thing", "stuff", "foo", "bar"]
-        .iter()
-        .map(|s| s.to_string())
-        .collect()
+    [
+        "data", "temp", "tmp", "flag", "val", "value", "res", "obj", "info", "thing", "stuff",
+        "foo", "bar",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect()
 }
 fn default_min_len() -> usize {
     3
 }
 fn default_whitelist() -> Vec<String> {
     [
-        "id", "db", "os", "io", "re", "ai", "ui", "tz", "ts", "ok", "ms", "el", "it", "fp", "fs", "fn", "kv", "ex",
-        "ev", "ci", "cd", "to", "of", "is", "in", "on", "by", "or", "up", "i", "j", "k", "x", "y", "z", "a", "b",
+        "id", "db", "os", "io", "re", "ai", "ui", "tz", "ts", "ok", "ms", "el", "it", "fp", "fs",
+        "fn", "kv", "ex", "ev", "ci", "cd", "to", "of", "is", "in", "on", "by", "or", "up", "i",
+        "j", "k", "x", "y", "z", "a", "b",
     ]
     .iter()
     .map(|s| s.to_string())
@@ -140,7 +147,10 @@ impl Default for SyntaxRules {
 
 impl Default for ModuleRules {
     fn default() -> Self {
-        Self { max_top_defs: default_max_top_defs(), max_methods: default_max_methods() }
+        Self {
+            max_top_defs: default_max_top_defs(),
+            max_methods: default_max_methods(),
+        }
     }
 }
 
@@ -183,7 +193,9 @@ pub fn find_contract() -> Result<PathBuf, String> {
     }
     // 装成命令行工具后，当前目录里不会有源码树的契约——退回用户级目录
     if let Ok(home) = std::env::var("HOME") {
-        let user_level = Path::new(&home).join(".config/qtfounder/code").join(CONTRACT_FILE);
+        let user_level = Path::new(&home)
+            .join(".config/qtfounder/code")
+            .join(CONTRACT_FILE);
         if user_level.is_file() {
             return Ok(user_level);
         }

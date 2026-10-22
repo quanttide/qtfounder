@@ -15,7 +15,9 @@ pub fn extract(source: &str, path: &Path) -> Option<Result<Facts, String>> {
         Some("rs") => Some(rust_lang::extract(source)),
         Some("py") => Some(python::extract(source)),
         Some("go") => Some(tree_sitter_extractor::extract(source, &specs::go())),
-        Some("ts" | "mts" | "cts") => Some(tree_sitter_extractor::extract(source, &specs::typescript())),
+        Some("ts" | "mts" | "cts") => {
+            Some(tree_sitter_extractor::extract(source, &specs::typescript()))
+        }
         Some("dart") => Some(tree_sitter_extractor::extract(source, &specs::dart())),
         _ => None,
     }

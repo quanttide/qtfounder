@@ -61,6 +61,9 @@ pub struct BindingFacts {
 
 impl Facts {
     pub fn function_names(&self) -> Vec<String> {
-        self.functions.iter().map(|function| function.name.clone()).collect()
+        self.functions
+            .iter()
+            .map(|function| function.name.clone())
+            .collect()
     }
 }

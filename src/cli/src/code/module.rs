@@ -35,7 +35,10 @@ pub fn check(facts: &Facts, path: &str, rules: &Rules) -> Vec<Finding> {
                 "too_many_methods",
                 path,
                 class.line,
-                format!("{} 有 {} 个方法：调用方要在几十个入口里找", class.name, class.methods),
+                format!(
+                    "{} 有 {} 个方法：调用方要在几十个入口里找",
+                    class.name, class.methods
+                ),
                 Principle::Quantity,
                 "按「谁会调它」拆开，或把成组的参数收进结构体",
             ));

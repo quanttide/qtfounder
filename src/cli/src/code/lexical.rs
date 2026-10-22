@@ -55,13 +55,17 @@ fn name_finding(binding: &BindingFacts, path: &str, rules: &Rules) -> Option<Fin
             "换成说清内容的词（如 pending_orders / retry_budget），别用万能名",
         ));
     }
-    if name.chars().count() < lexical.min_len && !binding.short_lived && !rules.is_whitelisted(name) {
+    if name.chars().count() < lexical.min_len && !binding.short_lived && !rules.is_whitelisted(name)
+    {
         return Some(Finding::new(
             Layer::Lexical,
             "short_name",
             path,
             binding.line,
-            format!("「{name}」只有 {} 个字符，而它要在整个函数里被记住：读者得靠上下文猜它是什么", name.chars().count()),
+            format!(
+                "「{name}」只有 {} 个字符，而它要在整个函数里被记住：读者得靠上下文猜它是什么",
+                name.chars().count()
+            ),
             Principle::Manner,
             "换成完整词。循环变量、闭包参数、match 绑定里的短名不报——它们只活几行",
         ));
@@ -92,7 +96,10 @@ fn mismatch_finding(binding: &BindingFacts, path: &str) -> Option<Finding> {
         "name_type_mismatch",
         path,
         binding.line,
-        format!("「{}」的名字说是 {expects}，赋的却是 {actual}（{shape}）", binding.name),
+        format!(
+            "「{}」的名字说是 {expects}，赋的却是 {actual}（{shape}）",
+            binding.name
+        ),
         Principle::Quality,
         "要么改名字，要么改值——名字不诚实会让人按错的假设改代码",
     ))
@@ -122,7 +129,10 @@ pub fn check(facts: &Facts, path: &str, rules: &Rules) -> Vec<Finding> {
 pub fn check_consistency(functions: &[String], path: &str, rules: &Rules) -> Vec<Finding> {
     let mut out = Vec::new();
     for group in &rules.lexical.synonym_groups {
-        let used: HashSet<&String> = functions.iter().filter(|name| group.iter().any(|word| word == *name)).collect();
+        let used: HashSet<&String> = functions
+            .iter()
+            .filter(|name| group.iter().any(|word| word == *name))
+            .collect();
         if used.len() < 3.min(group.len()) {
             continue;
         }
@@ -133,7 +143,11 @@ pub fn check_consistency(functions: &[String], path: &str, rules: &Rules) -> Vec
             "synonym_drift",
             path,
             0,
-            format!("同一种动作在仓库里有 {} 种说法（{}）：读者每次都要重新判断它们是不是一回事", used.len(), shown.join("、")),
+            format!(
+                "同一种动作在仓库里有 {} 种说法（{}）：读者每次都要重新判断它们是不是一回事",
+                used.len(),
+                shown.join("、")
+            ),
             Principle::Relation,
             "选一种作为正名，其余改名或写进规则表当同义词",
         ));

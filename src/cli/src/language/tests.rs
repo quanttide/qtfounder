@@ -29,7 +29,10 @@ fn kinds(text: &str, rel: &str) -> Vec<&'static str> {
     let dir = std::env::temp_dir().join(format!("qfl-test-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
     // 并行测试共用文件名会互相覆盖，用序号错开
-    let path = dir.join(format!("sample-{}.md", COUNTER.fetch_add(1, Ordering::Relaxed)));
+    let path = dir.join(format!(
+        "sample-{}.md",
+        COUNTER.fetch_add(1, Ordering::Relaxed)
+    ));
     std::fs::write(&path, text).expect("写样本");
     let findings = scan::check_file(&path, &contract, Some(&dir));
     let _ = std::fs::remove_file(&path);
@@ -43,7 +46,11 @@ fn kinds(text: &str, rel: &str) -> Vec<&'static str> {
 #[test]
 fn contract_is_a_real_file_on_disk() {
     let found = super::contract::find_contract().expect("应能找到契约");
-    assert!(found.is_file(), "契约必须是磁盘上的文件：{}", found.display());
+    assert!(
+        found.is_file(),
+        "契约必须是磁盘上的文件：{}",
+        found.display()
+    );
     assert!(contract().syntax.max_sentence_chars > 0);
 }
 
@@ -56,7 +63,11 @@ fn banned_word_is_reported() {
 fn placement_misplacement_is_reported() {
     let contract = contract();
     let findings = scan::check_file(std::path::Path::new("data/essay/x.md"), &contract, None);
-    assert!(findings.iter().any(|finding| finding.kind == Kind::Placement));
+    assert!(
+        findings
+            .iter()
+            .any(|finding| finding.kind == Kind::Placement)
+    );
 }
 
 #[test]
@@ -100,7 +111,13 @@ fn conclusion_pushed_back_to_reader_is_reported() {
 
 #[test]
 fn count_word_is_reported() {
-    assert!(kinds("工具判不了三件事：体裁、词的多义、某句是引述还是自述。\n", "").contains(&"syntax"));
+    assert!(
+        kinds(
+            "工具判不了三件事：体裁、词的多义、某句是引述还是自述。\n",
+            ""
+        )
+        .contains(&"syntax")
+    );
     // 给事情命名也报：他说这类写法全是我写的，他讨厌
     assert!(kinds("搬迁收尾三件事、重写前先读现文件。\n", "").contains(&"syntax"));
 }
@@ -113,13 +130,16 @@ fn two_column_table_is_reported() {
 
 #[test]
 fn voice_reports_internal_id_wall() {
-    let text = "改了 `a/b.md`、`c/d.rs`、`e/f.toml`、`g/h.json`、`i/j.yaml` 这五处，`k/l.sh` 也算。\n";
+    let text =
+        "改了 `a/b.md`、`c/d.rs`、`e/f.toml`、`g/h.json`、`i/j.yaml` 这五处，`k/l.sh` 也算。\n";
     let contract = contract();
     let dir = std::env::temp_dir().join(format!("qfl-voice-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
     let path = dir.join(format!("v-{}.md", std::process::id()));
     std::fs::write(&path, text).expect("写样本");
-    let found = scan::check_file(&path, &contract, Some(&dir)).into_iter().any(|f| f.kind == Kind::Voice);
+    let found = scan::check_file(&path, &contract, Some(&dir))
+        .into_iter()
+        .any(|f| f.kind == Kind::Voice);
     let _ = std::fs::remove_file(&path);
     assert!(found);
 }
@@ -137,20 +157,30 @@ fn a_changed_contract_changes_the_verdict() {
     let _ = std::fs::create_dir_all(&dir);
     let path = dir.join(format!("c-{}.md", std::process::id()));
     std::fs::write(&path, &text).expect("写样本");
-    assert!(scan::check_file(&path, &contract, Some(&dir)).iter().any(|f| f.kind == Kind::Syntax));
+    assert!(
+        scan::check_file(&path, &contract, Some(&dir))
+            .iter()
+            .any(|f| f.kind == Kind::Syntax)
+    );
     contract.syntax.max_sentence_chars = 0;
     contract.syntax.max_sentence_error_chars = 0;
     contract.syntax.max_de_chain = 0;
     contract.syntax.max_commas = 0;
     contract.syntax.max_nominal = 0;
     contract.syntax.max_paragraph_chars = 0;
-    assert!(!scan::check_file(&path, &contract, Some(&dir)).iter().any(|f| f.kind == Kind::Syntax));
+    assert!(
+        !scan::check_file(&path, &contract, Some(&dir))
+            .iter()
+            .any(|f| f.kind == Kind::Syntax)
+    );
     let _ = std::fs::remove_file(&path);
 }
 
 #[test]
 fn sense_parses_json_verdict() {
-    let verdict = super::sense::parse_verdict("{\"kind\":\"process\",\"why\":\"在记操作\",\"fix\":\"改成对读者说\"}");
+    let verdict = super::sense::parse_verdict(
+        "{\"kind\":\"process\",\"why\":\"在记操作\",\"fix\":\"改成对读者说\"}",
+    );
     assert_eq!(verdict.kind, "process");
     assert_eq!(verdict.fix, "改成对读者说");
 }
@@ -165,9 +195,30 @@ fn sense_degrades_when_model_returns_prose() {
 fn sense_takes_only_voice_and_syntax_segments() {
     use super::model::{Finding, Kind, Severity};
     let findings = vec![
-        Finding::new(Kind::Voice, Severity::Suspect, "a.md", 3, "一段内部标识符堆积的话".into(), "x".into()),
-        Finding::new(Kind::Banned, Severity::Error, "b.md", 1, "不变式".into(), "y".into()),
-        Finding::new(Kind::Syntax, Severity::Suspect, "c.md", 9, "一句特别长的话".into(), "z".into()),
+        Finding::new(
+            Kind::Voice,
+            Severity::Suspect,
+            "a.md",
+            3,
+            "一段内部标识符堆积的话".into(),
+            "x".into(),
+        ),
+        Finding::new(
+            Kind::Banned,
+            Severity::Error,
+            "b.md",
+            1,
+            "不变式".into(),
+            "y".into(),
+        ),
+        Finding::new(
+            Kind::Syntax,
+            Severity::Suspect,
+            "c.md",
+            9,
+            "一句特别长的话".into(),
+            "z".into(),
+        ),
     ];
     let segments = super::sense::suspect_segments(&findings, 5);
     assert_eq!(segments.len(), 2, "只挑 voice 与 syntax");
@@ -177,7 +228,10 @@ fn sense_takes_only_voice_and_syntax_segments() {
 #[test]
 fn sense_prompt_is_on_disk() {
     let prompt = super::sense::load_prompt();
-    assert!(prompt.contains("reader") && prompt.contains("process"), "提示词要能读到且含两个判定类");
+    assert!(
+        prompt.contains("reader") && prompt.contains("process"),
+        "提示词要能读到且含两个判定类"
+    );
 }
 
 #[test]
@@ -236,7 +290,12 @@ fn files_outside_docs_prefix_are_audited() {
     std::fs::write(dir.join("domains/human/a.md"), "不变式\n").expect("写样本");
     std::fs::write(dir.join("default/company/b.md"), "不变式\n").expect("写样本");
     let files = scan::markdown_files(&dir, &contract, "default");
-    assert_eq!(files.len(), 2, "domains/ 与 default/ 下的文件也该在范围内：{:?}", files);
+    assert_eq!(
+        files.len(),
+        2,
+        "domains/ 与 default/ 下的文件也该在范围内：{:?}",
+        files
+    );
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -248,8 +307,10 @@ fn judgment_layer_separates_rule_noise_from_real_problems() {
     assert!(verdicts("合计 64 处（词汇层 9，句法层 27）\n").contains(&"quoted-output"));
     // 加粗小标签被并进句子
     assert!(
-        verdicts("**执行自己的想法**：让他按自己的思路做一次，观察他的做法与他的结果，看他的反应。\n")
-            .contains(&"lead-in")
+        verdicts(
+            "**执行自己的想法**：让他按自己的思路做一次，观察他的做法与他的结果，看他的反应。\n"
+        )
+        .contains(&"lead-in")
     );
     // 真问题不带误报标
     assert!(!verdicts("改了 22 处。\n").iter().any(|v| *v != "real"));

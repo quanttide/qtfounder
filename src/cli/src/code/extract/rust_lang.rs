@@ -108,8 +108,16 @@ fn collect_strings(tokens: &proc_macro2::TokenStream, out: &mut Vec<String>) {
 
 impl<'ast> Visit<'ast> for ErrorMessages {
     fn visit_macro(&mut self, node: &'ast syn::Macro) {
-        let name = node.path.segments.last().map(|segment| segment.ident.to_string()).unwrap_or_default();
-        if matches!(name.as_str(), "panic" | "unreachable" | "bail" | "ensure" | "expect") {
+        let name = node
+            .path
+            .segments
+            .last()
+            .map(|segment| segment.ident.to_string())
+            .unwrap_or_default();
+        if matches!(
+            name.as_str(),
+            "panic" | "unreachable" | "bail" | "ensure" | "expect"
+        ) {
             let mut texts = Vec::new();
             collect_strings(&node.tokens, &mut texts);
             for text in texts {
@@ -177,7 +185,11 @@ fn function_facts(
         params: sig.inputs.len(),
         doc: doc_text(attrs),
         max_depth: metrics.depth,
-        max_depth_line: if metrics.depth_line == 0 { start } else { metrics.depth_line },
+        max_depth_line: if metrics.depth_line == 0 {
+            start
+        } else {
+            metrics.depth_line
+        },
         cognitive: metrics.cognitive,
         has_comment: has_comment(source, start, end),
         chains: chains.found,
@@ -340,7 +352,12 @@ pub fn extract(source: &str) -> Result<Facts, String> {
         .filter(|item| {
             matches!(
                 item,
-                Item::Fn(_) | Item::Struct(_) | Item::Enum(_) | Item::Trait(_) | Item::Impl(_) | Item::Mod(_)
+                Item::Fn(_)
+                    | Item::Struct(_)
+                    | Item::Enum(_)
+                    | Item::Trait(_)
+                    | Item::Impl(_)
+                    | Item::Mod(_)
             )
         })
         .count();

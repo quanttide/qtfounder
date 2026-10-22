@@ -7,10 +7,12 @@ use super::model::{Finding, Layer, Principle};
 use super::rules::Rules;
 
 const UNINFORMATIVE_NAMES: [&str; 15] = [
-    "handle", "process", "do_it", "run", "exec", "execute", "work", "deal", "manage", "util", "utils", "helper",
-    "helpers", "func", "stuff",
+    "handle", "process", "do_it", "run", "exec", "execute", "work", "deal", "manage", "util",
+    "utils", "helper", "helpers", "func", "stuff",
 ];
-const ACTION_WORDS: [&str; 10] = ["请", "检查", "应该", "必须", "不能", "需要", "配置", "传入", "指定", "重试"];
+const ACTION_WORDS: [&str; 10] = [
+    "请", "检查", "应该", "必须", "不能", "需要", "配置", "传入", "指定", "重试",
+];
 
 fn name_finding(function: &FunctionFacts, path: &str) -> Option<Finding> {
     let bare = function.name.trim_matches('_').to_lowercase();
@@ -22,7 +24,10 @@ fn name_finding(function: &FunctionFacts, path: &str) -> Option<Finding> {
         "uninformative_name",
         path,
         function.line,
-        format!("「{}」只说了动作没说对象：读者不知道它处理的是什么、结果长什么样", function.name),
+        format!(
+            "「{}」只说了动作没说对象：读者不知道它处理的是什么、结果长什么样",
+            function.name
+        ),
         Principle::Quality,
         "把宾语写进名字（handle_retry_of_failed_upload），或直接改成说清结果的名字",
     ))
@@ -39,7 +44,10 @@ fn docstring_echo_finding(function: &FunctionFacts, path: &str) -> Option<Findin
             rest = rest.replace(token, " ");
         }
     }
-    let leftover: String = rest.chars().filter(|ch| !ch.is_whitespace() && !"，。：；、,.:;".contains(*ch)).collect();
+    let leftover: String = rest
+        .chars()
+        .filter(|ch| !ch.is_whitespace() && !"，。：；、,.:;".contains(*ch))
+        .collect();
     if leftover.chars().count() > 2 {
         return None;
     }
@@ -48,7 +56,10 @@ fn docstring_echo_finding(function: &FunctionFacts, path: &str) -> Option<Findin
         "docstring_echo",
         path,
         function.line,
-        format!("文档「{}」只是把函数名说了一遍：读者拿不到新信息", doc.chars().take(30).collect::<String>()),
+        format!(
+            "文档「{}」只是把函数名说了一遍：读者拿不到新信息",
+            doc.chars().take(30).collect::<String>()
+        ),
         Principle::Relation,
         "删掉，或改成说明「为什么这样做、什么情况下会失败」",
     ))
@@ -56,7 +67,11 @@ fn docstring_echo_finding(function: &FunctionFacts, path: &str) -> Option<Findin
 
 fn missing_why_finding(function: &FunctionFacts, path: &str, rules: &Rules) -> Option<Finding> {
     let threshold = rules.pragmatic.missing_why_lines;
-    if function.lines() <= threshold || function.max_depth <= 2 || function.has_comment || !function.doc.is_empty() {
+    if function.lines() <= threshold
+        || function.max_depth <= 2
+        || function.has_comment
+        || !function.doc.is_empty()
+    {
         return None;
     }
     Some(Finding::new(
@@ -64,7 +79,11 @@ fn missing_why_finding(function: &FunctionFacts, path: &str, rules: &Rules) -> O
         "missing_why",
         path,
         function.line,
-        format!("{} 有 {} 行、多处分支，却没有一句说明为什么这样做", function.name, function.lines()),
+        format!(
+            "{} 有 {} 行、多处分支，却没有一句说明为什么这样做",
+            function.name,
+            function.lines()
+        ),
         Principle::Quality,
         "在判断处补一行「为什么选这条分支」，不要复述代码",
     ))
@@ -99,14 +118,15 @@ fn vague_error_findings(facts: &Facts, path: &str, rules: &Rules) -> Vec<Finding
 pub fn check(facts: &Facts, path: &str, rules: &Rules) -> Vec<Finding> {
     let mut out = Vec::new();
     for function in &facts.functions {
-        for candidate in [
+        for finding in [
             name_finding(function, path),
             docstring_echo_finding(function, path),
             missing_why_finding(function, path, rules),
-        ] {
-            if let Some(finding) = candidate {
-                out.push(finding);
-            }
+        ]
+        .into_iter()
+        .flatten()
+        {
+            out.push(finding);
         }
     }
     out.extend(vague_error_findings(facts, path, rules));

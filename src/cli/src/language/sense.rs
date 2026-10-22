@@ -64,7 +64,10 @@ fn credentials() -> Result<(String, String, String), String> {
     let auth = Path::new(&home).join(".pi/agent/auth.json");
     if let Ok(text) = std::fs::read_to_string(&auth)
         && let Ok(parsed) = serde_json::from_str::<Value>(&text)
-        && let Some(key) = parsed.get("deepseek").and_then(|node| node.get("key")).and_then(|v| v.as_str())
+        && let Some(key) = parsed
+            .get("deepseek")
+            .and_then(|node| node.get("key"))
+            .and_then(|v| v.as_str())
     {
         return Ok((model, base_url, key.to_string()));
     }
@@ -103,7 +106,11 @@ pub fn suspect_segments(findings: &[Finding], limit: usize) -> Vec<Segment> {
 pub fn classify(text: &str, model: &str, base_url: &str, api_key: &str) -> Result<Verdict, String> {
     let body = text.trim();
     if body.is_empty() {
-        return Ok(Verdict { kind: "empty".into(), why: "空段".into(), fix: String::new() });
+        return Ok(Verdict {
+            kind: "empty".into(),
+            why: "空段".into(),
+            fix: String::new(),
+        });
     }
     let prompt = load_prompt();
     let payload = serde_json::json!({
@@ -115,16 +122,22 @@ pub fn classify(text: &str, model: &str, base_url: &str, api_key: &str) -> Resul
             {"role": "user", "content": format!("文字：\n{body}")}
         ]
     });
-    let mut response = ureq::post(&format!("{}/chat/completions", base_url.trim_end_matches('/')))
-        .header("Authorization", &format!("Bearer {api_key}"))
-        .header("Content-Type", "application/json")
-        .send_json(payload)
-        .map_err(|err| format!("模型调用失败：{err}"))?;
+    let mut response = ureq::post(&format!(
+        "{}/chat/completions",
+        base_url.trim_end_matches('/')
+    ))
+    .header("Authorization", &format!("Bearer {api_key}"))
+    .header("Content-Type", "application/json")
+    .send_json(payload)
+    .map_err(|err| format!("模型调用失败：{err}"))?;
     let parsed: Value = response
         .body_mut()
         .read_json()
         .map_err(|err| format!("模型返回不是 JSON：{err}"))?;
-    let raw = parsed["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
+    let raw = parsed["choices"][0]["message"]["content"]
+        .as_str()
+        .unwrap_or("")
+        .to_string();
     Ok(parse_verdict(&raw))
 }
 
@@ -158,11 +171,12 @@ pub fn run(findings: &[Finding], limit: usize) -> Result<Vec<(Segment, Verdict)>
     let (model, base_url, api_key) = credentials()?;
     let mut out = Vec::new();
     for segment in segments {
-        let verdict = classify(&segment.text, &model, &base_url, &api_key).unwrap_or_else(|err| Verdict {
-            kind: "error".into(),
-            why: err.chars().take(120).collect(),
-            fix: String::new(),
-        });
+        let verdict =
+            classify(&segment.text, &model, &base_url, &api_key).unwrap_or_else(|err| Verdict {
+                kind: "error".into(),
+                why: err.chars().take(120).collect(),
+                fix: String::new(),
+            });
         out.push((segment, verdict));
     }
     Ok(out)

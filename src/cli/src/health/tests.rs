@@ -1,9 +1,9 @@
 //! 离线自测：历法换算、宽筛、判定解析、环节归一。不联网。
 
+use super::corpus::Message;
 use super::corpus::{civil_from_ts, expand_home};
 use super::judge::{parse_judged, stage_title};
 use super::screen::screen;
-use super::corpus::Message;
 
 fn msg(id: &str, content: &str) -> Message {
     Message {
@@ -45,7 +45,10 @@ fn signal_word_kept_even_if_short() {
 
 #[test]
 fn long_message_kept() {
-    let (cands, _) = screen(vec![msg("1", "这一段话足够长并且没有任何疲劳方面的词汇表达")]);
+    let (cands, _) = screen(vec![msg(
+        "1",
+        "这一段话足够长并且没有任何疲劳方面的词汇表达",
+    )]);
     assert_eq!(cands.len(), 1);
 }
 
@@ -91,7 +94,8 @@ fn chinese_keys_and_stage_fallback() {
 
 #[test]
 fn unknown_stage_is_not_user() {
-    let raw = r#"[{"id":"a1","signal":"fatigue","stage":"用户","sources":[{"label":"x","quote":"y"}]}]"#;
+    let raw =
+        r#"[{"id":"a1","signal":"fatigue","stage":"用户","sources":[{"label":"x","quote":"y"}]}]"#;
     let items = parse_judged(raw);
     assert_eq!(items[0].1.stage, "C");
     assert_eq!(stage_title("C"), "没给判据、没法验证");

@@ -10,7 +10,10 @@ use serde::Deserialize;
 
 pub const CONTRACT_FILE: &str = "default-contract.toml";
 pub const CONTRACT_ENV: &str = "QTFOUNDER_LANGUAGE_CONTRACT";
-const CONTRACT_RELATIVE: [&str; 2] = ["src/language/default-contract.toml", "src/cli/src/language/default-contract.toml"];
+const CONTRACT_RELATIVE: [&str; 2] = [
+    "src/language/default-contract.toml",
+    "src/cli/src/language/default-contract.toml",
+];
 
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct Contract {
@@ -44,7 +47,9 @@ pub struct Scope {
 pub struct BannedEntry {
     #[serde(default)]
     pub advice: String,
+    /// 出处原话：给人读的，判定不读它，但出库/复核时要照着它查
     #[serde(default)]
+    #[allow(dead_code)]
     pub evidence: String,
 }
 
@@ -61,6 +66,8 @@ pub struct Numbers {
     #[serde(default)]
     pub source_words: Vec<String>,
     #[serde(default)]
+    /// 要追分母的单位：写着给人看，判定按正则走，暂不读这张表
+    #[allow(dead_code)]
     pub units: Vec<String>,
 }
 
@@ -103,6 +110,8 @@ pub struct Table {
     #[serde(default)]
     pub sparse_ratio: f64,
     #[serde(default)]
+    /// 一格超过多少字算段落：口径记在契约里，判定暂用 max_cell_chars
+    #[allow(dead_code)]
     pub long_cell_chars: usize,
     #[serde(default)]
     pub layout_headers: Vec<String>,
@@ -145,7 +154,8 @@ pub fn find_contract() -> Result<PathBuf, String> {
     // 装成命令行工具后，当前目录里不会有源码树的契约——退回用户级目录，
     // 这样 `qtfounder language .` 在任何目录都能跑，用户改阈值也改这一份。
     if let Ok(home) = std::env::var("HOME") {
-        let user_level = Path::new(&home).join(format!(".config/qtfounder/language/{CONTRACT_FILE}"));
+        let user_level =
+            Path::new(&home).join(format!(".config/qtfounder/language/{CONTRACT_FILE}"));
         if user_level.is_file() {
             return Ok(user_level);
         }

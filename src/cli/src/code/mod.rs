@@ -17,7 +17,7 @@ mod tests;
 
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::Args;
 use walkdir::WalkDir;
@@ -47,13 +47,24 @@ pub struct CodeArgs {
 
 // 归档代码与示例代码不审：2026-10-22 实测，全仓四百二十二处里三百一十三处落在 data/archive 与 examples。
 // 语言层早就跳过这两处，代码层原来不跳，两个子命令对同一批目录的态度不一致。
-const SKIP_DIRS: [&str; 7] = ["target", ".git", "node_modules", "build", "dist", "archive", "examples"];
+const SKIP_DIRS: [&str; 7] = [
+    "target",
+    ".git",
+    "node_modules",
+    "build",
+    "dist",
+    "archive",
+    "examples",
+];
 
 fn wanted_layers(requested: &[String]) -> Vec<Layer> {
     if requested.is_empty() {
         return Layer::ALL.to_vec();
     }
-    requested.iter().filter_map(|name| Layer::parse(name)).collect()
+    requested
+        .iter()
+        .filter_map(|name| Layer::parse(name))
+        .collect()
 }
 
 fn source_files(root: &PathBuf) -> Vec<PathBuf> {
@@ -67,22 +78,34 @@ fn source_files(root: &PathBuf) -> Vec<PathBuf> {
         .filter(|path| extract::supports(path))
         .filter(|path| {
             !path.components().any(|part| {
-                part.as_os_str().to_str().map(|text| SKIP_DIRS.contains(&text)).unwrap_or(false)
+                part.as_os_str()
+                    .to_str()
+                    .map(|text| SKIP_DIRS.contains(&text))
+                    .unwrap_or(false)
             })
         })
         .collect()
 }
 
-fn display_path(root: &PathBuf, path: &PathBuf) -> String {
+fn display_path(root: &Path, path: &Path) -> String {
     if root.is_dir() {
-        path.strip_prefix(root).unwrap_or(path).display().to_string()
+        path.strip_prefix(root)
+            .unwrap_or(path)
+            .display()
+            .to_string()
     } else {
-        path.file_name().map(|name| name.to_string_lossy().to_string()).unwrap_or_default()
+        path.file_name()
+            .map(|name| name.to_string_lossy().to_string())
+            .unwrap_or_default()
     }
 }
 
 /// 跑完整个目录：返回（命中，解析失败的文件）。
-fn collect(root: &PathBuf, rules: &Rules, layers: &[Layer]) -> (Vec<Finding>, Vec<(String, String)>) {
+fn collect(
+    root: &PathBuf,
+    rules: &Rules,
+    layers: &[Layer],
+) -> (Vec<Finding>, Vec<(String, String)>) {
     let mut findings = Vec::new();
     let mut broken = Vec::new();
     let mut function_names: Vec<String> = Vec::new();
@@ -129,7 +152,10 @@ fn collect(root: &PathBuf, rules: &Rules, layers: &[Layer]) -> (Vec<Finding>, Ve
 
 fn render(findings: &[Finding], top: usize) {
     for layer in Layer::ALL {
-        let group: Vec<&Finding> = findings.iter().filter(|finding| finding.layer == layer).collect();
+        let group: Vec<&Finding> = findings
+            .iter()
+            .filter(|finding| finding.layer == layer)
+            .collect();
         if group.is_empty() {
             continue;
         }
@@ -200,12 +226,19 @@ pub fn run(args: &CodeArgs) -> Result<i32, String> {
         render(&findings, args.top);
         let mut counts: Vec<String> = Vec::new();
         for layer in Layer::ALL {
-            let count = findings.iter().filter(|finding| finding.layer == layer).count();
+            let count = findings
+                .iter()
+                .filter(|finding| finding.layer == layer)
+                .count();
             if count > 0 {
                 counts.push(format!("{} {count}", layer.label()));
             }
         }
-        let summary = if counts.is_empty() { "无".to_string() } else { counts.join("，") };
+        let summary = if counts.is_empty() {
+            "无".to_string()
+        } else {
+            counts.join("，")
+        };
         println!("\n合计 {} 处（{summary}）", findings.len());
         if !findings.is_empty() {
             println!("报的是读者视角的风险，不是错误：逐条读上下文再改。");

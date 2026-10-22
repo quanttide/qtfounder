@@ -21,8 +21,10 @@ fn drill<'a>(node: Node<'a>, path: &[&str]) -> Option<Node<'a>> {
     for step in path {
         current = current.child_by_field_name(step).or_else(|| {
             let mut cursor = current.walk();
-            let found = current.named_children(&mut cursor).find(|child| child.kind() == *step);
-            found
+
+            current
+                .named_children(&mut cursor)
+                .find(|child| child.kind() == *step)
         })?;
     }
     Some(current)
@@ -39,21 +41,35 @@ fn identifier_text(node: Node<'_>, source: &str) -> Option<String> {
 }
 
 fn function_name(node: Node<'_>, source: &str, spec: &LangSpec) -> String {
-    let container = if spec.name_path.is_empty() { Some(node) } else { drill(node, spec.name_path) };
-    let Some(container) = container else { return "<anonymous>".to_string() };
+    let container = if spec.name_path.is_empty() {
+        Some(node)
+    } else {
+        drill(node, spec.name_path)
+    };
+    let Some(container) = container else {
+        return "<anonymous>".to_string();
+    };
     container
         .child_by_field_name("name")
         .or_else(|| {
             let mut cursor = container.walk();
-            container.named_children(&mut cursor).find(|child| child.kind().contains("identifier"))
+            container
+                .named_children(&mut cursor)
+                .find(|child| child.kind().contains("identifier"))
         })
         .and_then(|child| identifier_text(child, source))
         .unwrap_or_else(|| "<anonymous>".to_string())
 }
 
 fn parameter_count(node: Node<'_>, spec: &LangSpec) -> usize {
-    let container = if spec.name_path.is_empty() { node } else { drill(node, spec.name_path).unwrap_or(node) };
-    let Some(parameters) = container.child_by_field_name(spec.params_field) else { return 0 };
+    let container = if spec.name_path.is_empty() {
+        node
+    } else {
+        drill(node, spec.name_path).unwrap_or(node)
+    };
+    let Some(parameters) = container.child_by_field_name(spec.params_field) else {
+        return 0;
+    };
     let mut cursor = parameters.walk();
     let items: Vec<Node<'_>> = parameters
         .named_children(&mut cursor)
@@ -120,14 +136,22 @@ fn is_false_condition(node: Node<'_>, spec: &LangSpec) -> bool {
     }
 }
 
-fn function_facts(node: Node<'_>, source: &str, spec: &LangSpec) -> (FunctionFacts, Vec<(usize, String)>) {
+fn function_facts(
+    node: Node<'_>,
+    source: &str,
+    spec: &LangSpec,
+) -> (FunctionFacts, Vec<(usize, String)>) {
     let name = function_name(node, source, spec);
     let params = parameter_count(node, spec);
     let start = line_of(node);
     let end = node.end_position().row + 1;
     let body = node.child_by_field_name(spec.body_field);
 
-    let mut depth = Depth { depth: 0, depth_line: 0, cognitive: 0 };
+    let mut depth = Depth {
+        depth: 0,
+        depth_line: 0,
+        cognitive: 0,
+    };
     if let Some(body) = body {
         depth.walk(body, 0, spec);
     }
@@ -151,7 +175,11 @@ fn function_facts(node: Node<'_>, source: &str, spec: &LangSpec) -> (FunctionFac
         params,
         doc: String::new(), // 三个语言的文档注释提取待补，见用户指南
         max_depth: depth.depth,
-        max_depth_line: if depth.depth_line == 0 { start } else { depth.depth_line },
+        max_depth_line: if depth.depth_line == 0 {
+            start
+        } else {
+            depth.depth_line
+        },
         cognitive: depth.cognitive,
         has_comment: false,
         chains: Vec::new(), // 调用链验收标准暂只对 Rust／Python 生效
@@ -161,9 +189,20 @@ fn function_facts(node: Node<'_>, source: &str, spec: &LangSpec) -> (FunctionFac
 }
 
 /// 参数名也是绑定，而且是长命的那种。
-fn collect_parameter_bindings(node: Node<'_>, source: &str, spec: &LangSpec, out: &mut Vec<BindingFacts>) {
-    let container = if spec.name_path.is_empty() { node } else { drill(node, spec.name_path).unwrap_or(node) };
-    let Some(parameters) = container.child_by_field_name(spec.params_field) else { return };
+fn collect_parameter_bindings(
+    node: Node<'_>,
+    source: &str,
+    spec: &LangSpec,
+    out: &mut Vec<BindingFacts>,
+) {
+    let container = if spec.name_path.is_empty() {
+        node
+    } else {
+        drill(node, spec.name_path).unwrap_or(node)
+    };
+    let Some(parameters) = container.child_by_field_name(spec.params_field) else {
+        return;
+    };
     let mut cursor = parameters.walk();
     for item in parameters.named_children(&mut cursor) {
         if !spec.param_item_nodes.contains(&item.kind()) {
@@ -209,7 +248,10 @@ fn collect_bindings(
         && let Some(left) = node.child_by_field_name(spec.assignment_left_field)
     {
         let mut cursor = left.walk();
-        for child in left.named_children(&mut cursor).chain(std::iter::once(left)) {
+        for child in left
+            .named_children(&mut cursor)
+            .chain(std::iter::once(left))
+        {
             if child.kind().contains("identifier") {
                 out.push(BindingFacts {
                     name: text_of(child, source),
@@ -230,7 +272,11 @@ fn collect_bindings(
 }
 
 fn collect_false_conditions(node: Node<'_>, spec: &LangSpec, out: &mut Vec<usize>) {
-    if matches!(node.kind(), "if_statement" | "while_statement" | "if_element") && is_false_condition(node, spec) {
+    if matches!(
+        node.kind(),
+        "if_statement" | "while_statement" | "if_element"
+    ) && is_false_condition(node, spec)
+    {
         out.push(line_of(node));
     }
     let mut cursor = node.walk();
@@ -254,7 +300,11 @@ fn collect_classes(node: Node<'_>, source: &str, spec: &LangSpec, out: &mut Vec<
                     .count()
             })
             .unwrap_or(0);
-        out.push(ClassFacts { name, line: line_of(node), methods });
+        out.push(ClassFacts {
+            name,
+            line: line_of(node),
+            methods,
+        });
     }
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
@@ -267,7 +317,9 @@ pub fn extract(source: &str, spec: &LangSpec) -> Result<Facts, String> {
     parser
         .set_language(&(spec.language)())
         .map_err(|err| format!("{} 语法装不上：{err}", spec.name))?;
-    let tree = parser.parse(source, None).ok_or_else(|| format!("{} 解析失败", spec.name))?;
+    let tree = parser
+        .parse(source, None)
+        .ok_or_else(|| format!("{} 解析失败", spec.name))?;
     let root = tree.root_node();
 
     let mut facts = Facts::default();
@@ -304,7 +356,11 @@ pub fn extract(source: &str, spec: &LangSpec) -> Result<Facts, String> {
         let end = function.end_line.min(lines.len());
         function.has_comment = lines
             .get(start..end)
-            .map(|slice| slice.iter().any(|line| line.trim_start().starts_with(spec.comment_prefix)))
+            .map(|slice| {
+                slice
+                    .iter()
+                    .any(|line| line.trim_start().starts_with(spec.comment_prefix))
+            })
             .unwrap_or(false);
     }
 

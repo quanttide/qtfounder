@@ -35,7 +35,11 @@ fn param_count(parameters: Node<'_>) -> usize {
         .filter(|child| {
             matches!(
                 child.kind(),
-                "identifier" | "default_parameter" | "typed_parameter" | "list_splat_pattern" | "dictionary_splat_pattern"
+                "identifier"
+                    | "default_parameter"
+                    | "typed_parameter"
+                    | "list_splat_pattern"
+                    | "dictionary_splat_pattern"
             )
         })
         .count()
@@ -129,15 +133,22 @@ fn collect_all_strings(node: Node<'_>, source: &str, out: &mut Vec<(usize, Strin
 
 /// 文档字符串：函数体第一条语句是字符串。
 fn docstring(body: Node<'_>, source: &str) -> String {
-    let Some(first) = body.named_child(0) else { return String::new() };
+    let Some(first) = body.named_child(0) else {
+        return String::new();
+    };
     if first.kind() != "expression_statement" {
         return String::new();
     }
-    let Some(inner) = first.named_child(0) else { return String::new() };
+    let Some(inner) = first.named_child(0) else {
+        return String::new();
+    };
     if inner.kind() != "string" {
         return String::new();
     }
-    text_of(inner, source).trim_matches(|ch| ch == '"' || ch == '\'').trim().to_string()
+    text_of(inner, source)
+        .trim_matches(|ch| ch == '"' || ch == '\'')
+        .trim()
+        .to_string()
 }
 
 fn function_facts(node: Node<'_>, source: &str) -> FunctionFacts {
@@ -145,12 +156,19 @@ fn function_facts(node: Node<'_>, source: &str) -> FunctionFacts {
         .child_by_field_name("name")
         .map(|child| text_of(child, source))
         .unwrap_or_else(|| "<anonymous>".to_string());
-    let params = node.child_by_field_name("parameters").map(param_count).unwrap_or(0);
+    let params = node
+        .child_by_field_name("parameters")
+        .map(param_count)
+        .unwrap_or(0);
     let body = node.child_by_field_name("body");
     let start = line_of(node);
     let end = node.end_position().row + 1;
 
-    let mut depth = Depth { depth: 0, depth_line: 0, cognitive: 0 };
+    let mut depth = Depth {
+        depth: 0,
+        depth_line: 0,
+        cognitive: 0,
+    };
     if let Some(body) = body {
         depth.walk(body, 0);
     }
@@ -169,7 +187,11 @@ fn function_facts(node: Node<'_>, source: &str) -> FunctionFacts {
         params,
         doc: body.map(|body| docstring(body, source)).unwrap_or_default(),
         max_depth: depth.depth,
-        max_depth_line: if depth.depth_line == 0 { start } else { depth.depth_line },
+        max_depth_line: if depth.depth_line == 0 {
+            start
+        } else {
+            depth.depth_line
+        },
         cognitive: depth.cognitive,
         has_comment: false, // 下面按行范围补
         chains,
@@ -180,15 +202,15 @@ fn function_facts(node: Node<'_>, source: &str) -> FunctionFacts {
 /// 简单绑定：赋值左侧、for 目标、with as、except as、lambda 参数。
 fn collect_bindings(node: Node<'_>, source: &str, short: bool, out: &mut Vec<BindingFacts>) {
     let kind = node.kind();
-    if kind == "assignment" {
-        if let Some(left) = node.child_by_field_name("left") {
-            push_binding(left, source, short, node, out);
-        }
+    if kind == "assignment"
+        && let Some(left) = node.child_by_field_name("left")
+    {
+        push_binding(left, source, short, node, out);
     }
-    if matches!(kind, "for_statement" | "for_in_clause") {
-        if let Some(left) = node.child_by_field_name("left") {
-            push_binding(left, source, true, node, out);
-        }
+    if matches!(kind, "for_statement" | "for_in_clause")
+        && let Some(left) = node.child_by_field_name("left")
+    {
+        push_binding(left, source, true, node, out);
     }
     if kind == "function_definition"
         && let Some(parameters) = node.child_by_field_name("parameters")
@@ -197,9 +219,9 @@ fn collect_bindings(node: Node<'_>, source: &str, short: bool, out: &mut Vec<Bin
         for child in parameters.named_children(&mut cursor) {
             let target = match child.kind() {
                 "identifier" => Some(child),
-                "default_parameter" | "typed_parameter" => {
-                    child.child_by_field_name("name").or_else(|| child.named_child(0))
-                }
+                "default_parameter" | "typed_parameter" => child
+                    .child_by_field_name("name")
+                    .or_else(|| child.named_child(0)),
                 "list_splat_pattern" | "dictionary_splat_pattern" => child.named_child(0),
                 _ => None,
             };
@@ -222,13 +244,19 @@ fn collect_bindings(node: Node<'_>, source: &str, short: bool, out: &mut Vec<Bin
     }
 }
 
-fn push_binding(target: Node<'_>, source: &str, short: bool, owner: Node<'_>, out: &mut Vec<BindingFacts>) {
+fn push_binding(
+    target: Node<'_>,
+    source: &str,
+    short: bool,
+    owner: Node<'_>,
+    out: &mut Vec<BindingFacts>,
+) {
     if target.kind() != "identifier" {
         return;
     }
     let shape = owner
         .child_by_field_name("right")
-        .map(|right| match right.kind() {
+        .and_then(|right| match right.kind() {
             "list" => Some("list".to_string()),
             "dictionary" => Some("dict".to_string()),
             "set" => Some("set".to_string()),
@@ -236,8 +264,7 @@ fn push_binding(target: Node<'_>, source: &str, short: bool, owner: Node<'_>, ou
                 .child_by_field_name("function")
                 .map(|func| text_of(func, source)),
             _ => None,
-        })
-        .flatten();
+        });
     out.push(BindingFacts {
         name: text_of(target, source),
         line: line_of(target),
@@ -246,6 +273,7 @@ fn push_binding(target: Node<'_>, source: &str, short: bool, owner: Node<'_>, ou
     });
 }
 
+#[allow(clippy::only_used_in_recursion)]
 fn collect_false_conditions(node: Node<'_>, source: &str, out: &mut Vec<usize>) {
     if matches!(node.kind(), "if_statement" | "while_statement")
         && let Some(condition) = node.child_by_field_name("condition")
@@ -269,10 +297,16 @@ fn collect_classes(node: Node<'_>, source: &str, out: &mut Vec<ClassFacts>) {
             .child_by_field_name("body")
             .map(|body| {
                 let mut cursor = body.walk();
-                body.named_children(&mut cursor).filter(|child| child.kind() == "function_definition").count()
+                body.named_children(&mut cursor)
+                    .filter(|child| child.kind() == "function_definition")
+                    .count()
             })
             .unwrap_or(0);
-        out.push(ClassFacts { name, line: line_of(node), methods });
+        out.push(ClassFacts {
+            name,
+            line: line_of(node),
+            methods,
+        });
     }
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
@@ -319,7 +353,9 @@ pub fn extract(source: &str) -> Result<Facts, String> {
 
     facts.top_defs = {
         let mut cursor = root.walk();
-        root.named_children(&mut cursor).filter(|child| DEFINITION.contains(&child.kind())).count()
+        root.named_children(&mut cursor)
+            .filter(|child| DEFINITION.contains(&child.kind()))
+            .count()
     };
 
     let mut short_scope = Vec::new();

@@ -57,24 +57,47 @@ fn clean_python_function_reports_nothing() {
 
 #[test]
 fn vague_name_is_reported() {
-    assert!(kinds(&facts_rs("fn f() {\n    let data = 1;\n    let _ = data;\n}\n"), Layer::Lexical)
-        .contains(&"vague_name"));
-    assert!(kinds(&facts_py("def f():\n    data = 1\n    print(data)\n"), Layer::Lexical).contains(&"vague_name"));
+    assert!(
+        kinds(
+            &facts_rs("fn f() {\n    let data = 1;\n    let _ = data;\n}\n"),
+            Layer::Lexical
+        )
+        .contains(&"vague_name")
+    );
+    assert!(
+        kinds(
+            &facts_py("def f():\n    data = 1\n    print(data)\n"),
+            Layer::Lexical
+        )
+        .contains(&"vague_name")
+    );
 }
 
 #[test]
 fn short_name_in_loop_is_exempt() {
     let rust = "fn f(items: Vec<u32>) -> u32 {\n    let mut total = 0;\n    for i in items {\n        total += i;\n    }\n    total\n}\n";
-    let python = "def f(items):\n    total = 0\n    for i in items:\n        total += i\n    return total\n";
+    let python =
+        "def f(items):\n    total = 0\n    for i in items:\n        total += i\n    return total\n";
     assert!(!kinds(&facts_rs(rust), Layer::Lexical).contains(&"short_name"));
     assert!(!kinds(&facts_py(python), Layer::Lexical).contains(&"short_name"));
 }
 
 #[test]
 fn abbreviation_is_reported() {
-    assert!(kinds(&facts_rs("fn f() {\n    let ctx = 1;\n    let _ = ctx;\n}\n"), Layer::Lexical)
-        .contains(&"abbreviation"));
-    assert!(kinds(&facts_py("def f():\n    ctx = 1\n    print(ctx)\n"), Layer::Lexical).contains(&"abbreviation"));
+    assert!(
+        kinds(
+            &facts_rs("fn f() {\n    let ctx = 1;\n    let _ = ctx;\n}\n"),
+            Layer::Lexical
+        )
+        .contains(&"abbreviation")
+    );
+    assert!(
+        kinds(
+            &facts_py("def f():\n    ctx = 1\n    print(ctx)\n"),
+            Layer::Lexical
+        )
+        .contains(&"abbreviation")
+    );
 }
 
 #[test]
@@ -96,25 +119,46 @@ fn too_many_params_is_reported_in_both_languages() {
 #[test]
 fn long_chain_is_reported_in_both_languages() {
     let rust = "fn f(text: &str) -> String {\n    text.trim().to_lowercase().replace('a', \"b\").split(' ').next().unwrap_or(\"\").to_string()\n}\n";
-    let python = "def f(text):\n    return text.strip().lower().replace('a', 'b').split(' ')[0].upper()\n";
+    let python =
+        "def f(text):\n    return text.strip().lower().replace('a', 'b').split(' ')[0].upper()\n";
     assert!(kinds(&facts_rs(rust), Layer::Syntax).contains(&"long_chain"));
     assert!(kinds(&facts_py(python), Layer::Syntax).contains(&"long_chain"));
 }
 
 #[test]
 fn dead_branch_is_reported_in_both_languages() {
-    assert!(kinds(&facts_rs("fn f() {\n    if false {\n        println!(\"never\");\n    }\n}\n"), Layer::Structure)
-        .contains(&"dead_branch"));
-    assert!(kinds(&facts_py("def f():\n    if False:\n        print('never')\n"), Layer::Structure)
-        .contains(&"dead_branch"));
+    assert!(
+        kinds(
+            &facts_rs("fn f() {\n    if false {\n        println!(\"never\");\n    }\n}\n"),
+            Layer::Structure
+        )
+        .contains(&"dead_branch")
+    );
+    assert!(
+        kinds(
+            &facts_py("def f():\n    if False:\n        print('never')\n"),
+            Layer::Structure
+        )
+        .contains(&"dead_branch")
+    );
 }
 
 #[test]
 fn uninformative_name_is_reported_in_both_languages() {
-    assert!(kinds(&facts_rs("fn handle(a: u32) -> u32 {\n    a\n}\n"), Layer::Pragmatic)
-        .contains(&"uninformative_name"));
-    assert!(kinds(&facts_py("def handle(a):\n    return a\n"), Layer::Pragmatic)
-        .contains(&"uninformative_name"));
+    assert!(
+        kinds(
+            &facts_rs("fn handle(a: u32) -> u32 {\n    a\n}\n"),
+            Layer::Pragmatic
+        )
+        .contains(&"uninformative_name")
+    );
+    assert!(
+        kinds(
+            &facts_py("def handle(a):\n    return a\n"),
+            Layer::Pragmatic
+        )
+        .contains(&"uninformative_name")
+    );
 }
 
 #[test]
@@ -127,10 +171,20 @@ fn docstring_echo_is_reported_in_both_languages() {
 
 #[test]
 fn vague_error_message_is_reported_in_both_languages() {
-    assert!(kinds(&facts_rs("fn f(x: bool) {\n    if x {\n        panic!(\"bad\");\n    }\n}\n"), Layer::Pragmatic)
-        .contains(&"vague_error"));
-    assert!(kinds(&facts_py("def f(x):\n    if x:\n        raise ValueError('bad')\n"), Layer::Pragmatic)
-        .contains(&"vague_error"));
+    assert!(
+        kinds(
+            &facts_rs("fn f(x: bool) {\n    if x {\n        panic!(\"bad\");\n    }\n}\n"),
+            Layer::Pragmatic
+        )
+        .contains(&"vague_error")
+    );
+    assert!(
+        kinds(
+            &facts_py("def f(x):\n    if x:\n        raise ValueError('bad')\n"),
+            Layer::Pragmatic
+        )
+        .contains(&"vague_error")
+    );
 }
 
 #[test]
@@ -209,7 +263,10 @@ fn both_languages_agree_on_every_sample() {
             mismatched.push(format!("{name}: py={left:?} rs={right:?}"));
         }
     }
-    assert!(mismatched.is_empty(), "两个提取器结论不一致：{mismatched:#?}");
+    assert!(
+        mismatched.is_empty(),
+        "两个提取器结论不一致：{mismatched:#?}"
+    );
 }
 
 fn facts_go(source: &str) -> Facts {
@@ -258,10 +315,20 @@ fn five_languages_agree_on_the_same_defect() {
     let go = "package main\n\nfunc handle(a int, b int, c int, d int) int {\n\tif a > 0 {\n\t\tif b > 0 {\n\t\t\tif c > 0 {\n\t\t\t\tif d > 0 {\n\t\t\t\t\treturn 1\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\treturn 0\n}\n";
     let ts = "function handle(a: number, b: number, c: number, d: number): number {\n  if (a > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
     let dart = "int handle(int a, int b, int c, int d) {\n  if (a > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
-    for (name, facts) in [("go", facts_go(go)), ("ts", facts_ts(ts)), ("dart", facts_dart(dart))] {
+    for (name, facts) in [
+        ("go", facts_go(go)),
+        ("ts", facts_ts(ts)),
+        ("dart", facts_dart(dart)),
+    ] {
         let found = all_kinds(&facts);
-        assert!(found.contains(&"deep_nesting"), "{name} 应报深嵌套：{found:?}");
-        assert!(found.contains(&"uninformative_name"), "{name} 应报不诚实函数名：{found:?}");
+        assert!(
+            found.contains(&"deep_nesting"),
+            "{name} 应报深嵌套：{found:?}"
+        );
+        assert!(
+            found.contains(&"uninformative_name"),
+            "{name} 应报不诚实函数名：{found:?}"
+        );
     }
 }
 
@@ -288,7 +355,10 @@ fn a_changed_contract_changes_the_verdict() {
 fn missing_contract_is_an_explicit_error() {
     let missing = std::path::Path::new("/nonexistent/contract.toml");
     let error = Rules::load(Some(missing)).expect_err("契约不存在时必须报错，不能偷偷用内置阈值");
-    assert!(error.contains("契约读不了"), "报错要说清是契约读不了：{error}");
+    assert!(
+        error.contains("契约读不了"),
+        "报错要说清是契约读不了：{error}"
+    );
 }
 
 #[test]

@@ -70,7 +70,12 @@ pub fn load(db: &Path, since: Option<&str>) -> Result<Vec<Message>, String> {
             let session_id: Option<String> = row.get(1)?;
             let ts: Option<f64> = row.get(2)?;
             let content: String = row.get(3)?;
-            Ok((id, session_id.unwrap_or_default(), ts.unwrap_or(0.0), content))
+            Ok((
+                id,
+                session_id.unwrap_or_default(),
+                ts.unwrap_or(0.0),
+                content,
+            ))
         })
         .map_err(|err| format!("读取失败：{err}"))?;
 
@@ -83,14 +88,24 @@ pub fn load(db: &Path, since: Option<&str>) -> Result<Vec<Message>, String> {
         {
             continue;
         }
-        out.push(Message { id, session_id, ts, date, hour, content });
+        out.push(Message {
+            id,
+            session_id,
+            ts,
+            date,
+            hour,
+            content,
+        });
     }
     out.sort_by(|a, b| a.ts.partial_cmp(&b.ts).unwrap_or(std::cmp::Ordering::Equal));
 
     let mut seen: HashSet<(String, String)> = HashSet::new();
     let mut deduped = Vec::with_capacity(out.len());
     for msg in out {
-        let key = (msg.session_id.clone(), msg.content.split_whitespace().collect::<Vec<_>>().join(" "));
+        let key = (
+            msg.session_id.clone(),
+            msg.content.split_whitespace().collect::<Vec<_>>().join(" "),
+        );
         if seen.insert(key) {
             deduped.push(msg);
         }

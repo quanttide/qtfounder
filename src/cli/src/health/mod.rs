@@ -172,7 +172,9 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
         if !words.is_empty() {
             lexical_hits += 1;
         }
-        let Some(verdict) = judged.get(id) else { continue };
+        let Some(verdict) = judged.get(id) else {
+            continue;
+        };
         if verdict.signal.is_empty() {
             continue;
         }
@@ -275,7 +277,8 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
             std::fs::create_dir_all(parent)
                 .map_err(|err| format!("建目录 {} 失败：{err}", parent.display()))?;
         }
-        std::fs::write(path, report).map_err(|err| format!("写报告 {} 失败：{err}", path.display()))?;
+        std::fs::write(path, report)
+            .map_err(|err| format!("写报告 {} 失败：{err}", path.display()))?;
         println!("\n报告已写入 {}", path.display());
     }
 
@@ -353,7 +356,10 @@ fn render_markdown(
     let fatigue = hits.iter().filter(|h| h.signal == "fatigue").count();
     let friction = hits.iter().filter(|h| h.signal == "friction").count();
     out.push_str("## 一、命中概况\n\n");
-    out.push_str(&format!("- 命中 {} 条：疲劳 {fatigue} 条、摩擦 {friction} 条\n", hits.len()));
+    out.push_str(&format!(
+        "- 命中 {} 条：疲劳 {fatigue} 条、摩擦 {friction} 条\n",
+        hits.len()
+    ));
     out.push_str(&format!(
         "- 隐式命中（无关键词、靠语气）：{} 条\n",
         hits.iter().filter(|h| h.implicit).count()
@@ -379,7 +385,7 @@ fn render_markdown(
                 *count as f64 / hits.len() as f64 * 100.0
             ));
         }
-        out.push_str("\n");
+        out.push('\n');
         for (code, _) in stage_rows {
             out.push_str(&format!("### {code} {}\n\n", judge::stage_title(code)));
             for hit in hits.iter().filter(|h| &h.stage == code).take(3) {
@@ -391,7 +397,7 @@ fn render_markdown(
                     ));
                 }
             }
-            out.push_str("\n");
+            out.push('\n');
         }
     }
 
@@ -400,9 +406,12 @@ fn render_markdown(
         out.push_str("（无。）\n\n");
     } else {
         for (label, count, quote) in label_rows.iter().take(args.top) {
-            out.push_str(&format!("- {count}×{label}　例：「{}」\n", truncate(quote, 50)));
+            out.push_str(&format!(
+                "- {count}×{label}　例：「{}」\n",
+                truncate(quote, 50)
+            ));
         }
-        out.push_str("\n");
+        out.push('\n');
     }
 
     out.push_str("## 四、时间分布（疲劳命中）\n\n");
@@ -412,12 +421,14 @@ fn render_markdown(
         for (month, count) in month_rows {
             out.push_str(&format!("- {month}：{count} 条\n"));
         }
-        out.push_str("\n");
+        out.push('\n');
     }
 
     out.push_str("## 五、这份报告自带哪些偏差\n\n");
     out.push_str("- 语料只有与助手的对话：与人当面聊的、会议录音都不在这里面\n");
-    out.push_str("- 单模型单次判定，没有第二人复核；来源短语是概括，是「值得核对的假设」，不是因果\n");
+    out.push_str(
+        "- 单模型单次判定，没有第二人复核；来源短语是概括，是「值得核对的假设」，不是因果\n",
+    );
     out.push_str("- 命中要求原文片段，语气很轻的累会被漏掉；未进池的条数见上，未做穿漏抽样\n");
     out.push_str("- 责任口径由用户定死为「全部在助手一侧」，所以本报告只回答「落在哪个环节」，不回答「谁的错」\n");
     out.push('\n');

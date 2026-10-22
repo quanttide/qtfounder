@@ -38,16 +38,6 @@ impl Kind {
         .into_iter()
         .find(|kind| kind.key() == text)
     }
-
-    pub const ALL: [Kind; 7] = [
-        Kind::Placement,
-        Kind::Banned,
-        Kind::Required,
-        Kind::Numbers,
-        Kind::Syntax,
-        Kind::Table,
-        Kind::Voice,
-    ];
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

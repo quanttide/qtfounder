@@ -76,7 +76,9 @@ pub fn prompt_path(custom: Option<&Path>) -> Result<PathBuf, String> {
         if path.is_file() {
             return Ok(path);
         }
-        return Err(format!("QTFOUNDER_HEALTH_PROMPT 指的文件不存在：{env_path}"));
+        return Err(format!(
+            "QTFOUNDER_HEALTH_PROMPT 指的文件不存在：{env_path}"
+        ));
     }
     if let Ok(start) = std::env::current_dir() {
         let mut dir = start.as_path();
@@ -103,7 +105,10 @@ pub fn prompt_path(custom: Option<&Path>) -> Result<PathBuf, String> {
     if bundled.is_file() {
         return Ok(bundled);
     }
-    Err("找不到判定口径（prompt.md）：用 --prompt 指定，或把它装到 ~/.config/qtfounder/health/".to_string())
+    Err(
+        "找不到判定口径（prompt.md）：用 --prompt 指定，或把它装到 ~/.config/qtfounder/health/"
+            .to_string(),
+    )
 }
 
 pub fn load_prompt(custom: Option<&Path>) -> Result<String, String> {
@@ -190,11 +195,14 @@ pub fn judge_batch(
             {"role": "user", "content": build_batch(items)}
         ]
     });
-    let mut response = ureq::post(&format!("{}/chat/completions", base_url.trim_end_matches('/')))
-        .header("Authorization", &format!("Bearer {api_key}"))
-        .header("Content-Type", "application/json")
-        .send_json(payload)
-        .map_err(|err| format!("模型调用失败：{err}"))?;
+    let mut response = ureq::post(&format!(
+        "{}/chat/completions",
+        base_url.trim_end_matches('/')
+    ))
+    .header("Authorization", &format!("Bearer {api_key}"))
+    .header("Content-Type", "application/json")
+    .send_json(payload)
+    .map_err(|err| format!("模型调用失败：{err}"))?;
     let parsed: Value = response
         .body_mut()
         .read_json()
@@ -219,8 +227,8 @@ pub fn parse_judged(raw: &str) -> Vec<(String, Judged)> {
         let mut close = None;
         let mut in_str = false;
         let mut escaped = false;
-        for idx in open..bytes.len() {
-            let ch = bytes[idx] as char;
+        for (idx, byte) in bytes.iter().enumerate().skip(open) {
+            let ch = *byte as char;
             if in_str {
                 if escaped {
                     escaped = false;
@@ -267,7 +275,10 @@ fn pick<'a>(obj: &'a Value, keys: &[&str]) -> Option<&'a Value> {
 }
 
 fn parse_item(item: &Value) -> Option<(String, Judged)> {
-    let id = pick(item, &["id", "msg_id", "编号"])?.as_str()?.trim().to_string();
+    let id = pick(item, &["id", "msg_id", "编号"])?
+        .as_str()?
+        .trim()
+        .to_string();
     let signal_raw = pick(item, &["signal", "信号", "kind", "类型"])
         .and_then(|v| v.as_str())
         .unwrap_or("")

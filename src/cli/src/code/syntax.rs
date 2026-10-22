@@ -72,7 +72,8 @@ pub fn check(facts: &Facts, path: &str, rules: &Rules) -> Vec<Finding> {
     for function in &facts.functions {
         out.extend(function_findings(function, path, rules));
         // 同一条链上的每个节点都会被访问到：按行取最大链长，一行只报一次
-        let mut longest: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
+        let mut longest: std::collections::BTreeMap<usize, usize> =
+            std::collections::BTreeMap::new();
         for (line, length) in &function.chains {
             let entry = longest.entry(*line).or_insert(0);
             *entry = (*entry).max(*length);
