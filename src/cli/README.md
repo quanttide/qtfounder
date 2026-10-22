@@ -26,3 +26,20 @@ cargo test
 ## 许可
 
 Apache 2.0
+
+## 装到本地
+
+```bash
+cargo build --release
+install -m755 target/release/qtfounder ~/.local/bin/qtfounder
+
+# 契约装到用户级目录，这样脱离源码树也能跑、改阈值不用重编译
+mkdir -p ~/.config/qtfounder/code ~/.config/qtfounder/language
+cp src/code/default-contract.toml     ~/.config/qtfounder/code/
+cp src/language/default-contract.toml ~/.config/qtfounder/language/
+cp src/language/sense-prompt.md       ~/.config/qtfounder/language/
+```
+
+契约查找顺序：`--rules` → 环境变量（`QTFOUNDER_CODE_CONTRACT`／`QTFOUNDER_LANGUAGE_CONTRACT`）→ 从当前目录逐级往上找 → `~/.config/qtfounder/<模块>/`。四道都找不到就以退出码 2 报错，**不内置兜底**——静默回退会让人以为阈值生效了。
+
+最后一条容易漏：只装二进制不装契约，在任何非源码目录里跑都会直接报错。

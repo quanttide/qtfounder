@@ -181,8 +181,15 @@ pub fn find_contract() -> Result<PathBuf, String> {
             None => break,
         }
     }
+    // 装成命令行工具后，当前目录里不会有源码树的契约——退回用户级目录
+    if let Ok(home) = std::env::var("HOME") {
+        let user_level = Path::new(&home).join(".config/qtfounder/code").join(CONTRACT_FILE);
+        if user_level.is_file() {
+            return Ok(user_level);
+        }
+    }
     Err(format!(
-        "找不到默认契约 {CONTRACT_FILE}：用 --rules 指定，或设 {CONTRACT_ENV}，或放在 src/code/{CONTRACT_FILE}"
+        "找不到默认契约 {CONTRACT_FILE}：用 --rules 指定，或设 {CONTRACT_ENV}，或放在 src/code/{CONTRACT_FILE}，或装到 ~/.config/qtfounder/code/{CONTRACT_FILE}"
     ))
 }
 
