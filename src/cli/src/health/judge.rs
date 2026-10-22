@@ -59,14 +59,32 @@ impl Judged {
     }
 }
 
-fn prompt_path() -> PathBuf {
+/// 提示词查找顺序：`--prompt` → `QTFOUNDER_HEALTH_PROMPT` → 从当前目录逐级往上找 →
+/// `~/.config/qtfounder/health/`。四道都找不到就报错，**不内置兜底**——
+/// 静默回退会让人以为改过的口径生效了。
+pub fn prompt_path(custom: Option<&Path>) -> Result<PathBuf, String> {
+    if let Some(path) = custom {
+        if path.is_file() {
+            return Ok(path.to_path_buf());
+        }
+        return Err(format!("--prompt 指的文件不存在：{}", path.display()));
+    }
+    if let Ok(env_path) = std::env::var("QTFOUNDER_HEALTH_PROMPT")
+        && !env_path.is_empty()
+    {
+        let path = PathBuf::from(&env_path);
+        if path.is_file() {
+            return Ok(path);
+        }
+        return Err(format!("QTFOUNDER_HEALTH_PROMPT 指的文件不存在：{env_path}"));
+    }
     if let Ok(start) = std::env::current_dir() {
         let mut dir = start.as_path();
         loop {
             for candidate in ["src/health/prompt.md", "src/cli/src/health/prompt.md"] {
                 let path = dir.join(candidate);
                 if path.is_file() {
-                    return path;
+                    return Ok(path);
                 }
             }
             match dir.parent() {
@@ -75,11 +93,22 @@ fn prompt_path() -> PathBuf {
             }
         }
     }
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("src/health/prompt.md")
+    if let Ok(home) = std::env::var("HOME") {
+        let path = Path::new(&home).join(".config/qtfounder/health/prompt.md");
+        if path.is_file() {
+            return Ok(path);
+        }
+    }
+    let bundled = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/health/prompt.md");
+    if bundled.is_file() {
+        return Ok(bundled);
+    }
+    Err("找不到判定口径（prompt.md）：用 --prompt 指定，或把它装到 ~/.config/qtfounder/health/".to_string())
 }
 
-pub fn load_prompt() -> String {
-    std::fs::read_to_string(prompt_path()).unwrap_or_default()
+pub fn load_prompt(custom: Option<&Path>) -> Result<String, String> {
+    let path = prompt_path(custom)?;
+    std::fs::read_to_string(&path).map_err(|err| format!("读 {} 失败：{err}", path.display()))
 }
 
 /// 凭据：LLM_API_KEY → ~/.pi/agent/auth.json → ~/.bashrc 里的 export。密钥只读不打印。
@@ -144,6 +173,7 @@ pub fn build_batch(items: &[(String, String)]) -> String {
 /// 判一批。返回（id → 判定，解析失败说明）。
 pub fn judge_batch(
     items: &[(String, String)],
+    prompt: &str,
     model: &str,
     base_url: &str,
     api_key: &str,
@@ -156,7 +186,7 @@ pub fn judge_batch(
         "temperature": 0.0,
         "max_tokens": 8000,
         "messages": [
-            {"role": "system", "content": load_prompt()},
+            {"role": "system", "content": prompt},
             {"role": "user", "content": build_batch(items)}
         ]
     });

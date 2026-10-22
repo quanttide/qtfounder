@@ -45,6 +45,9 @@ pub struct HealthArgs {
     /// 把完整报告写成 markdown
     #[arg(long)]
     pub out: Option<PathBuf>,
+    /// 判定口径（prompt.md）路径；缺省按 QTFOUNDER_HEALTH_PROMPT、源码树、~/.config/qtfounder/health/ 的顺序找
+    #[arg(long)]
+    pub prompt: Option<PathBuf>,
     /// 只统计候选量，不调模型
     #[arg(long)]
     pub dry_run: bool,
@@ -110,6 +113,7 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
     }
 
     let (model, base_url, api_key) = judge::credentials()?;
+    let prompt = judge::load_prompt(args.prompt.as_deref())?;
     let inputs: Vec<(String, String)> = picked
         .iter()
         .map(|(id, _, msg)| (id.clone(), msg.content.clone()))
@@ -131,11 +135,12 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
             .into_iter()
             .map(|group| {
                 let (model, base_url, api_key) = (model.clone(), base_url.clone(), api_key.clone());
+                let prompt = prompt.clone();
                 scope.spawn(move || {
                     let mut out: Vec<(String, Judged)> = Vec::new();
                     let mut errs: Vec<String> = Vec::new();
                     for batch in group {
-                        match judge::judge_batch(&batch, &model, &base_url, &api_key) {
+                        match judge::judge_batch(&batch, &prompt, &model, &base_url, &api_key) {
                             Ok(items) => out.extend(items),
                             Err(err) => errs.push(err),
                         }

@@ -31,7 +31,7 @@ pub fn expand_home(raw: &str) -> PathBuf {
 }
 
 /// 把 unix 秒换成北京时间（固定 +08:00，无夏令时）下的（年-月-日，小时）。
-fn civil_from_ts(ts: f64) -> (String, u32) {
+pub fn civil_from_ts(ts: f64) -> (String, u32) {
     // 用整数日做历法换算，避免引时区库：CST 恒为 UTC+8。
     let shifted = ts + 8.0 * 3600.0;
     let days = (shifted / 86400.0).floor() as i64;
@@ -60,7 +60,7 @@ pub fn load(db: &Path, since: Option<&str>) -> Result<Vec<Message>, String> {
         .map_err(|err| format!("打不开会话库 {}：{err}", db.display()))?;
     let mut stmt = conn
         .prepare(
-            "select m.id, m.session_id, m.timestamp, m.content from messages m \
+            "select cast(m.id as text), m.session_id, cast(m.timestamp as real), m.content from messages m \
              where m.role = 'user' and m.content is not null and length(trim(m.content)) > 0",
         )
         .map_err(|err| format!("查询失败：{err}"))?;

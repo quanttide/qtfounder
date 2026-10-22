@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added
+
+- CLI `health` 子命令：读 Hermes 会话库（只读、只取 `role='user'`、同会话同内容去重），
+  判两类消耗信号（`fatigue` 真的累 / `friction` 烦与返工）、来源短语与责任环节，
+  每条来源必须挂一句原话，没有原话不计命中。口径在 `src/cli/src/health/prompt.md`。
+  与 v0.0.1 移除的旧 `health`（check/track/history/profile，从 fiction+memory 的 git 历史
+  提情绪维度）不是同一件事——**情绪画像仍归 memory 五轴档案，本命令不做情绪画像**，
+  只回答「这股消耗来自哪里、落在助手哪个环节」。责任口径定死为「全部在助手一侧」，
+  按 A–E 五个环节归位，不设「用户」「双方」「不明」选项。凭据沿用 language 的语义层
+  （`LLM_API_KEY` → `~/.pi/agent/auth.json` → `~/.bashrc` 的 `DEEPSEEK_API_KEY`），
+  `temperature=0`、只收 JSON。新增依赖 `rusqlite`（bundled）读会话库
+
 ### Changed
 
 - 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）

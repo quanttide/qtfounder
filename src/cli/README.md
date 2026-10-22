@@ -16,6 +16,7 @@ cargo test
 |---|---|
 | `qtfounder code` | 代码语用检查：词汇、句法、语篇、语用四层，判下一个维护者能不能看懂。用法见 [docs/user-guide/code.md](docs/user-guide/code.md) |
 | `qtfounder language` | 语言检查：落点、自造术语、体系词、数字、句法、表格、语用七层，判这段文字是不是在跟读者说话 |
+| `qtfounder health` | 健康检查：从会话库看消耗来自哪里、落在助手哪个环节，每条挂原话。用法见 [docs/user-guide/health.md](docs/user-guide/health.md) |
 
 ## 添加新功能
 
@@ -34,10 +35,11 @@ cargo build --release
 install -m755 target/release/qtfounder ~/.local/bin/qtfounder
 
 # 契约装到用户级目录，这样脱离源码树也能跑、改阈值不用重编译
-mkdir -p ~/.config/qtfounder/code ~/.config/qtfounder/language
+mkdir -p ~/.config/qtfounder/code ~/.config/qtfounder/language ~/.config/qtfounder/health
 cp src/code/default-contract.toml     ~/.config/qtfounder/code/
 cp src/language/default-contract.toml ~/.config/qtfounder/language/
 cp src/language/sense-prompt.md       ~/.config/qtfounder/language/
+cp src/health/prompt.md               ~/.config/qtfounder/health/
 ```
 
 契约查找顺序：`--rules` → 环境变量（`QTFOUNDER_CODE_CONTRACT`／`QTFOUNDER_LANGUAGE_CONTRACT`）→ 从当前目录逐级往上找 → `~/.config/qtfounder/<模块>/`。四道都找不到就以退出码 2 报错，**不内置兜底**——静默回退会让人以为阈值生效了。
