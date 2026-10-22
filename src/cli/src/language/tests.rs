@@ -150,6 +150,19 @@ fn sense_prompt_is_on_disk() {
 }
 
 #[test]
+fn deep_root_still_counts_as_in_scope() {
+    // 在 docs/handbook 里跑，rel 不含 docs 前缀；靠祖先把范围补回来，否则静默报「没有命中」
+    let contract = contract();
+    let dir = std::env::temp_dir().join(format!("qfl-deep-{}", std::process::id()));
+    let deep = dir.join("docs/handbook");
+    let _ = std::fs::create_dir_all(&deep);
+    std::fs::write(deep.join("a.md"), "不变式\n").expect("写样本");
+    let files = scan::markdown_files(&deep, &contract, "default");
+    assert_eq!(files.len(), 1, "深层 root 也该在范围内");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn missing_contract_is_an_explicit_error() {
     let error = Contract::load(Some(std::path::Path::new("/nonexistent/c.toml")))
         .expect_err("契约不存在时必须报错");
@@ -172,6 +185,12 @@ fn scope_default_skips_journal() {
         "default 只审规范文档，实际拿到：{:?}",
         default_files
     );
-    assert_eq!(all_files.len(), 2, "all 含流水，实际拿到：{:?}", all_files);
+    // exclude 对所有 scope 生效——all 只是放开 include 前缀，不是把流水也审一遍
+    assert_eq!(
+        all_files.len(),
+        1,
+        "all 仍跳过 data/journal，实际拿到：{:?}",
+        all_files
+    );
     let _ = std::fs::remove_dir_all(&dir);
 }

@@ -554,19 +554,28 @@ pub fn markdown_files(root: &Path, contract: &Contract, scope: &str) -> Vec<Path
         .map(|entry| entry.into_path())
         .filter(|path| path.extension().map(|ext| ext == "md").unwrap_or(false))
         .filter(|path| {
-            // all 是「连流水与报告一起」，排除项只对 default 生效
+            let rel = rel_of(path, Some(root));
+            // exclude 对所有 scope 都生效：all 只是放开 include 前缀，不是把第三方依赖也审一遍
+            !contract.scope.exclude.iter().any(|skip| in_dir(&rel, skip))
+        })
+        .filter(|path| {
             if scope == "all" {
                 return true;
             }
             let rel = rel_of(path, Some(root));
-            !contract.scope.exclude.iter().any(|skip| in_dir(&rel, skip))
-        })
-        .filter(|path| {
-            if includes.iter().any(|item| item.is_empty()) {
+            // root 本身可能在深层（如 docs/handbook）：祖先目录里出现过 include 前缀就算在范围内
+            let ancestor_hit = root
+                .components()
+                .filter_map(|part| part.as_os_str().to_str())
+                .any(|part| {
+                    includes
+                        .iter()
+                        .any(|prefix| !prefix.is_empty() && part == prefix.trim_end_matches('/'))
+                });
+            if ancestor_hit {
                 return true;
             }
-            let rel = rel_of(path, Some(root));
-            includes.iter().any(|prefix| in_dir(&rel, prefix))
+            includes.iter().any(|prefix| !prefix.is_empty() && in_dir(&rel, prefix))
         })
         .collect();
     out.sort();
