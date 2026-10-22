@@ -115,6 +115,38 @@ fn a_changed_contract_changes_the_verdict() {
 }
 
 #[test]
+fn sense_parses_json_verdict() {
+    let verdict = super::sense::parse_verdict("{\"kind\":\"process\",\"why\":\"在记操作\",\"fix\":\"改成对读者说\"}");
+    assert_eq!(verdict.kind, "process");
+    assert_eq!(verdict.fix, "改成对读者说");
+}
+
+#[test]
+fn sense_degrades_when_model_returns_prose() {
+    let verdict = super::sense::parse_verdict("这段像是在记操作，但我没按格式回");
+    assert_eq!(verdict.kind, "unknown");
+}
+
+#[test]
+fn sense_takes_only_voice_and_syntax_segments() {
+    use super::model::{Finding, Kind, Severity};
+    let findings = vec![
+        Finding::new(Kind::Voice, Severity::Suspect, "a.md", 3, "一段内部标识符堆积的话".into(), "x".into()),
+        Finding::new(Kind::Banned, Severity::Error, "b.md", 1, "不变式".into(), "y".into()),
+        Finding::new(Kind::Syntax, Severity::Suspect, "c.md", 9, "一句特别长的话".into(), "z".into()),
+    ];
+    let segments = super::sense::suspect_segments(&findings, 5);
+    assert_eq!(segments.len(), 2, "只挑 voice 与 syntax");
+    assert_eq!(segments[0].text, "一段内部标识符堆积的话");
+}
+
+#[test]
+fn sense_prompt_is_on_disk() {
+    let prompt = super::sense::load_prompt();
+    assert!(prompt.contains("reader") && prompt.contains("process"), "提示词要能读到且含两个判定类");
+}
+
+#[test]
 fn missing_contract_is_an_explicit_error() {
     let error = Contract::load(Some(std::path::Path::new("/nonexistent/c.toml")))
         .expect_err("契约不存在时必须报错");

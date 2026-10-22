@@ -6,6 +6,7 @@
 pub mod contract;
 pub mod model;
 pub mod scan;
+pub mod sense;
 
 #[cfg(test)]
 mod tests;
@@ -39,6 +40,12 @@ pub struct LanguageArgs {
     /// 最多列几个文件
     #[arg(long, default_value_t = 15)]
     pub top: usize,
+    /// 顺带跑语义层：把规则挑出的段送模型判读者视角
+    #[arg(long)]
+    pub sense: bool,
+    /// 语义层最多送判几段（控成本）
+    #[arg(long, default_value_t = 10)]
+    pub limit: usize,
     /// 输出 JSON
     #[arg(long)]
     pub json: bool,
@@ -69,6 +76,31 @@ fn own_usage_hint(contract: &Contract, pool: &PathBuf) -> Vec<String> {
         .collect();
     hits.sort();
     hits
+}
+
+/// 语义层：规则挑段，模型判「这段在不在对读者说话」。返回判为「在记操作」的段数。
+fn run_sense(findings: &[Finding], limit: usize) -> Result<usize, String> {
+    let results = sense::run(findings, limit)?;
+    if results.is_empty() {
+        println!("\n规则没有挑出可疑段：语义层用不上");
+        return Ok(0);
+    }
+    let process = results.iter().filter(|(_, verdict)| verdict.kind == "process").count();
+    println!("\n送判 {} 段；判为「在记操作」{process} 段", results.len());
+    for (segment, verdict) in &results {
+        let mark = match verdict.kind.as_str() {
+            "process" => "操作记录",
+            "reader" => "对读者说话",
+            other => other,
+        };
+        println!("\n  [{mark}] {}:{}", segment.path, segment.line);
+        println!("      {}", segment.text.chars().take(60).collect::<String>());
+        println!("      理由：{}", verdict.why.chars().take(100).collect::<String>());
+        if !verdict.fix.is_empty() {
+            println!("      怎么改：{}", verdict.fix.chars().take(100).collect::<String>());
+        }
+    }
+    Ok(process)
 }
 
 fn json_escape(text: &str) -> String {
@@ -130,6 +162,9 @@ pub fn run(args: &LanguageArgs) -> Result<i32, String> {
     let hint = own_usage_hint(&contract, &args.pool);
     if args.json {
         render_json(&findings, &hint);
+        if args.sense {
+            eprintln!("JSON 模式下语义层不并输出：单独跑一次（不带 --json）看判读");
+        }
         return Ok(if broken.is_empty() { i32::from(!findings.is_empty()) } else { 2 });
     }
 
@@ -170,8 +205,14 @@ pub fn run(args: &LanguageArgs) -> Result<i32, String> {
         );
     }
 
+    let sense_process = if args.sense {
+        run_sense(&findings, args.limit)?
+    } else {
+        0
+    };
+
     if !broken.is_empty() {
         return Ok(2);
     }
-    Ok(i32::from(!findings.is_empty()))
+    Ok(i32::from(!findings.is_empty() || sense_process > 0))
 }
