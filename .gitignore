@@ -7,5 +7,4 @@ src/cli/target
 src/site/dist
 src/site/node_modules
 
-# src/cli/manifests 放代码资源（默认契约随代码走），data 留给生产数据
-!src/cli/manifests/
+# 默认契约随代码走（src/cli/src/code/default-contract.toml），data 留给生产数据
