@@ -1,6 +1,6 @@
 //! 两件事一起验：每层判据能证伪，两个语言提取器给出一致结论。
 
-use super::extract::{python, rust_lang};
+use super::extract::{python, rust_lang, specs, tree_sitter_extractor};
 use super::ir::Facts;
 use super::model::Layer;
 use super::{lexical, module, pragmatic, rules::Rules, syntax};
@@ -200,6 +200,59 @@ fn both_languages_agree_on_every_sample() {
         }
     }
     assert!(mismatched.is_empty(), "两个提取器结论不一致：{mismatched:#?}");
+}
+
+fn facts_go(source: &str) -> Facts {
+    tree_sitter_extractor::extract(source, &specs::go()).expect("Go 样本必须合法")
+}
+
+fn facts_ts(source: &str) -> Facts {
+    tree_sitter_extractor::extract(source, &specs::typescript()).expect("TS 样本必须合法")
+}
+
+fn facts_dart(source: &str) -> Facts {
+    tree_sitter_extractor::extract(source, &specs::dart()).expect("Dart 样本必须合法")
+}
+
+#[test]
+fn go_reports_params_and_nesting() {
+    let source = "package main\n\nfunc handle(data int, b int, c int, d int, e int, g int) int {\n\tif data > 0 {\n\t\tif b > 0 {\n\t\t\tif c > 0 {\n\t\t\t\tif d > 0 {\n\t\t\t\t\treturn 1\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\treturn 0\n}\n";
+    let facts = facts_go(source);
+    let found = kinds(&facts, Layer::Syntax);
+    assert!(found.contains(&"too_many_params"), "{found:?}");
+    assert!(found.contains(&"deep_nesting"), "{found:?}");
+    assert!(kinds(&facts, Layer::Pragmatic).contains(&"uninformative_name"));
+    assert!(kinds(&facts, Layer::Lexical).contains(&"vague_name"));
+}
+
+#[test]
+fn typescript_reports_params_and_nesting() {
+    let source = "function handle(data: number, b: number, c: number, d: number, e: number, g: number): number {\n  if (data > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
+    let facts = facts_ts(source);
+    assert!(kinds(&facts, Layer::Syntax).contains(&"too_many_params"));
+    assert!(kinds(&facts, Layer::Syntax).contains(&"deep_nesting"));
+    assert!(kinds(&facts, Layer::Lexical).contains(&"vague_name"));
+}
+
+#[test]
+fn dart_reports_params_and_nesting() {
+    let source = "int handle(int data, int b, int c, int d, int e, int g) {\n  if (data > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
+    let facts = facts_dart(source);
+    assert!(kinds(&facts, Layer::Syntax).contains(&"too_many_params"));
+    assert!(kinds(&facts, Layer::Syntax).contains(&"deep_nesting"));
+    assert!(kinds(&facts, Layer::Pragmatic).contains(&"uninformative_name"));
+}
+
+#[test]
+fn five_languages_agree_on_the_same_defect() {
+    let go = "package main\n\nfunc handle(a int, b int, c int, d int) int {\n\tif a > 0 {\n\t\tif b > 0 {\n\t\t\tif c > 0 {\n\t\t\t\tif d > 0 {\n\t\t\t\t\treturn 1\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\treturn 0\n}\n";
+    let ts = "function handle(a: number, b: number, c: number, d: number): number {\n  if (a > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
+    let dart = "int handle(int a, int b, int c, int d) {\n  if (a > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
+    for (name, facts) in [("go", facts_go(go)), ("ts", facts_ts(ts)), ("dart", facts_dart(dart))] {
+        let found = all_kinds(&facts);
+        assert!(found.contains(&"deep_nesting"), "{name} 应报深嵌套：{found:?}");
+        assert!(found.contains(&"uninformative_name"), "{name} 应报不诚实函数名：{found:?}");
+    }
 }
 
 #[test]

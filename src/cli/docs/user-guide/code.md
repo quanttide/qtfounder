@@ -32,8 +32,23 @@ cargo run -- code src --rules my-rules.toml
 
 | 扩展名 | 提取器 | 解析方式 |
 |---|---|---|
-| `.rs` | `extract/rust_lang.rs` | `syn` |
-| `.py` | `extract/python.rs` | `tree-sitter-python` |
+| `.rs` | `extract/rust_lang.rs`（专用） | `syn` |
+| `.py` | `extract/python.rs`（专用） | `tree-sitter-python` |
+| `.go` | `extract/tree_sitter_extractor.rs` + `specs::go()` | `tree-sitter-go` |
+| `.ts` / `.mts` / `.cts` | 同上 + `specs::typescript()` | `tree-sitter-typescript` |
+| `.dart` | 同上 + `specs::dart()` | `tree-sitter-dart` |
+
+Go／TypeScript／Dart 共用同一份提取器，差异全在 `specs.rs` 的一份 `LangSpec` 里：函数节点名、名字与参数的下钻路径、嵌套节点集合、赋值节点与左右值字段、行注释前缀。**加这三个语言时判定层一行没改**，这就是这条路走通的证据。
+
+### 三种语言暂时没有的三条验收标准
+
+诚实列出来，别当成「没问题」：
+
+- **调用链长度**——`chains` 留空，需要各语言的调用表达式结构，还没接；
+- **文档复述**——`doc` 留空，注释与函数的关联方式三种语言各异，还没接；
+- **名实不符**——`init_shape` 只记了右值节点类型，还没有构造器名归一。
+
+其余七条（参数数、函数行数、嵌套深度、认知负荷、常量假条件、顶层定义数、名字检查）三种语言都已生效。
 
 判定层不认语言：四层只读 `ir::Facts`。**加一个新语言只需写一个提取器，判定层一行不改**——这是这条路是否成立的唯一验收。
 
