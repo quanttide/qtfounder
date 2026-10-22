@@ -3,6 +3,8 @@
 //! 判的不是语法错、不是风格、不是圈复杂度，而是**下一个维护者能不能看懂**。
 //! 四层判据见 `docs/user-guide/code.md`；阈值全在 `data/rules/code.toml`。
 
+pub mod extract;
+pub mod ir;
 pub mod lexical;
 pub mod model;
 pub mod module;
@@ -52,7 +54,7 @@ fn wanted_layers(requested: &[String]) -> Vec<Layer> {
     requested.iter().filter_map(|name| Layer::parse(name)).collect()
 }
 
-fn rust_files(root: &PathBuf) -> Vec<PathBuf> {
+fn source_files(root: &PathBuf) -> Vec<PathBuf> {
     if root.is_file() {
         return vec![root.clone()];
     }
@@ -60,7 +62,7 @@ fn rust_files(root: &PathBuf) -> Vec<PathBuf> {
         .into_iter()
         .filter_map(Result::ok)
         .map(|entry| entry.into_path())
-        .filter(|path| path.extension().map(|ext| ext == "rs").unwrap_or(false))
+        .filter(|path| extract::supports(path))
         .filter(|path| {
             !path.components().any(|part| {
                 part.as_os_str().to_str().map(|text| SKIP_DIRS.contains(&text)).unwrap_or(false)
@@ -83,7 +85,7 @@ fn collect(root: &PathBuf, rules: &Rules, layers: &[Layer]) -> (Vec<Finding>, Ve
     let mut broken = Vec::new();
     let mut function_names: Vec<String> = Vec::new();
 
-    for path in rust_files(root) {
+    for path in source_files(root) {
         let label = display_path(root, &path);
         let source = match fs::read_to_string(&path) {
             Ok(text) => text,
@@ -92,40 +94,29 @@ fn collect(root: &PathBuf, rules: &Rules, layers: &[Layer]) -> (Vec<Finding>, Ve
                 continue;
             }
         };
-        let syntax = match syn::parse_file(&source) {
-            Ok(parsed) => parsed,
-            Err(err) => {
-                broken.push((label, err.to_string()));
+        // 解析交给语言提取器；判定层只认 Facts，加语言不改这里
+        let facts = match extract::extract(&source, &path) {
+            Some(Ok(facts)) => facts,
+            Some(Err(err)) => {
+                broken.push((label, err));
                 continue;
             }
+            None => continue,
         };
 
         if layers.contains(&Layer::Lexical) {
-            findings.extend(lexical::check(&syntax, &label, rules));
+            findings.extend(lexical::check(&facts, &label, rules));
         }
         if layers.contains(&Layer::Syntax) {
-            findings.extend(syntax::check(&syntax, &label, rules));
+            findings.extend(syntax::check(&facts, &label, rules));
         }
         if layers.contains(&Layer::Structure) {
-            findings.extend(module::check(&syntax, &label, rules));
+            findings.extend(module::check(&facts, &label, rules));
         }
         if layers.contains(&Layer::Pragmatic) {
-            findings.extend(pragmatic::check(&syntax, &label, &source, rules));
+            findings.extend(pragmatic::check(&facts, &label, rules));
         }
-
-        for item in &syntax.items {
-            match item {
-                syn::Item::Fn(function) => function_names.push(function.sig.ident.to_string()),
-                syn::Item::Impl(block) => {
-                    for inner in &block.items {
-                        if let syn::ImplItem::Fn(method) = inner {
-                            function_names.push(method.sig.ident.to_string());
-                        }
-                    }
-                }
-                _ => {}
-            }
-        }
+        function_names.extend(facts.function_names());
     }
 
     if layers.contains(&Layer::Lexical) {

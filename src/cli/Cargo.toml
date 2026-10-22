@@ -14,3 +14,5 @@ proc-macro2 = { version = "1", features = ["span-locations"] }
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
 walkdir = "2"
+tree-sitter = "0.27.1"
+tree-sitter-python = "0.25.0"
