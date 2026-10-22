@@ -4,7 +4,7 @@
 
 ### Added
 
-- CLI `code` 子命令：代码语用检查四层（词汇／句法／语篇／语用），基于 `syn` 解析 Rust 源码。判据来自 Grice 合作原则，每条命中写清违反哪一条；阈值在 `src/cli/data/rules/code.toml`（内嵌，`--rules` 可覆盖），15 个单元测试。`unused_imports` 刻意不判——rustc 已权威负责
+- CLI `code` 子命令：代码语用检查四层（词汇／句法／语篇／语用）。解析与判定分开——判定层只读 `ir::Facts`，Rust 走 `syn`、Python 走 `tree-sitter`，加语言只写提取器；同一个缺陷两种语言的结论由对等测试守住，18 个单元测试。阈值在 `src/cli/data/rules/code.toml`（内嵌，`--rules` 可覆盖）。`unused_imports` 刻意不判——rustc 已权威负责
 
 ### Changed
 
