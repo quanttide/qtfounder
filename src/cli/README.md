@@ -10,6 +10,12 @@ cargo build --release
 cargo test
 ```
 
+## 子命令
+
+| 命令 | 说明 |
+|---|---|
+| `qtfounder code` | 代码语用检查：词汇、句法、语篇、语用四层，判下一个维护者能不能看懂。用法见 [docs/user-guide/code.md](docs/user-guide/code.md) |
+
 ## 添加新功能
 
 1. `src/` 下新建模块（如 `feature.rs`），在 `main.rs` 用 `mod` 声明

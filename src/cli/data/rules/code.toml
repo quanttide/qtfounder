@@ -1,0 +1,33 @@
+# 代码语用的判据与阈值。改口径只改这里，不碰代码。
+
+[lexical]
+# 信息量不足的万能名：叫这些名字的，读者必须回头读代码才知道装的是什么
+vague_names = ["data", "temp", "tmp", "flag", "val", "value", "res", "obj", "info", "thing", "stuff", "foo", "bar"]
+min_len = 3
+# 短名白名单：行业里只有一个读法的缩写，不算「读者要猜」
+whitelist = ["id", "db", "os", "io", "re", "ai", "ui", "tz", "ts", "ok", "ms", "el", "it", "fp", "fs", "fn", "kv", "ex", "ev", "ci", "cd", "to", "of", "is", "in", "on", "by", "or", "up", "i", "j", "k", "x", "y", "z", "a", "b"]
+# 缩写至少两种读法：团队没有唯一约定时读者会读错
+abbreviations = { ctx = "context", cfg = "config", msg = "message", req = "request", resp = "response", err = "error", buf = "buffer", cnt = "count", idx = "index", ptr = "pointer", src = "source", dst = "destination", attr = "attribute", arg = "argument", param = "parameter", impl_ = "implementation", spec = "specification" }
+# 同一个动作多种说法：一组里出现三种以上就报
+synonym_groups = [
+  ["get", "fetch", "load", "read", "query", "retrieve"],
+  ["save", "store", "persist", "write", "put"],
+  ["make", "create", "build", "generate", "construct"],
+  ["delete", "remove", "drop", "clear", "purge"],
+  ["check", "validate", "verify", "ensure", "assert"],
+]
+
+[syntax]
+max_depth = 3
+max_function_lines = 60
+max_params = 5
+max_cognitive = 15
+max_chain = 4
+
+[module]
+max_top_defs = 15
+max_methods = 15
+
+[pragmatic]
+error_msg_min_chars = 12
+missing_why_lines = 25

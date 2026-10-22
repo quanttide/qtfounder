@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- CLI `code` 子命令：代码语用检查四层（词汇／句法／语篇／语用），基于 `syn` 解析 Rust 源码。判据来自 Grice 合作原则，每条命中写清违反哪一条；阈值在 `src/cli/data/rules/code.toml`（内嵌，`--rules` 可覆盖），15 个单元测试。`unused_imports` 刻意不判——rustc 已权威负责
+
 ### Changed
 
 - 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
