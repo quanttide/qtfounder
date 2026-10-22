@@ -47,9 +47,9 @@ qtfounder language [ROOT] [--scope SCOPE] [--kind KIND] [--rules PATH]
 }
 ```
 
-字段口径：`scanned_files` 是这次真审了的文件数——它是 0 就说明范围没设对，别看 `findings` 空着就当通过。
+字段含义：`scanned_files` 是这次真审了的文件数——它是 0 就说明范围没设对，别看 `findings` 空着就当通过。
 
-`verdict` 是判定层给每条命中的结论：`real`（真问题）、`mention`（误报·提及，词被引号包着讨论，不是拿来用）、`lead-in`（误报·标题并入，加粗小标签被当成句子成分）、`quoted-output`（误报·引用输出，抄的是工具自己的「合计 N 处」）。只判这三种机判得了的形态，体裁错配和词的多义仍归人判。
+`verdict` 是复核层给每条命中的结论。四个取值是 `real`（真问题）、`mention`（误报·提及，词被引号包着讨论，不是拿来用）、`lead-in`（误报·标题并入，加粗小标签被当成句子成分）、`quoted-output`（误报·引用输出，抄的是工具自己的「合计 N 处」）。只判这三种机判得了的形态。体裁错配和词的多义仍归人判。
 
 - `kind` 是七层之一，稳定；`severity` 只有 `error` 与 `suspect` 两值，后者是嫌疑不是判决。
 - `excerpt` 是命中处的截断原文，最多九十汉字，用来定位，不要拿来当验收标准。
@@ -67,4 +67,4 @@ qtfounder language [ROOT] [--scope SCOPE] [--kind KIND] [--rules PATH]
 
 ## 五、稳定性承诺
 
-`kind` 的七个取值与 `severity` 的两个取值不变；`excerpt`／`advice` 的措辞会变，别做断言。语义层的判定类只有 `reader`／`process`／`unknown`／`error` 四个，加类算大版本。
+`kind` 的七个取值与 `severity` 的两个取值不变；`excerpt`／`advice` 的措辞会变，别做断言。语义层的判断类只有 `reader`／`process`／`unknown`／`error` 四个，加类算大版本。

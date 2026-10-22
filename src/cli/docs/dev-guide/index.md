@@ -11,7 +11,7 @@
 
 ## `code` 模块
 
-- [加一门语言](code/adding-a-language.md)：只写一份配置，判定层一行不改。
+- [加一门语言](code/adding-a-language.md)：只写一份配置，`判定层`一行不改。
 
 ## `language` 模块
 

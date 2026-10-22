@@ -36,14 +36,14 @@ qtfounder code [ROOT] [--layer LAYER]... [--top N] [--json] [--rules PATH]
       "path": "src/code/mod.rs",
       "line": 183,
       "message": "「run」只说了动作没说对象：读者不知道它处理的是什么、结果长什么样",
-      "principle": "违反质准则（不说没依据的话）",
+      "principle": "违反质准则（不说没理由的话）",
       "advice": "把宾语写进名字，或直接改成说清结果的名字"
     }
   ]
 }
 ```
 
-字段口径：
+字段含义：
 
 - `layer` 是稳定标识，会进脚本；`layer_name` 是给人看的中文名，可能改词，别拿它做匹配。
 - `kind` 是这条验收标准的标识，同一 `kind` 的 `message` 会带不同的具体内容。

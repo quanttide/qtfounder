@@ -14,7 +14,7 @@ use super::contract::{Contract, Syntax as SyntaxConfig};
 use super::model::{Finding, Kind, Severity, Verdict};
 
 static QUOTED_OUTPUT: std::sync::LazyLock<Regex> =
-    std::sync::LazyLock::new(|| Regex::new(r"合计\s*\d+\s*处").expect("引用输出正则"));
+    std::sync::LazyLock::new(|| Regex::new(r"合计\s*\d+\s*处").expect("引用输出正则写坏了：改 QUOTED_OUTPUT，再跑 cargo test"));
 
 const COMMON_ACRONYMS: [&str; 34] = [
     "AI", "LLM", "JSON", "YAML", "URL", "URI", "HTTP", "HTTPS", "API", "SQL", "HTML", "CSS", "PDF", "CSV", "ID",
@@ -120,7 +120,7 @@ fn check_numbers(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
     }
     // 只收「论据数字」：百分比、总数计数。描述用的数字（三四个人、最多十条、第 10 行、
     // 出现 1 次才算类型）不在此列——读者要的是量感，不问出处，要求分母反而啰嗦。
-    let evidence_number = Regex::new(r"\d+(?:\.\d+)?\s*%|\d[\d,]*\s*(?:处|次|条|份|行)").expect("论据数字正则");
+    let evidence_number = Regex::new(r"\d+(?:\.\d+)?\s*%|\d[\d,]*\s*(?:处|次|条|份|行)").expect("论据数字正则写坏了：改 scan.rs 的 evidence_number，再跑 cargo test");
     let denominators: Vec<Regex> = config
         .denominator_patterns
         .iter()
@@ -235,7 +235,7 @@ impl SyntaxPatterns {
         };
         Self {
             nominal: Regex::new(r"[\u{4e00}-\u{9fa5}]{2}(?:度|性|化|式)|[\u{4e00}-\u{9fa5}]{1,4}主义")
-                .expect("名词化正则"),
+                .expect("名词化正则写坏了：改 scan.rs 的 SyntaxPatterns::new，再跑 cargo test"),
             push_to_reader: compile(&config.push_to_reader_patterns),
             count_then_list: compile(&config.count_then_list_patterns),
         }
@@ -523,14 +523,14 @@ fn internal_ids(body: &str) -> HashSet<String> {
     // 从正则里挪到下面的代码判——语义等价，别想着换回 look-ahead。
     let patterns = PATTERNS.get_or_init(|| {
         vec![
-            Regex::new(r"\b[0-9a-f]{7,40}\b").expect("hex"),
-            Regex::new(r"[\w\-]+\.(?:md|py|rs|go|dart|toml|yaml|yml|json|sh|lock)\b").expect("文件名"),
-            Regex::new(r"\b[A-Z]{2,}\d*\b").expect("缩写"),
-            Regex::new(r"[\w.\-]+/[\w./\-]+").expect("路径"),
+            Regex::new(r"\b[0-9a-f]{7,40}\b").expect("十六进制正则写坏了：改 internal_ids，再跑 cargo test"),
+            Regex::new(r"[\w\-]+\.(?:md|py|rs|go|dart|toml|yaml|yml|json|sh|lock)\b").expect("文件名正则写坏了：改 internal_ids，再跑 cargo test"),
+            Regex::new(r"\b[A-Z]{2,}\d*\b").expect("缩写正则写坏了：改 internal_ids，再跑 cargo test"),
+            Regex::new(r"[\w.\-]+/[\w./\-]+").expect("路径正则写坏了：改 internal_ids，再跑 cargo test"),
         ]
     });
-    let backtick = Regex::new(r"`[^`\n]+`").expect("反引号");
-    let chinese_only = Regex::new(r"^[\u{4e00}-\u{9fa5}，。：；、「」（）《》\s]+$").expect("纯中文");
+    let backtick = Regex::new(r"`[^`\n]+`").expect("反引号配对正则写坏了：改 internal_ids，再跑 cargo test");
+    let chinese_only = Regex::new(r"^[\u{4e00}-\u{9fa5}，。：；、「」（）《》\s]+$").expect("纯中文判定正则写坏了：改 internal_ids，再跑 cargo test");
 
     // 反引号里如果全是中文，那是术语强调（`正本`、`验收标准`），不是内部代号
     let mut ids: HashSet<String> = HashSet::new();
@@ -665,7 +665,7 @@ pub fn check_file(path: &Path, contract: &Contract, root: Option<&Path>) -> Vec<
     findings
 }
 
-/// 判定层：命中的这一条，是规则本身导致的误报，还是要改的真问题。
+/// 复核层：命中的这一条，是规则本身导致的误报，还是要改的真问题。
 /// 只判机判得了的三种形态；判不了的不在这里假装判过。
 fn judge(finding: &mut Finding, line: &str) {
     let verdict = match finding.kind {
@@ -689,8 +689,22 @@ fn quoted_word(advice: &str) -> Option<&str> {
     Some(&rest[..end])
 }
 
+/// 词在行里只当「被引的东西」出现：包在「」或反引号里，或作为反引号内术语的一部分
+/// （`判定层` 这种组件名，词本身没被单独拿来用）。
 fn is_quoted(line: &str, word: &str) -> bool {
-    line.contains(&format!("「{word}」")) || line.contains(&format!("`{word}`"))
+    if line.contains(&format!("「{word}」")) || line.contains(&format!("`{word}`")) {
+        return true;
+    }
+    let mut rest = line;
+    while let Some(open) = rest.find('`') {
+        let after = &rest[open + 1..];
+        let Some(close) = after.find('`') else { break };
+        if after[..close].contains(word) {
+            return true;
+        }
+        rest = &after[close + 1..];
+    }
+    false
 }
 
 /// 扫描范围：`default` 审全量但跳过 `[scope] exclude`（流水、第三方依赖）；`all` 连 exclude 也不放过。

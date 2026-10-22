@@ -65,7 +65,7 @@ impl Severity {
     }
 }
 
-/// 命中之后的判定：这一条是规则本身导致的误报，还是要改的真问题。
+/// 复核结论：这一条是规则本身导致的误报，还是要改的真问题。
 /// 只收机判得了的三种误报形态；体裁错配、词的多义这类判不了，仍归人判。
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Verdict {
@@ -134,7 +134,7 @@ impl Finding {
         }
     }
 
-    /// 判定层标一次：这条是规则导致的误报，还是真问题。
+    /// 复核层标一次：这条是规则导致的误报，还是真问题。
     pub fn mark(&mut self, verdict: Verdict) {
         self.verdict = verdict;
     }

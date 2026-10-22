@@ -152,10 +152,10 @@ fn json_escape(text: &str) -> String {
     out
 }
 
-/// 判定层的汇总：真问题几处、规则误报几处、各是什么形态。
+/// 复核的汇总：真问题几处、规则误报几处、各是什么形态。
 fn judge_summary(findings: &[Finding]) -> String {
     let real = findings.iter().filter(|f| !f.verdict.is_false_positive()).count();
-    let mut lines = vec![format!("判定：真问题 {real} 处，规则误报 {} 处", findings.len() - real)];
+    let mut lines = vec![format!("复核：真问题 {real} 处，规则误报 {} 处", findings.len() - real)];
     for (label, count) in [
         ("提及不是使用", Verdict::Mention),
         ("标题并入句子", Verdict::LeadIn),
