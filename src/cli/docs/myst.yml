@@ -1,0 +1,29 @@
+# See docs at: https://mystmd.org
+version: 1
+project:
+  title: qtfounder CLI 文档
+  description: code 与 language 两个子命令的用户指南、开发指南与接口参考
+  toc:
+    - file: index.md
+    - title: 用户指南
+      children:
+        - file: user-guide/code.md
+        - file: user-guide/language.md
+    - title: 开发指南
+      children:
+        - file: dev-guide/index.md
+        - file: dev-guide/architecture.md
+        - file: dev-guide/adding-a-check.md
+        - file: dev-guide/code/adding-a-language.md
+        - file: dev-guide/language/sense-layer.md
+        - file: dev-guide/testing.md
+        - file: dev-guide/roadmap.md
+    - title: 接口参考
+      children:
+        - file: api-reference/code.md
+        - file: api-reference/language.md
+site:
+  template: book-theme
+  options:
+    # URL 保留目录结构，否则 code.md 与 user-guide/code.md 会撞成 code-1
+    folders: true

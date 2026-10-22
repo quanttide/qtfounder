@@ -1,0 +1,110 @@
+# 发布 CLI 文档：src/cli/docs/ 用 MyST 构建成静态站，推到官网桶的 /qtfounder-cli/ 前缀。
+#
+# 为什么挂在 founder.quanttide.com 而不是 docs.quanttide.com：
+#   docs.quanttide.com 放 data/ 与 docs/ 这类纯文档仓；平台的代码跟随自己的域名发，
+#   CLI 属于 founder 这一套（apps/qtfounder），所以走官网域名下的子路径。
+#
+# 产物：founder.quanttide.com/qtfounder-cli/
+#   - 与官网同一个桶（qtfounder-site）与同一个 CDN 分配，不新增证书、DNS 与 CDN；
+#   - 只按前缀区分，官网 SPA 在桶根，文档站不进它的路由。
+#
+# 缓存：静态资源长缓存，HTML 与入口不缓存——发版后读者拿到的必须是最新页面。
+#
+# 所需 secrets（与 deploy-site.yml 同一对）：
+#   ALIYUN_ACCESS_KEY_ID / ALIYUN_ACCESS_KEY_SECRET
+
+name: Deploy CLI Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/cli/docs/**'
+      - '.github/workflows/deploy-cli-docs.yml'
+
+concurrency:
+  group: deploy-cli-docs
+  cancel-in-progress: true
+
+env:
+  OSS_BUCKET: qtfounder-site
+  OSS_ENDPOINT: oss-cn-hangzhou.aliyuncs.com
+  DOC_PREFIX: qtfounder-cli
+  CDN_DOMAIN: founder.quanttide.com
+  # MyST 按 BASE_URL 生成站内链接与资源路径，必须与桶里的前缀一致
+  BASE_URL: /qtfounder-cli
+
+jobs:
+  build-and-deploy:
+    name: Build MyST Docs & Deploy to OSS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install MyST Markdown
+        run: npm install --global mystmd@1.10.1
+
+      - name: Build HTML
+        working-directory: src/cli/docs
+        run: myst build --html
+
+      - name: Verify build output
+        run: test -f src/cli/docs/_build/html/index.html
+
+      - name: Setup ossutil
+        uses: manyuanrong/setup-ossutil@v3.0
+        with:
+          endpoint: ${{ env.OSS_ENDPOINT }}
+          access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+
+      # 先清空旧产物：删掉的页面不该继续能被访问到
+      - name: Clean previous docs
+        run: ossutil rm oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }}/ -r -f || true
+
+      # 静态资源（_build/html/_static、assets 之类）长缓存
+      - name: Upload static（长缓存）
+        working-directory: src/cli/docs
+        run: |
+          ossutil cp ./_build/html/ oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }}/ -r -f \
+            --exclude "*.html" \
+            --meta "Cache-Control:public,max-age=31536000"
+
+      # 页面与入口不缓存：否则发版后读者看到的是旧 HTML
+      - name: Upload pages（no-cache）
+        working-directory: src/cli/docs
+        run: |
+          ossutil cp ./_build/html/ oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }}/ -r -f \
+            --include "*.html" \
+            --meta "Cache-Control:no-cache"
+
+      # OSS 静态托管的默认首页只在桶根生效，子路径必须显式给一份无扩展名 key
+      - name: Upload entry（/qtfounder-cli/ 与 /qtfounder-cli）
+        working-directory: src/cli/docs
+        run: |
+          ossutil cp ./_build/html/index.html oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }}/index.html -f \
+            --meta "Cache-Control:no-cache" --meta "Content-Type:text/html"
+          ossutil cp ./_build/html/index.html oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }} -f \
+            --meta "Cache-Control:no-cache" --meta "Content-Type:text/html"
+
+      - name: Refresh CDN
+        run: |
+          pip install aliyun-python-sdk-cdn
+          python -c "
+          from aliyunsdkcore.client import AcsClient
+          from aliyunsdkcdn.request.v20180510.RefreshObjectCachesRequest import RefreshObjectCachesRequest
+          import os
+          cli = AcsClient(os.environ['ALIYUN_ACCESS_KEY_ID'], os.environ['ALIYUN_ACCESS_KEY_SECRET'], 'cn-hangzhou')
+          req = RefreshObjectCachesRequest()
+          req.set_ObjectPath('https://${{ env.CDN_DOMAIN }}/${{ env.DOC_PREFIX }}/')
+          req.set_ObjectType('Directory')
+          cli.do_action_with_exception(req)
+          "
+        env:
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}

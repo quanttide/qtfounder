@@ -7,4 +7,7 @@ src/cli/target
 src/site/dist
 src/site/node_modules
 
+# MyST 构建产物（CLI 文档站）
+src/cli/docs/_build
+
 # 默认契约随代码走（src/cli/src/code/default-contract.toml），data 留给生产数据
