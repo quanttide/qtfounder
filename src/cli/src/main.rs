@@ -6,6 +6,7 @@
 //! 3. 把该功能的依赖加回 `Cargo.toml`
 
 mod code;
+mod language;
 
 use clap::{Parser, Subcommand};
 
@@ -21,11 +22,20 @@ struct Cli {
 enum CliCommand {
     /// 代码语用检查：词汇、句法、语篇、语用四层
     Code(code::CodeArgs),
+    /// 语言检查：落点、术语、数字、句法、表格、语用七层
+    Language(language::LanguageArgs),
 }
 
 fn main() {
     match Cli::parse().command {
         Some(CliCommand::Code(args)) => match code::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Language(args)) => match language::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

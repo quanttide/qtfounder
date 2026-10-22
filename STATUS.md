@@ -14,7 +14,7 @@
 | `src/site/` | 创始人官网（React + Vite） | v0.1.0-beta.1 | ✅ 从"作品集"转向"创作现场"（时间线/矩阵/改稿轨迹） |
 | `src/studio/` | 创始人工作台（Flutter） | 1.0.0+1 | 🔶 骨架：业务代码已归档，仅保留入口与壳 |
 | `src/provider/` | 创作数据 API（Go） | v0.1.0 | ✅ chapters/memory/health 三 API，真实数据源测试通过 |
-| `src/cli/` | CLI 工具（Rust） | — | 🔶 首个子命令 `code`（代码语用检查四层，15 测试）已落地；journal／submodule／release 见路线图 |
+| `src/cli/` | CLI 工具（Rust） | — | 🔶 两个子命令已落地：`code`（代码四层）、`language`（文字七层，与原 `qfl` 对等）；journal／submodule／release 见路线图 |
 
 ## 数据源
 
