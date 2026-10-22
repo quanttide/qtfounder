@@ -58,7 +58,7 @@ cargo run -- code src --rules my-rules.toml
 
 ## 三、阈值在哪改
 
-内嵌默认表在 `src/cli/data/rules/code.toml`（编译进二进制），`--rules` 可覆盖。
+内嵌默认表在 `src/cli/data/rules/default-contract.toml`（编译进二进制），`--rules` 可覆盖。
 
 - `[lexical]` —— 万能名词表、短名长度、白名单、缩写表、同义组；
 - `[syntax]` —— 五个阈值：嵌套、行数、参数、认知负荷、链长；

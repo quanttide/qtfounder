@@ -5,8 +5,8 @@ use std::path::Path;
 
 use serde::Deserialize;
 
-/// 内嵌默认规则表：装成二进制后不必附带外部文件。
-const DEFAULT_RULES: &str = include_str!("../../data/rules/code.toml");
+/// 默认契约：编译进二进制，装出来的命令不依赖外部文件。
+const DEFAULT_RULES: &str = include_str!("../../data/rules/default-contract.toml");
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rules {

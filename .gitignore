@@ -6,3 +6,6 @@ node_modules
 src/cli/target
 src/site/dist
 src/site/node_modules
+
+# src/cli/data 是代码资源（默认契约随代码走），不要忽略
+!src/cli/data/
