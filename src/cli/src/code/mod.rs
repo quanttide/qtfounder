@@ -45,7 +45,9 @@ pub struct CodeArgs {
     pub rules: Option<PathBuf>,
 }
 
-const SKIP_DIRS: [&str; 5] = ["target", ".git", "node_modules", "build", "dist"];
+// 归档代码与示例代码不审：2026-10-22 实测，全仓四百二十二处里三百一十三处落在 data/archive 与 examples。
+// 语言层早就跳过这两处，代码层原来不跳，两个子命令对同一批目录的态度不一致。
+const SKIP_DIRS: [&str; 7] = ["target", ".git", "node_modules", "build", "dist", "archive", "examples"];
 
 fn wanted_layers(requested: &[String]) -> Vec<Layer> {
     if requested.is_empty() {

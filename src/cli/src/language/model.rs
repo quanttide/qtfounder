@@ -65,6 +65,44 @@ impl Severity {
     }
 }
 
+/// 命中之后的判定：这一条是规则本身导致的误报，还是要改的真问题。
+/// 只收机判得了的三种误报形态；体裁错配、词的多义这类判不了，仍归人判。
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Verdict {
+    /// 真问题
+    Real,
+    /// 提及，不是使用：词被引号包着讨论（「判据」→ 验收标准 这种段落）
+    Mention,
+    /// 规则切分错：加粗小标题被并进了句子
+    LeadIn,
+    /// 引用工具自己的输出（「合计 64 处（词汇层 9…）」）
+    QuotedOutput,
+}
+
+impl Verdict {
+    pub fn key(self) -> &'static str {
+        match self {
+            Verdict::Real => "real",
+            Verdict::Mention => "mention",
+            Verdict::LeadIn => "lead-in",
+            Verdict::QuotedOutput => "quoted-output",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Verdict::Real => "真问题",
+            Verdict::Mention => "误报·提及",
+            Verdict::LeadIn => "误报·标题并入",
+            Verdict::QuotedOutput => "误报·引用输出",
+        }
+    }
+
+    pub fn is_false_positive(self) -> bool {
+        self != Verdict::Real
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Finding {
     pub kind: Kind,
@@ -73,6 +111,7 @@ pub struct Finding {
     pub line: usize,
     pub excerpt: String,
     pub advice: String,
+    pub verdict: Verdict,
 }
 
 impl Finding {
@@ -91,6 +130,12 @@ impl Finding {
             line,
             excerpt,
             advice,
+            verdict: Verdict::Real,
         }
+    }
+
+    /// 判定层标一次：这条是规则导致的误报，还是真问题。
+    pub fn mark(&mut self, verdict: Verdict) {
+        self.verdict = verdict;
     }
 }

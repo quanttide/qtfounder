@@ -78,6 +78,12 @@ pub struct Syntax {
     pub max_nominal: usize,
     #[serde(default)]
     pub max_paragraph_chars: usize,
+    /// 「由你定」这类把结论推回给读者的收尾。值里写正则。
+    #[serde(default)]
+    pub push_to_reader_patterns: Vec<String>,
+    /// 「三件事：A、B、C」这类先报件数再罗列。值里写正则。
+    #[serde(default)]
+    pub count_then_list_patterns: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]

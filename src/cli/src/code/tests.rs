@@ -1,4 +1,4 @@
-//! 两件事一起验：每层判据能证伪，两个语言提取器给出一致结论。
+//! 两件事一起验：每层验收标准能证伪，两个语言提取器给出一致结论。
 
 use super::extract::{python, rust_lang, specs, tree_sitter_extractor};
 use super::ir::Facts;

@@ -6,6 +6,7 @@
 //! 3. 把该功能的依赖加回 `Cargo.toml`
 
 mod code;
+mod health;
 mod language;
 
 use clap::{Parser, Subcommand};
@@ -24,6 +25,8 @@ enum CliCommand {
     Code(code::CodeArgs),
     /// 语言检查：落点、术语、数字、句法、表格、语用七层
     Language(language::LanguageArgs),
+    /// 健康检查：从会话库看消耗来自哪里、落在助手哪个环节
+    Health(health::HealthArgs),
 }
 
 fn main() {
@@ -36,6 +39,13 @@ fn main() {
             }
         },
         Some(CliCommand::Language(args)) => match language::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Health(args)) => match health::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

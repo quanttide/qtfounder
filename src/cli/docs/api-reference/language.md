@@ -9,7 +9,7 @@ qtfounder language [ROOT] [--scope SCOPE] [--kind KIND] [--rules PATH]
 
 **ROOT**：目录或单文件，缺省当前目录。递归找 `.md`。
 
-**`--scope`**：`default`（只审规范文档）或 `all`（连流水与报告一起）。缺省 `default`。排除目录与必审目录都在契约的 `[scope]` 段。
+**`--scope`**：`default` 审 root 下全部 `.md`，只跳过契约 `[scope] exclude` 里的流水、报告、归档、示例与第三方依赖；`all` 连 exclude 也不放过。缺省 `default`。审哪些文件由 ROOT 决定，工具不再内嵌目录白名单。
 
 **`--kind`**：`placement`／`banned`／`required`／`numbers`／`syntax`／`table`／`voice`，只报一类。
 
@@ -31,10 +31,12 @@ qtfounder language [ROOT] [--scope SCOPE] [--kind KIND] [--rules PATH]
 
 ```json
 {
+  "scanned_files": 121,
   "findings": [
     {
       "kind": "voice",
       "severity": "suspect",
+      "verdict": "real",
       "path": "docs/gallery/x.md",
       "line": 42,
       "excerpt": "这一段有六个内部标识符却没有一处对读者说话",
@@ -45,7 +47,9 @@ qtfounder language [ROOT] [--scope SCOPE] [--kind KIND] [--rules PATH]
 }
 ```
 
-字段口径：
+字段口径：`scanned_files` 是这次真审了的文件数——它是 0 就说明范围没设对，别看 `findings` 空着就当通过。
+
+`verdict` 是判定层给每条命中的结论：`real`（真问题）、`mention`（误报·提及，词被引号包着讨论，不是拿来用）、`lead-in`（误报·标题并入，加粗小标签被当成句子成分）、`quoted-output`（误报·引用输出，抄的是工具自己的「合计 N 处」）。只判这三种机判得了的形态，体裁错配和词的多义仍归人判。
 
 - `kind` 是七层之一，稳定；`severity` 只有 `error` 与 `suspect` 两值，后者是嫌疑不是判决。
 - `excerpt` 是命中处的截断原文，最多九十汉字，用来定位，不要拿来当验收标准。

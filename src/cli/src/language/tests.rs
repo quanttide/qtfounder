@@ -1,4 +1,4 @@
-//! 七层各一条真样本，加契约查找。判据要能证伪。
+//! 七层各一条真样本，加契约查找。验收标准要能证伪。
 
 use super::contract::Contract;
 use super::model::Kind;
@@ -6,6 +6,20 @@ use super::scan;
 
 fn contract() -> Contract {
     Contract::load(None).expect("仓里应能找到默认契约")
+}
+
+fn verdicts(text: &str) -> Vec<&'static str> {
+    let contract = contract();
+    let dir = std::env::temp_dir().join(format!("qfl-verdict-{}", std::process::id()));
+    let _ = std::fs::create_dir_all(&dir);
+    let path = dir.join(format!("v-{}.md", text.len()));
+    std::fs::write(&path, text).expect("写样本");
+    let out = scan::check_file(&path, &contract, Some(&dir))
+        .into_iter()
+        .map(|finding| finding.verdict.key())
+        .collect();
+    let _ = std::fs::remove_file(&path);
+    out
 }
 
 fn kinds(text: &str, rel: &str) -> Vec<&'static str> {
@@ -51,16 +65,21 @@ fn number_without_denominator_is_reported() {
 }
 
 #[test]
-fn denominator_patterns_are_known_broken_in_both_implementations() {
-    // 契约里 `denominator_patterns` 写的是 '占\\s*\\d' 这种（TOML 字面量 + regex 双层转义），
-    // 编译出来要求字面反斜杠，两边一致地不生效。这里把现状钉住：谁要修契约，先看这条。
-    let contract = contract();
-    let broken = contract
-        .numbers
-        .denominator_patterns
-        .iter()
-        .any(|pattern| pattern.contains("\\\\s"));
-    assert!(broken, "契约若已修成单反斜杠，请把这条测试改成「有分母就通过」");
+fn denominator_patterns_actually_match() {
+    // 2026-10-22 修过：契约里原来写 '占\\s*\\d'（TOML 字面量 + 正则双层转义），
+    // 编译出来要求字面反斜杠，七条分母模式一条都不生效。现在固定住「有分母就放过」。
+    assert!(!kinds("返工 22 处，占 37%\n", "").contains(&"numbers"));
+    assert!(!kinds("2026-10-22 实测：误报 8 处\n", "").contains(&"numbers"));
+}
+
+#[test]
+fn descriptive_numbers_are_not_evidence() {
+    // 估算、区间、阈值、上限、序数都是描述用的数字，不该要求分母
+    assert!(!kinds("桌边三四个工作人员，人均 50–60 元。\n", "").contains(&"numbers"));
+    assert!(!kinds("小红书最多 10 个标签，抖音最多 5 个。\n", "").contains(&"numbers"));
+    assert!(!kinds("第 10 行报了一次，≥2 次才算类型。\n", "").contains(&"numbers"));
+    // 但论据数字仍然要出处
+    assert!(kinds("返工 22 处。\n", "").contains(&"numbers"));
 }
 
 #[test]
@@ -72,6 +91,18 @@ fn threshold_is_not_a_statistic() {
 fn long_sentence_is_reported() {
     let long = "字".repeat(120);
     assert!(kinds(&format!("{long}\n"), "").contains(&"syntax"));
+}
+
+#[test]
+fn conclusion_pushed_back_to_reader_is_reported() {
+    assert!(kinds("先跑一遍再决定补不补，改不改由你定。\n", "").contains(&"syntax"));
+}
+
+#[test]
+fn count_word_is_reported() {
+    assert!(kinds("工具判不了三件事：体裁、词的多义、某句是引述还是自述。\n", "").contains(&"syntax"));
+    // 给事情命名也报：他说这类写法全是我写的，他讨厌
+    assert!(kinds("搬迁收尾三件事、重写前先读现文件。\n", "").contains(&"syntax"));
 }
 
 #[test]
@@ -182,15 +213,44 @@ fn scope_default_skips_journal() {
     assert_eq!(
         default_files.len(),
         1,
-        "default 只审规范文档，实际拿到：{:?}",
+        "default 走 exclude，跳过 data/journal，实际拿到：{:?}",
         default_files
     );
-    // exclude 对所有 scope 生效——all 只是放开 include 前缀，不是把流水也审一遍
     assert_eq!(
         all_files.len(),
-        1,
-        "all 仍跳过 data/journal，实际拿到：{:?}",
+        2,
+        "all 连 exclude 也不放过，实际拿到：{:?}",
         all_files
     );
     let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn files_outside_docs_prefix_are_audited() {
+    // categories/quanttide-handbook 那种布局：正文在 domains/ 与 default/，不在 docs/ 下。
+    // 默认契约不填 include_default，所以这里该审到两个文件，而不是静默报「没有命中」。
+    let contract = contract();
+    let dir = std::env::temp_dir().join(format!("qfl-layout-{}", std::process::id()));
+    let _ = std::fs::create_dir_all(dir.join("domains/human"));
+    let _ = std::fs::create_dir_all(dir.join("default/company"));
+    std::fs::write(dir.join("domains/human/a.md"), "不变式\n").expect("写样本");
+    std::fs::write(dir.join("default/company/b.md"), "不变式\n").expect("写样本");
+    let files = scan::markdown_files(&dir, &contract, "default");
+    assert_eq!(files.len(), 2, "domains/ 与 default/ 下的文件也该在范围内：{:?}", files);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn judgment_layer_separates_rule_noise_from_real_problems() {
+    // 提及不是使用：词被引号包着讨论
+    assert!(verdicts("- 词表里「接手人」该改成读者。\n").contains(&"mention"));
+    // 引用工具自己的输出
+    assert!(verdicts("合计 64 处（词汇层 9，句法层 27）\n").contains(&"quoted-output"));
+    // 加粗小标签被并进句子
+    assert!(
+        verdicts("**执行自己的想法**：让他按自己的思路做一次，观察他的做法与他的结果，看他的反应。\n")
+            .contains(&"lead-in")
+    );
+    // 真问题不带误报标
+    assert!(!verdicts("改了 22 处。\n").iter().any(|v| *v != "real"));
 }

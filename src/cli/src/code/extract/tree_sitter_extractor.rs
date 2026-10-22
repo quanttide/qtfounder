@@ -154,7 +154,7 @@ fn function_facts(node: Node<'_>, source: &str, spec: &LangSpec) -> (FunctionFac
         max_depth_line: if depth.depth_line == 0 { start } else { depth.depth_line },
         cognitive: depth.cognitive,
         has_comment: false,
-        chains: Vec::new(), // 调用链判据暂只对 Rust／Python 生效
+        chains: Vec::new(), // 调用链验收标准暂只对 Rust／Python 生效
         error_messages: Vec::new(),
     };
     (facts, messages)

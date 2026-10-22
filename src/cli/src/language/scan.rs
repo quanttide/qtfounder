@@ -1,7 +1,7 @@
 //! 七层检查：落点、自造术语、体系词、数字、句法、表格、语用。
 //!
-//! 判据只有能机判的才进来。逻辑跳跃、这句话是谁写的、这篇该放哪层——判不了，不进这里；
-//! 误报多了判据就被忽略。
+//! 验收标准只有能机判的才进来。逻辑跳跃、这句话是谁写的、这篇该放哪层——判不了，不进这里；
+//! 误报多了验收标准就被忽略。
 
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -10,8 +10,11 @@ use std::path::{Path, PathBuf};
 use regex::Regex;
 use walkdir::WalkDir;
 
-use super::contract::Contract;
-use super::model::{Finding, Kind, Severity};
+use super::contract::{Contract, Syntax as SyntaxConfig};
+use super::model::{Finding, Kind, Severity, Verdict};
+
+static QUOTED_OUTPUT: std::sync::LazyLock<Regex> =
+    std::sync::LazyLock::new(|| Regex::new(r"合计\s*\d+\s*处").expect("引用输出正则"));
 
 const COMMON_ACRONYMS: [&str; 34] = [
     "AI", "LLM", "JSON", "YAML", "URL", "URI", "HTTP", "HTTPS", "API", "SQL", "HTML", "CSS", "PDF", "CSV", "ID",
@@ -32,6 +35,18 @@ fn rel_of(path: &Path, root: Option<&Path>) -> String {
 
 fn in_dir(rel: &str, prefix: &str) -> bool {
     rel == prefix || rel.starts_with(&format!("{}/", prefix.trim_end_matches('/')))
+}
+
+/// exclude 条目：带 `/` 的按路径前缀算，不带的按同名文件或目录算（任意层级）。
+/// 这样 `CHANGELOG.md`、`node_modules` 这类通用约定写一条就够，不会漏掉嵌套的那几份。
+fn is_excluded(rel: &str, contract: &Contract) -> bool {
+    contract.scope.exclude.iter().any(|skip| {
+        if skip.contains('/') {
+            in_dir(rel, skip)
+        } else {
+            rel.split('/').any(|part| part == skip)
+        }
+    })
 }
 
 /// 落点：文件放错了层。
@@ -100,14 +115,12 @@ fn check_required(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
 /// 数字：嫌疑不是判决——分母与来源都缺才报。
 fn check_numbers(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
     let config = &contract.numbers;
-    if config.denominator_patterns.is_empty() {
+    if config.denominator_patterns.is_empty() && config.source_words.is_empty() {
         return Vec::new();
     }
-    let number = Regex::new(r"(\d+(?:\.\d+)?)\s*%").expect("百分比正则");
-    let count = Regex::new(r"(\d[\d,]*)\s*(?:处|次|条|份|行)").expect("计数正则");
-    // 阈值与序数不是统计量：`≥2 次`、`第 2 次浮出`、`N 次阈值` 都不需要分母
-    let non_stat = Regex::new(r"(?:[≥≤<>＞＜]\s*\d+|第\s*\d+\s*(?:次|步|轮|阶段)|\d+\s*次(?:阈值|为限|以内|以上))")
-        .expect("非统计正则");
+    // 只收「论据数字」：百分比、总数计数。描述用的数字（三四个人、最多十条、第 10 行、
+    // 出现 1 次才算类型）不在此列——读者要的是量感，不问出处，要求分母反而啰嗦。
+    let evidence_number = Regex::new(r"\d+(?:\.\d+)?\s*%|\d[\d,]*\s*(?:处|次|条|份|行)").expect("论据数字正则");
     let denominators: Vec<Regex> = config
         .denominator_patterns
         .iter()
@@ -116,14 +129,17 @@ fn check_numbers(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
 
     let mut out = Vec::new();
     for (lineno, line) in text.lines().enumerate() {
-        let stripped = non_stat.replace_all(line, "");
-        if !number.is_match(&stripped) && !count.is_match(&stripped) {
+        let hits: Vec<&str> = evidence_number
+            .find_iter(line)
+            .filter(|found| !is_descriptive_number(line, found.start(), found.end()))
+            .map(|found| found.as_str())
+            .collect();
+        if hits.is_empty() {
             continue;
         }
-        if denominators.iter().any(|pattern| pattern.is_match(line)) {
-            continue;
-        }
-        if config.source_words.iter().any(|word| line.contains(word.as_str())) {
+        let sourced = denominators.iter().any(|pattern| pattern.is_match(line))
+            || config.source_words.iter().any(|word| line.contains(word.as_str()));
+        if sourced {
             continue;
         }
         out.push(Finding::new(
@@ -132,25 +148,41 @@ fn check_numbers(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
             rel,
             lineno + 1,
             line.trim().chars().take(90).collect(),
-            "数字没有分母也没有来源：补「共 N」「占 N/M」或实测出处，否则读者无从复核".to_string(),
+            format!(
+                "「{}」是论据数字，却没有分母也没有出处：补「共 N」「占 N/M」、文件:行、实测日期，否则读者无从复核",
+                hits.join("」「")
+            ),
         ));
     }
     out
 }
 
+/// 描述用的数字：阈值、上限、序数、估算、区间。这些不是论据，不该要求分母。
+fn is_descriptive_number(line: &str, start: usize, end: usize) -> bool {
+    let before: String = line[..start].chars().rev().take(8).collect();
+    let before: String = before.chars().rev().collect();
+    // 「第 10 行」中间常有空格，去掉尾空格再比对
+    let before = before.trim_end();
+    let after: String = line[end..].chars().take(3).collect();
+    // 前面的限定词：多字的按包含算（「最多展示 10 条」），单字的按紧邻算（「约 20 处」）
+    const LEAD_WORDS: [&str; 8] = ["最多", "至少", "至多", "不超过", "大概", "不到", "只", "才"];
+    const LEAD_CHARS: [&str; 7] = ["约", "近", "第", "≥", "≤", "<", ">"];
+    // 后面的模糊词与区间：多、来、左右、上下、以上/以下/以内、区间号，以及阈值句式的「只算／才算」
+    const TAILS: [&str; 15] = [
+        "多", "来", "左右", "上下", "以上", "以下", "以内", "–", "-", "~", "只算", "才算", "就算", "即算", "封顶",
+    ];
+    LEAD_WORDS.iter().any(|lead| before.contains(lead))
+        || LEAD_CHARS.iter().any(|lead| before.ends_with(lead))
+        || TAILS.iter().any(|tail| after.starts_with(tail))
+}
+
 /// 句法层：句子太长、长定语链、一逗到底、名词化堆叠、段落过长。0 = 关闭。
 fn check_syntax(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
     let config = &contract.syntax;
-    if config.max_sentence_chars == 0
-        && config.max_de_chain == 0
-        && config.max_commas == 0
-        && config.max_nominal == 0
-        && config.max_paragraph_chars == 0
-    {
+    if syntax_is_off(config) {
         return Vec::new();
     }
-    let nominal = Regex::new(r"[\u{4e00}-\u{9fa5}]{2}(?:度|性|化|式)|[\u{4e00}-\u{9fa5}]{1,4}主义").expect("名词化正则");
-
+    let patterns = SyntaxPatterns::new(config);
     let mut out = Vec::new();
     let mut in_code = false;
     let mut in_front = false;
@@ -168,84 +200,176 @@ fn check_syntax(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
         if in_code || in_front || trimmed.starts_with('|') || trimmed.starts_with('#') || trimmed.is_empty() {
             continue;
         }
-        let paragraph_hanzi = hanzi_count(trimmed);
-        if config.max_paragraph_chars > 0 && paragraph_hanzi > config.max_paragraph_chars {
-            out.push(Finding::new(
-                Kind::Syntax,
-                Severity::Suspect,
-                rel,
-                lineno + 1,
-                trimmed.chars().take(70).collect(),
-                format!("这一段 {paragraph_hanzi} 汉字（上限 {}）：拆成几段，每段一个意思", config.max_paragraph_chars),
-            ));
+        if let Some(finding) = long_paragraph(config, rel, lineno, trimmed) {
+            out.push(finding);
         }
         for sentence in raw.split(['。', '！', '？']) {
-            let body = sentence.trim();
-            if body.is_empty() {
-                continue;
-            }
-            let count = hanzi_count(body);
-            let excerpt: String = body.chars().take(70).collect();
-            if config.max_sentence_chars > 0 && count > config.max_sentence_chars {
-                let severity = if config.max_sentence_error_chars > 0 && count > config.max_sentence_error_chars {
-                    Severity::Error
-                } else {
-                    Severity::Suspect
-                };
-                out.push(Finding::new(
-                    Kind::Syntax,
-                    severity,
-                    rel,
-                    lineno + 1,
-                    excerpt.clone(),
-                    format!(
-                        "一句 {count} 汉字（他在 {} 字以上只占 7%）：切成两句，或把并列项改成列表",
-                        config.max_sentence_chars
-                    ),
-                ));
-            }
-            if config.max_de_chain > 0 && body.matches('的').count() > config.max_de_chain {
-                out.push(Finding::new(
-                    Kind::Syntax,
-                    Severity::Suspect,
-                    rel,
-                    lineno + 1,
-                    excerpt.clone(),
-                    format!(
-                        "一句里「的」{} 个（上限 {}）：定语链太长，拆成两句或改成短定语",
-                        body.matches('的').count(),
-                        config.max_de_chain
-                    ),
-                ));
-            }
-            if config.max_commas > 0 && body.matches('，').count() > config.max_commas {
-                out.push(Finding::new(
-                    Kind::Syntax,
-                    Severity::Suspect,
-                    rel,
-                    lineno + 1,
-                    excerpt.clone(),
-                    format!(
-                        "一句里逗号 {} 个（上限 {}）：一逗到底，断句或改列表",
-                        body.matches('，').count(),
-                        config.max_commas
-                    ),
-                ));
-            }
-            if config.max_nominal > 0 {
-                let hits = nominal.find_iter(body).count();
-                if hits > config.max_nominal {
-                    out.push(Finding::new(
-                        Kind::Syntax,
-                        Severity::Suspect,
-                        rel,
-                        lineno + 1,
-                        excerpt,
-                        format!("一句里名词化词 {hits} 个（上限 {}）：把动作写成名词，读者要多绕一层", config.max_nominal),
-                    ));
-                }
-            }
+            out.extend(check_sentence(config, &patterns, rel, lineno, sentence.trim()));
         }
+    }
+    out
+}
+
+/// 每一项都可以用 0 或空表关掉；全关就不必往下走。
+fn syntax_is_off(config: &SyntaxConfig) -> bool {
+    config.max_sentence_chars == 0
+        && config.max_de_chain == 0
+        && config.max_commas == 0
+        && config.max_nominal == 0
+        && config.max_paragraph_chars == 0
+        && config.push_to_reader_patterns.is_empty()
+        && config.count_then_list_patterns.is_empty()
+}
+
+/// 三个正则集合：编译一次，逐句复用。
+struct SyntaxPatterns {
+    nominal: Regex,
+    push_to_reader: Vec<Regex>,
+    count_then_list: Vec<Regex>,
+}
+
+impl SyntaxPatterns {
+    fn new(config: &SyntaxConfig) -> Self {
+        let compile = |patterns: &Vec<String>| -> Vec<Regex> {
+            patterns.iter().filter_map(|pattern| Regex::new(pattern).ok()).collect()
+        };
+        Self {
+            nominal: Regex::new(r"[\u{4e00}-\u{9fa5}]{2}(?:度|性|化|式)|[\u{4e00}-\u{9fa5}]{1,4}主义")
+                .expect("名词化正则"),
+            push_to_reader: compile(&config.push_to_reader_patterns),
+            count_then_list: compile(&config.count_then_list_patterns),
+        }
+    }
+}
+
+fn excerpt_of(body: &str) -> String {
+    body.chars().take(70).collect()
+}
+
+fn long_paragraph(config: &SyntaxConfig, rel: &str, lineno: usize, line: &str) -> Option<Finding> {
+    if config.max_paragraph_chars == 0 {
+        return None;
+    }
+    let hanzi = hanzi_count(line);
+    if hanzi <= config.max_paragraph_chars {
+        return None;
+    }
+    Some(Finding::new(
+        Kind::Syntax,
+        Severity::Suspect,
+        rel,
+        lineno + 1,
+        excerpt_of(line),
+        format!("这一段 {hanzi} 汉字（上限 {}）：拆成几段，每段一个意思", config.max_paragraph_chars),
+    ))
+}
+
+fn check_sentence(
+    config: &SyntaxConfig,
+    patterns: &SyntaxPatterns,
+    rel: &str,
+    lineno: usize,
+    body: &str,
+) -> Vec<Finding> {
+    if body.is_empty() {
+        return Vec::new();
+    }
+    let excerpt = excerpt_of(body);
+    let metrics = Metrics {
+        hanzi: hanzi_count(body),
+        de: body.matches('的').count(),
+        commas: body.matches('，').count(),
+        nominal: patterns.nominal.find_iter(body).count(),
+    };
+    let mut out = threshold_findings(config, rel, lineno, &excerpt, &metrics);
+    for advice in shape(patterns, body) {
+        out.push(sentence_finding(rel, lineno, &excerpt, false, advice.to_string()));
+    }
+    out
+}
+
+/// 一句的四个计数：长短、定语链、逗号、名词化词。
+struct Metrics {
+    hanzi: usize,
+    de: usize,
+    commas: usize,
+    nominal: usize,
+}
+
+/// 超过阈值的四项各报一条：句太长、定语链太长、一逗到底、名词化堆叠。
+fn threshold_findings(
+    config: &SyntaxConfig,
+    rel: &str,
+    lineno: usize,
+    excerpt: &str,
+    metrics: &Metrics,
+) -> Vec<Finding> {
+    let mut out = Vec::new();
+    if config.max_sentence_chars > 0 && metrics.hanzi > config.max_sentence_chars {
+        let over = config.max_sentence_error_chars > 0 && metrics.hanzi > config.max_sentence_error_chars;
+        out.push(sentence_finding(
+            rel,
+            lineno,
+            excerpt,
+            over,
+            format!(
+                "一句 {} 汉字（他在 {} 字以上只占 7%）：切成两句，或把并列项改成列表",
+                metrics.hanzi, config.max_sentence_chars
+            ),
+        ));
+    }
+    if config.max_de_chain > 0 && metrics.de > config.max_de_chain {
+        out.push(sentence_finding(
+            rel,
+            lineno,
+            excerpt,
+            false,
+            format!(
+                "一句里「的」{} 个（上限 {}）：定语链太长，拆成两句或改成短定语",
+                metrics.de, config.max_de_chain
+            ),
+        ));
+    }
+    if config.max_commas > 0 && metrics.commas > config.max_commas {
+        out.push(sentence_finding(
+            rel,
+            lineno,
+            excerpt,
+            false,
+            format!(
+                "一句里逗号 {} 个（上限 {}）：一逗到底，断句或改列表",
+                metrics.commas, config.max_commas
+            ),
+        ));
+    }
+    if config.max_nominal > 0 && metrics.nominal > config.max_nominal {
+        out.push(sentence_finding(
+            rel,
+            lineno,
+            excerpt,
+            false,
+            format!(
+                "一句里名词化词 {} 个（上限 {}）：把动作写成名词，读者要多绕一层",
+                metrics.nominal, config.max_nominal
+            ),
+        ));
+    }
+    out
+}
+
+fn sentence_finding(rel: &str, lineno: usize, excerpt: &str, over: bool, advice: String) -> Finding {
+    let severity = if over { Severity::Error } else { Severity::Suspect };
+    Finding::new(Kind::Syntax, severity, rel, lineno + 1, excerpt.to_string(), advice)
+}
+
+/// 按句式报：把结论推回给读者、用件数代替内容。
+fn shape(patterns: &SyntaxPatterns, body: &str) -> Vec<&'static str> {
+    let mut out = Vec::new();
+    if patterns.push_to_reader.iter().any(|pattern| pattern.is_match(body)) {
+        out.push("「由你」把结论推回给读者：写出自己的判断和理由；要留选择就说清在选什么");
+    }
+    if patterns.count_then_list.iter().any(|pattern| pattern.is_match(body)) {
+        out.push("用件数代替内容（「三件事」）：件数是空的，直接把条目写出来");
     }
     out
 }
@@ -533,20 +657,50 @@ pub fn check_file(path: &Path, contract: &Contract, root: Option<&Path>) -> Vec<
     findings.extend(check_syntax(&rel, &text, contract));
     findings.extend(check_table(&rel, &text, contract));
     findings.extend(check_voice(&rel, &text, contract));
+    let lines: Vec<&str> = text.lines().collect();
+    for finding in &mut findings {
+        let line = lines.get(finding.line.saturating_sub(1)).copied().unwrap_or("");
+        judge(finding, line);
+    }
     findings
 }
 
-/// 扫描范围：`default` 只审规范文档，`all` 连流水与报告一起。
+/// 判定层：命中的这一条，是规则本身导致的误报，还是要改的真问题。
+/// 只判机判得了的三种形态；判不了的不在这里假装判过。
+fn judge(finding: &mut Finding, line: &str) {
+    let verdict = match finding.kind {
+        // 提及不是使用：词被引号包着讨论，比如「判据」→ 验收标准 这种段落
+        Kind::Banned if quoted_word(&finding.advice).is_some_and(|word| is_quoted(line, word)) => {
+            Verdict::Mention
+        }
+        // 引用工具自己的输出：合计 64 处（词汇层 9…）
+        Kind::Numbers if QUOTED_OUTPUT.is_match(line) => Verdict::QuotedOutput,
+        // 切分错：加粗小标签被并进了句子，句首的「**…**：」不是正文
+        Kind::Syntax if line.trim_start().starts_with("**") && line.contains("**：") => Verdict::LeadIn,
+        _ => Verdict::Real,
+    };
+    finding.mark(verdict);
+}
+
+/// advice 形如「「判据」→ 验收标准」，取出被引的那个词。
+fn quoted_word(advice: &str) -> Option<&str> {
+    let rest = advice.strip_prefix('「')?;
+    let end = rest.find('」')?;
+    Some(&rest[..end])
+}
+
+fn is_quoted(line: &str, word: &str) -> bool {
+    line.contains(&format!("「{word}」")) || line.contains(&format!("`{word}`"))
+}
+
+/// 扫描范围：`default` 审全量但跳过 `[scope] exclude`（流水、第三方依赖）；`all` 连 exclude 也不放过。
+/// `include_default` 为空 = 不按目录挑；仓自己的契约可以填前缀把范围收窄。
 pub fn markdown_files(root: &Path, contract: &Contract, scope: &str) -> Vec<PathBuf> {
     if root.is_file() {
         return vec![root.to_path_buf()];
     }
-    let mut includes: Vec<String> = Vec::new();
-    if scope == "all" {
-        includes.push(String::new()); // 空串 = 全收
-    } else {
-        includes.extend(contract.scope.include_default.iter().cloned());
-    }
+    let includes = &contract.scope.include_default;
+    let narrow = !includes.is_empty();
 
     let mut out: Vec<PathBuf> = WalkDir::new(root)
         .into_iter()
@@ -554,12 +708,14 @@ pub fn markdown_files(root: &Path, contract: &Contract, scope: &str) -> Vec<Path
         .map(|entry| entry.into_path())
         .filter(|path| path.extension().map(|ext| ext == "md").unwrap_or(false))
         .filter(|path| {
-            let rel = rel_of(path, Some(root));
-            // exclude 对所有 scope 都生效：all 只是放开 include 前缀，不是把第三方依赖也审一遍
-            !contract.scope.exclude.iter().any(|skip| in_dir(&rel, skip))
+            if scope == "all" {
+                return true;
+            }
+            !is_excluded(&rel_of(path, Some(root)), contract)
         })
         .filter(|path| {
-            if scope == "all" {
+            // 空 include 就是不挑目录：审什么由 root 决定，不再由工具内嵌的目录名单决定
+            if scope == "all" || !narrow {
                 return true;
             }
             let rel = rel_of(path, Some(root));
@@ -582,19 +738,21 @@ pub fn markdown_files(root: &Path, contract: &Contract, scope: &str) -> Vec<Path
     out
 }
 
-/// 全量扫描：返回（命中，读不了的文件）。
-pub fn scan(root: &Path, contract: &Contract, scope: &str) -> (Vec<Finding>, Vec<String>) {
+/// 全量扫描：返回（命中，读不了的文件，审了几个文件）。
+pub fn scan(root: &Path, contract: &Contract, scope: &str) -> (Vec<Finding>, Vec<String>, usize) {
     let mut findings = Vec::new();
     let mut broken = Vec::new();
     let base = if root.is_dir() { Some(root) } else { None };
-    for path in markdown_files(root, contract, scope) {
+    let files = markdown_files(root, contract, scope);
+    let scanned = files.len();
+    for path in files {
         if fs::read_to_string(&path).is_err() {
             broken.push(rel_of(&path, base));
             continue;
         }
         findings.extend(check_file(&path, contract, base));
     }
-    (findings, broken)
+    (findings, broken, scanned)
 }
 
 /// 按类计数，给汇总行用。
