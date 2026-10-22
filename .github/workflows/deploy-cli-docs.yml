@@ -66,27 +66,16 @@ jobs:
           access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
           access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
-      # 先清空旧产物：删掉的页面不该继续能被访问到
-      - name: Clean previous docs
-        run: ossutil rm oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }}/ -r -f || true
-
-      # 静态资源（_build/html/_static、assets 之类）长缓存
-      - name: Upload static（长缓存）
+      # 用 sync：先传新文件，再删多余文件。之前是「先 rm -r 再传」，删除到传完之间
+      # 整个站是 404——2026-10-22 上线时就撞上了这个窗口。
+      # 缓存统一 5 分钟：文档改完最多五分钟读到新版，不必为此把 HTML 单独拆出来。
+      - name: Sync docs（先传后删，不留空窗）
         working-directory: src/cli/docs
         run: |
-          ossutil cp ./_build/html/ oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }}/ -r -f \
-            --exclude "*.html" \
-            --meta "Cache-Control:public,max-age=31536000"
+          ossutil sync ./_build/html/ oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }}/ -f --delete \
+            --meta "Cache-Control:public,max-age=300"
 
-      # 页面与入口不缓存：否则发版后读者看到的是旧 HTML
-      - name: Upload pages（no-cache）
-        working-directory: src/cli/docs
-        run: |
-          ossutil cp ./_build/html/ oss://${{ env.OSS_BUCKET }}/${{ env.DOC_PREFIX }}/ -r -f \
-            --include "*.html" \
-            --meta "Cache-Control:no-cache"
-
-      # OSS 静态托管的默认首页只在桶根生效，子路径必须显式给一份无扩展名 key
+      # 不带尾斜杠直访时给一份无扩展名 key，否则 /qtfounder-cli 会落到 SPA 404
       - name: Upload entry（/qtfounder-cli/ 与 /qtfounder-cli）
         working-directory: src/cli/docs
         run: |
