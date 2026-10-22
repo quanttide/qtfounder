@@ -4,6 +4,7 @@
 
 ### Added
 
+- `docs/` 三组文档：用户指南两篇（`code`／`language`，以自举方式介绍作用）、开发指南四篇（架构、加语言、加验收标准、测试）、接口参考两篇（参数／退出码／JSON／稳定性承诺）
 - CLI `language` 子命令：文字审计七层（落点／自造术语／体系词／数字／句法／表格／语用），契约在 `src/cli/src/language/default-contract.toml`（运行时读磁盘，`--rules` 可换）。与原 Python 版 `qfl` 实测对等：同一份语料 1299 处、按类分布完全相同，37 个单元测试
 - CLI `code` 子命令：代码语用检查四层（词汇／句法／语篇／语用）。解析与判定分开——判定层只读 `ir::Facts`；Rust 走 `syn`、Python 走 `tree-sitter`，Go／TypeScript／Dart 共用一份通用提取器、差异全在 `specs.rs` 的一份 `LangSpec` 里，加语言只写配置。五语言一致性由测试守住，22 个单元测试。阈值在 `src/cli/src/code/default-contract.toml`——一份磁盘上的软件工程契约，运行时按 `--rules`／`QTFOUNDER_CODE_CONTRACT`／逐级往上找的顺序定位，**不内置兜底**，找不到就报错。`unused_imports` 刻意不判——rustc 已权威负责
 

@@ -23,8 +23,6 @@ cargo test
 2. `CliCommand` 枚举注册子命令分支
 3. 功能依赖加回 `Cargo.toml`
 
-路线见 [ROADMAP.md](docs/dev-guide/roadmap.md)。
-
 ## 许可
 
 Apache 2.0
