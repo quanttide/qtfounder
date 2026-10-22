@@ -1,12 +1,11 @@
 # 发布 CLI 文档：src/cli/docs/ 用 MyST 构建成静态站，推到官网桶的 /qtfounder-cli/ 前缀。
 #
-# 为什么挂在 founder.quanttide.com 而不是 docs.quanttide.com：
+# 发布地址：docs.founder.quanttide.com/qtfounder-cli/
 #   docs.quanttide.com 放 data/ 与 docs/ 这类纯文档仓；平台的代码跟随自己的域名发，
-#   CLI 属于 founder 这一套（apps/qtfounder），所以走官网域名下的子路径。
+#   CLI 属于 founder 这一套（apps/qtfounder），所以落在 founder 名下的文档域名。
 #
-# 产物：founder.quanttide.com/qtfounder-cli/
-#   - 与官网同一个桶（qtfounder-site）与同一个 CDN 分配，不新增证书、DNS 与 CDN；
-#   - 只按前缀区分，官网 SPA 在桶根，文档站不进它的路由。
+# 该域名需要独立的 DNS 记录、CDN 域名与证书（二级子域不在 *.quanttide.com 泛域名证书覆盖内）。
+# 桶沿用 qtfounder-site，只按前缀区分：官网 SPA 在桶根，文档站在 /qtfounder-cli/。
 #
 # 缓存：静态资源长缓存，HTML 与入口不缓存——发版后读者拿到的必须是最新页面。
 #
@@ -30,7 +29,7 @@ env:
   OSS_BUCKET: qtfounder-site
   OSS_ENDPOINT: oss-cn-hangzhou.aliyuncs.com
   DOC_PREFIX: qtfounder-cli
-  CDN_DOMAIN: founder.quanttide.com
+  CDN_DOMAIN: docs.founder.quanttide.com
   # MyST 按 BASE_URL 生成站内链接与资源路径，必须与桶里的前缀一致
   BASE_URL: /qtfounder-cli
 
