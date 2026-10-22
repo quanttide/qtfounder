@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
+
+### Removed
+
+- Studio 业务代码（`src/studio/lib/bloc`、`models`、`repositories`、`screens`、`services`、`config.dart`）与测试归档至 `data/archive/platform/qtfounder/studio/`；`src/studio` 仅保留入口 `lib/main.dart` 与最小骨架
+
+## [cli/v0.0.2] - 2026-10-22
+
+第三个子命令 `health` 上线：读会话库看消耗落在哪，每条命中挂一句原话。它不做情绪画像。
+
 ### Added
 
 - CLI `health` 子命令：读 Hermes 会话库（只读、只取 `role='user'`、同会话同内容去重），
@@ -13,14 +25,14 @@
   按 A–E 五个环节归位，不设「用户」「双方」「不明」选项。凭据沿用 language 的语义层
   （`LLM_API_KEY` → `~/.pi/agent/auth.json` → `~/.bashrc` 的 `DEEPSEEK_API_KEY`），
   `temperature=0`、只收 JSON。新增依赖 `rusqlite`（bundled）读会话库
+- 判定口径可外置：`--prompt` → `QTFOUNDER_HEALTH_PROMPT` → 源码树 → `~/.config/qtfounder/health/`，
+  四道都没有就报错。与 `code`／`language` 的契约同规矩，装成 CLI 之后脱离源码树也能跑
+- `docs/user-guide/health.md`：命令、参数、退出码、判定口径、五环节、凭据、隐私边界、已知偏差
 
-### Changed
+### Fixed
 
-- 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
-
-### Removed
-
-- Studio 业务代码（`src/studio/lib/bloc`、`models`、`repositories`、`screens`、`services`、`config.dart`）与测试归档至 `data/archive/platform/qtfounder/studio/`；`src/studio` 仅保留入口 `lib/main.dart` 与最小骨架
+- 会话库读取：`messages.id` 与 `timestamp` 按 `cast` 取。原来按 text/real 直取会
+  `Invalid column type` 直接失败——真机上跑过一次才暴露
 
 ## [cli/v0.0.1] - 2026-10-22
 
