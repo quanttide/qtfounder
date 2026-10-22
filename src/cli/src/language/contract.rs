@@ -121,6 +121,9 @@ pub struct Table {
 pub struct Voice {
     #[serde(default)]
     pub max_internal_ids: usize,
+    /// 一段里反引号标识符达到这个数，就认定是列举段（参数表、字段表），不报「没对读者说话」
+    #[serde(default)]
+    pub min_listed_ids: usize,
     #[serde(default)]
     pub reader_words: Vec<String>,
 }
@@ -136,7 +139,7 @@ pub fn find_contract() -> Result<PathBuf, String> {
         }
         return Err(format!("{CONTRACT_ENV} 指向的契约不存在：{from_env}"));
     }
-    let start = std::env::current_dir().map_err(|err| format!("读不到当前目录：{err}"))?;
+    let start = std::env::current_dir().map_err(|error| format!("读不到当前目录：{error}"))?;
     let mut dir = start.as_path();
     loop {
         for relative in CONTRACT_RELATIVE {
@@ -172,7 +175,8 @@ impl Contract {
             None => find_contract()?,
         };
         let text = std::fs::read_to_string(&target)
-            .map_err(|err| format!("契约读不了 {}：{err}", target.display()))?;
-        toml::from_str(&text).map_err(|err| format!("契约 {} 格式不对：{err}", target.display()))
+            .map_err(|error| format!("契约读不了 {}：{error}", target.display()))?;
+        toml::from_str(&text)
+            .map_err(|error| format!("契约 {} 格式不对：{error}", target.display()))
     }
 }

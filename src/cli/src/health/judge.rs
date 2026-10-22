@@ -113,7 +113,7 @@ pub fn prompt_path(custom: Option<&Path>) -> Result<PathBuf, String> {
 
 pub fn load_prompt(custom: Option<&Path>) -> Result<String, String> {
     let path = prompt_path(custom)?;
-    std::fs::read_to_string(&path).map_err(|err| format!("读 {} 失败：{err}", path.display()))
+    std::fs::read_to_string(&path).map_err(|error| format!("读 {} 失败：{error}", path.display()))
 }
 
 /// 凭据：LLM_API_KEY → ~/.pi/agent/auth.json → ~/.bashrc 里的 export。密钥只读不打印。
@@ -170,7 +170,10 @@ fn clip(text: &str, max: usize) -> String {
 pub fn build_batch(items: &[(String, String)]) -> String {
     let mut body = String::from("以下是待判定的消息，逐条判定：\n\n");
     for (id, content) in items {
-        body.push_str(&format!("<msg id=\"{id}\">{}</msg>\n", clip(content, 900)));
+        body.push_str(&format!(
+            "<message id=\"{id}\">{}</message>\n",
+            clip(content, 900)
+        ));
     }
     body
 }
@@ -202,11 +205,11 @@ pub fn judge_batch(
     .header("Authorization", &format!("Bearer {api_key}"))
     .header("Content-Type", "application/json")
     .send_json(payload)
-    .map_err(|err| format!("模型调用失败：{err}"))?;
+    .map_err(|error| format!("模型调用失败：{error}"))?;
     let parsed: Value = response
         .body_mut()
         .read_json()
-        .map_err(|err| format!("模型返回不是 JSON：{err}"))?;
+        .map_err(|error| format!("模型返回不是 JSON：{error}"))?;
     let raw = parsed["choices"][0]["message"]["content"]
         .as_str()
         .unwrap_or("")
@@ -270,8 +273,9 @@ pub fn parse_judged(raw: &str) -> Vec<(String, Judged)> {
     out
 }
 
-fn pick<'a>(obj: &'a Value, keys: &[&str]) -> Option<&'a Value> {
-    keys.iter().find_map(|key| obj.get(*key))
+/// 从模型回的对象里按候选键名取第一个值——不同模型给的外层键名不一样。
+fn pick<'a>(parsed: &'a Value, keys: &[&str]) -> Option<&'a Value> {
+    keys.iter().find_map(|key| parsed.get(*key))
 }
 
 fn parse_item(item: &Value) -> Option<(String, Judged)> {

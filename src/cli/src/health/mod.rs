@@ -69,7 +69,9 @@ struct Hit {
     sources: Vec<(String, String)>,
 }
 
-pub fn run(args: &HealthArgs) -> Result<i32, String> {
+/// 报告长、分支多，是因为它同时做四件事：取语料、过筛、送判、按「消耗去向」汇总。
+/// 不拆开是因为四步共用同一批计数，拆了就要互相传十来个临时量，读者反而要来回跳。
+pub fn run_health(args: &HealthArgs) -> Result<i32, String> {
     let db = corpus::expand_home(&args.db);
     let messages = corpus::load(&db, args.since.as_deref())?;
     let total = messages.len();
@@ -95,9 +97,9 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
     let picked: Vec<(String, Vec<String>, corpus::Message)> = cands
         .into_iter()
         .take(args.limit)
-        .map(|(msg, hits)| {
-            let id = msg.id.clone();
-            (id, hits, msg)
+        .map(|(message, hits)| {
+            let id = message.id.clone();
+            (id, hits, message)
         })
         .collect();
     if picked.is_empty() {
@@ -116,7 +118,7 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
     let prompt = judge::load_prompt(args.prompt.as_deref())?;
     let inputs: Vec<(String, String)> = picked
         .iter()
-        .map(|(id, _, msg)| (id.clone(), msg.content.clone()))
+        .map(|(id, _, message)| (id.clone(), message.content.clone()))
         .collect();
     let batches: Vec<Vec<(String, String)>> = inputs
         .chunks(args.batch.max(1))
@@ -142,7 +144,7 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
                     for batch in group {
                         match judge::judge_batch(&batch, &prompt, &model, &base_url, &api_key) {
                             Ok(items) => out.extend(items),
-                            Err(err) => errs.push(err),
+                            Err(error) => errs.push(error),
                         }
                     }
                     (out, errs)
@@ -168,7 +170,7 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
 
     let mut hits: Vec<Hit> = Vec::new();
     let mut lexical_hits = 0usize;
-    for (id, words, msg) in &picked {
+    for (id, words, message) in &picked {
         if !words.is_empty() {
             lexical_hits += 1;
         }
@@ -180,8 +182,8 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
         }
         hits.push(Hit {
             id: id.clone(),
-            date: msg.date.clone(),
-            hour: msg.hour,
+            date: message.date.clone(),
+            hour: message.hour,
             signal: verdict.signal.clone(),
             implicit: verdict.implicit,
             intensity: verdict.intensity,
@@ -275,10 +277,10 @@ pub fn run(args: &HealthArgs) -> Result<i32, String> {
             && !parent.as_os_str().is_empty()
         {
             std::fs::create_dir_all(parent)
-                .map_err(|err| format!("建目录 {} 失败：{err}", parent.display()))?;
+                .map_err(|error| format!("建目录 {} 失败：{error}", parent.display()))?;
         }
         std::fs::write(path, report)
-            .map_err(|err| format!("写报告 {} 失败：{err}", path.display()))?;
+            .map_err(|error| format!("写报告 {} 失败：{error}", path.display()))?;
         println!("\n报告已写入 {}", path.display());
     }
 
@@ -329,6 +331,7 @@ fn truncate(text: &str, max: usize) -> String {
     out
 }
 
+/// 参数多，是因为报告里每一节都要不同的计数；与其在函数里回头算，不如一次传齐。
 #[allow(clippy::too_many_arguments)]
 fn render_markdown(
     args: &HealthArgs,

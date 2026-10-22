@@ -3,10 +3,15 @@
 //! 判的不是「有没有语法错误」，而是**这段文字是不是在跟读者说话**。
 //! 契约在 `src/language/default-contract.toml`；与 `code` 那份同构——一份契约 = 一类介质的验收标准。
 
+pub mod checks;
+mod common;
 pub mod contract;
 pub mod model;
 pub mod scan;
-pub mod sense;
+mod sense;
+mod syntax;
+mod table;
+mod voice;
 
 #[cfg(test)]
 mod tests;
@@ -128,7 +133,7 @@ fn first_hit(word: &str, bodies: &[(String, String)]) -> Option<String> {
 
 /// 语义层：规则挑段，模型判「这段在不在对读者说话」。返回判为「在记操作」的段数。
 fn run_sense(findings: &[Finding], limit: usize) -> Result<usize, String> {
-    let results = sense::run(findings, limit)?;
+    let results = sense::judge_segments(findings, limit)?;
     if results.is_empty() {
         println!("\n规则没有挑出可疑段：语义层用不上");
         return Ok(0);
@@ -175,6 +180,73 @@ fn json_escape(text: &str) -> String {
         }
     }
     out
+}
+
+/// 人读的输出：先报审了几个文件，再按文件分组列命中，最后是合计与复核汇总。
+fn print_report(findings: &[Finding], scanned: usize, top: usize) {
+    if findings.is_empty() {
+        println!(
+            "审了 {scanned} 个文件，没有命中：这批文字没有自造术语、体系词缺失、数字无据或放错层"
+        );
+        return;
+    }
+    let mut files = group_by_file(findings);
+    files.sort_by_key(|(_, group)| std::cmp::Reverse(group.len()));
+    for (path, group) in files.iter().take(top) {
+        println!("\n{path}  {} 处", group.len());
+        for finding in group.iter().take(8) {
+            println!("  {}", line_of(finding));
+            println!("          → {}", finding.advice);
+        }
+    }
+    println!(
+        "\n合计 {} 处（{}）；审了 {} 个文件，其中 {} 个有命中",
+        findings.len(),
+        kind_counts(findings),
+        scanned,
+        files.len()
+    );
+    println!("{}", judge_summary(findings));
+    println!("报的是嫌疑不是判决：数字与术语逐处读上下文再改。");
+}
+
+fn group_by_file(findings: &[Finding]) -> Vec<(&str, Vec<&Finding>)> {
+    let mut by_file: HashMap<&str, Vec<&Finding>> = HashMap::new();
+    for finding in findings {
+        by_file
+            .entry(finding.path.as_str())
+            .or_default()
+            .push(finding);
+    }
+    by_file.into_iter().collect()
+}
+
+/// 一类命中的一行：`[嫌疑／误报·提及] banned L44  摘要`。
+fn line_of(finding: &Finding) -> String {
+    let verdict = if finding.verdict.is_false_positive() {
+        format!("／{}", finding.verdict.label())
+    } else {
+        String::new()
+    };
+    format!(
+        "[{}{}] {} L{}  {}",
+        finding.severity.label(),
+        verdict,
+        finding.kind.key(),
+        finding.line,
+        finding.excerpt
+    )
+}
+
+/// 「banned 10，numbers 3，voice 1」这种按层计数。
+fn kind_counts(findings: &[Finding]) -> String {
+    let mut counts: Vec<(&str, usize)> = scan::summarize(findings).into_iter().collect();
+    counts.sort();
+    counts
+        .iter()
+        .map(|(kind, count)| format!("{kind} {count}"))
+        .collect::<Vec<String>>()
+        .join("，")
 }
 
 /// 复核的汇总：真问题几处、规则误报几处、各是什么形态。
@@ -233,7 +305,7 @@ fn render_json(findings: &[Finding], hint: &[String], scanned: usize) {
 }
 
 /// 入口：返回退出码（0 无命中 / 1 有命中 / 2 契约或文件读不了）。
-pub fn run(args: &LanguageArgs) -> Result<i32, String> {
+pub fn run_language(args: &LanguageArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;
     if args.scope != "default" && args.scope != "all" {
         return Err(format!(
@@ -266,59 +338,7 @@ pub fn run(args: &LanguageArgs) -> Result<i32, String> {
         });
     }
 
-    if findings.is_empty() {
-        println!(
-            "审了 {scanned} 个文件，没有命中：这批文字没有自造术语、体系词缺失、数字无据或落点违规"
-        );
-    } else {
-        let mut by_file: HashMap<&str, Vec<&Finding>> = HashMap::new();
-        for finding in &findings {
-            by_file
-                .entry(finding.path.as_str())
-                .or_default()
-                .push(finding);
-        }
-        let mut files: Vec<(&str, Vec<&Finding>)> = by_file.into_iter().collect();
-        files.sort_by_key(|(_, group)| std::cmp::Reverse(group.len()));
-        for (path, group) in files.iter().take(args.top) {
-            println!("\n{path}  {} 处", group.len());
-            for finding in group.iter().take(8) {
-                let verdict = if finding.verdict.is_false_positive() {
-                    format!("／{}", finding.verdict.label())
-                } else {
-                    String::new()
-                };
-                println!(
-                    "  [{}{}] {} L{}  {}",
-                    finding.severity.label(),
-                    verdict,
-                    finding.kind.key(),
-                    finding.line,
-                    finding.excerpt
-                );
-                println!("          → {}", finding.advice);
-            }
-        }
-        let summary = scan::summarize(&findings);
-        let mut counts: Vec<(&str, usize)> = summary
-            .iter()
-            .map(|(kind, count)| (*kind, *count))
-            .collect();
-        counts.sort();
-        let total: Vec<String> = counts
-            .iter()
-            .map(|(kind, count)| format!("{kind} {count}"))
-            .collect();
-        println!(
-            "\n合计 {} 处（{}）；审了 {} 个文件，其中 {} 个有命中",
-            findings.len(),
-            total.join("，"),
-            scanned,
-            files.len()
-        );
-        println!("{}", judge_summary(&findings));
-        println!("报的是嫌疑不是判决：数字与术语逐处读上下文再改。");
-    }
+    print_report(&findings, scanned, args.top);
     if !hint.is_empty() {
         println!();
         for line in &hint {

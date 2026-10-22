@@ -5,7 +5,7 @@ use super::corpus::{civil_from_ts, expand_home};
 use super::judge::{parse_judged, stage_title};
 use super::screen::screen;
 
-fn msg(id: &str, content: &str) -> Message {
+fn message(id: &str, content: &str) -> Message {
     Message {
         id: id.to_string(),
         session_id: "s1".to_string(),
@@ -32,20 +32,20 @@ fn expand_home_prefix() {
 
 #[test]
 fn bare_ack_dropped() {
-    let (cands, rest) = screen(vec![msg("1", "好的"), msg("2", "同意。")]);
+    let (cands, rest) = screen(vec![message("1", "好的"), message("2", "同意。")]);
     assert!(cands.is_empty());
     assert_eq!(rest, 2);
 }
 
 #[test]
 fn signal_word_kept_even_if_short() {
-    let (cands, _) = screen(vec![msg("1", "累")]);
+    let (cands, _) = screen(vec![message("1", "累")]);
     assert_eq!(cands.len(), 1);
 }
 
 #[test]
 fn long_message_kept() {
-    let (cands, _) = screen(vec![msg(
+    let (cands, _) = screen(vec![message(
         "1",
         "这一段话足够长并且没有任何疲劳方面的词汇表达",
     )]);

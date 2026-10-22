@@ -31,21 +31,21 @@ enum CliCommand {
 
 fn main() {
     match Cli::parse().command {
-        Some(CliCommand::Code(args)) => match code::run(&args) {
+        Some(CliCommand::Code(args)) => match code::run_code(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
                 std::process::exit(2);
             }
         },
-        Some(CliCommand::Language(args)) => match language::run(&args) {
+        Some(CliCommand::Language(args)) => match language::run_language(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
                 std::process::exit(2);
             }
         },
-        Some(CliCommand::Health(args)) => match health::run(&args) {
+        Some(CliCommand::Health(args)) => match health::run_health(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

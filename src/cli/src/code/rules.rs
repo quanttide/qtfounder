@@ -177,7 +177,7 @@ pub fn find_contract() -> Result<PathBuf, String> {
         return Err(format!("{CONTRACT_ENV} 指向的契约不存在：{from_env}"));
     }
 
-    let start = std::env::current_dir().map_err(|err| format!("读不到当前目录：{err}"))?;
+    let start = std::env::current_dir().map_err(|error| format!("读不到当前目录：{error}"))?;
     let mut dir = start.as_path();
     loop {
         for relative in CONTRACT_RELATIVE {
@@ -213,8 +213,9 @@ impl Rules {
             None => find_contract()?,
         };
         let text = std::fs::read_to_string(&target)
-            .map_err(|err| format!("契约读不了 {}：{err}", target.display()))?;
-        toml::from_str(&text).map_err(|err| format!("契约 {} 格式不对：{err}", target.display()))
+            .map_err(|error| format!("契约读不了 {}：{error}", target.display()))?;
+        toml::from_str(&text)
+            .map_err(|error| format!("契约 {} 格式不对：{error}", target.display()))
     }
 
     pub fn is_whitelisted(&self, name: &str) -> bool {

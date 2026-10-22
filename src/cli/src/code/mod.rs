@@ -114,16 +114,16 @@ fn collect(
         let label = display_path(root, &path);
         let source = match fs::read_to_string(&path) {
             Ok(text) => text,
-            Err(err) => {
-                broken.push((label, err.to_string()));
+            Err(error) => {
+                broken.push((label, error.to_string()));
                 continue;
             }
         };
         // 解析交给语言提取器；判定层只认 Facts，加语言不改这里
         let facts = match extract::extract(&source, &path) {
             Some(Ok(facts)) => facts,
-            Some(Err(err)) => {
-                broken.push((label, err));
+            Some(Err(error)) => {
+                broken.push((label, error));
                 continue;
             }
             None => continue,
@@ -208,7 +208,7 @@ fn render_json(findings: &[Finding]) {
 }
 
 /// 入口：返回退出码（0 无命中 / 1 有命中 / 2 读不了）。
-pub fn run(args: &CodeArgs) -> Result<i32, String> {
+pub fn run_code(args: &CodeArgs) -> Result<i32, String> {
     let rules = Rules::load(args.rules.as_deref())?;
     let layers = wanted_layers(&args.layer);
     if layers.is_empty() {

@@ -40,11 +40,11 @@ fn identifier_text(node: Node<'_>, source: &str) -> Option<String> {
         .map(|child| text_of(child, source))
 }
 
-fn function_name(node: Node<'_>, source: &str, spec: &LangSpec) -> String {
-    let container = if spec.name_path.is_empty() {
+fn function_name(node: Node<'_>, source: &str, specification: &LangSpec) -> String {
+    let container = if specification.name_path.is_empty() {
         Some(node)
     } else {
-        drill(node, spec.name_path)
+        drill(node, specification.name_path)
     };
     let Some(container) = container else {
         return "<anonymous>".to_string();
@@ -61,19 +61,19 @@ fn function_name(node: Node<'_>, source: &str, spec: &LangSpec) -> String {
         .unwrap_or_else(|| "<anonymous>".to_string())
 }
 
-fn parameter_count(node: Node<'_>, spec: &LangSpec) -> usize {
-    let container = if spec.name_path.is_empty() {
+fn parameter_count(node: Node<'_>, specification: &LangSpec) -> usize {
+    let container = if specification.name_path.is_empty() {
         node
     } else {
-        drill(node, spec.name_path).unwrap_or(node)
+        drill(node, specification.name_path).unwrap_or(node)
     };
-    let Some(parameters) = container.child_by_field_name(spec.params_field) else {
+    let Some(parameters) = container.child_by_field_name(specification.params_field) else {
         return 0;
     };
     let mut cursor = parameters.walk();
     let items: Vec<Node<'_>> = parameters
         .named_children(&mut cursor)
-        .filter(|child| spec.param_item_nodes.contains(&child.kind()))
+        .filter(|child| specification.param_item_nodes.contains(&child.kind()))
         .collect();
     // 一个参数条目里可能绑多个名字（Go 的 `a, b int`）
     items
@@ -96,11 +96,11 @@ struct Depth {
 }
 
 impl Depth {
-    fn walk(&mut self, node: Node<'_>, level: usize, spec: &LangSpec) {
+    fn walk(&mut self, node: Node<'_>, level: usize, specification: &LangSpec) {
         let mut cursor = node.walk();
         let children: Vec<Node<'_>> = node.named_children(&mut cursor).collect();
         for child in children {
-            let nested = spec.nesting_nodes.contains(&child.kind());
+            let nested = specification.nesting_nodes.contains(&child.kind());
             let reached = if nested { level + 1 } else { level };
             if nested {
                 if reached > self.depth {
@@ -109,7 +109,7 @@ impl Depth {
                 }
                 self.cognitive += reached;
             }
-            self.walk(child, reached, spec);
+            self.walk(child, reached, specification);
         }
     }
 }
@@ -125,13 +125,13 @@ fn collect_strings(node: Node<'_>, source: &str, out: &mut Vec<(usize, String)>)
     }
 }
 
-fn is_false_condition(node: Node<'_>, spec: &LangSpec) -> bool {
+fn is_false_condition(node: Node<'_>, specification: &LangSpec) -> bool {
     let condition = node.child_by_field_name("condition").or_else(|| {
         let mut cursor = node.walk();
         node.named_children(&mut cursor).next()
     });
     match condition {
-        Some(condition) => spec.false_nodes.contains(&condition.kind()),
+        Some(condition) => specification.false_nodes.contains(&condition.kind()),
         None => false,
     }
 }
@@ -139,13 +139,13 @@ fn is_false_condition(node: Node<'_>, spec: &LangSpec) -> bool {
 fn function_facts(
     node: Node<'_>,
     source: &str,
-    spec: &LangSpec,
+    specification: &LangSpec,
 ) -> (FunctionFacts, Vec<(usize, String)>) {
-    let name = function_name(node, source, spec);
-    let params = parameter_count(node, spec);
+    let name = function_name(node, source, specification);
+    let params = parameter_count(node, specification);
     let start = line_of(node);
     let end = node.end_position().row + 1;
-    let body = node.child_by_field_name(spec.body_field);
+    let body = node.child_by_field_name(specification.body_field);
 
     let mut depth = Depth {
         depth: 0,
@@ -153,7 +153,7 @@ fn function_facts(
         cognitive: 0,
     };
     if let Some(body) = body {
-        depth.walk(body, 0, spec);
+        depth.walk(body, 0, specification);
     }
 
     let mut messages = Vec::new();
@@ -161,7 +161,7 @@ fn function_facts(
         let mut cursor = body.walk();
         let candidates: Vec<Node<'_>> = body
             .named_children(&mut cursor)
-            .filter(|child| spec.error_nodes.contains(&child.kind()))
+            .filter(|child| specification.error_nodes.contains(&child.kind()))
             .collect();
         for candidate in candidates {
             collect_strings(candidate, source, &mut messages);
@@ -192,20 +192,20 @@ fn function_facts(
 fn collect_parameter_bindings(
     node: Node<'_>,
     source: &str,
-    spec: &LangSpec,
+    specification: &LangSpec,
     out: &mut Vec<BindingFacts>,
 ) {
-    let container = if spec.name_path.is_empty() {
+    let container = if specification.name_path.is_empty() {
         node
     } else {
-        drill(node, spec.name_path).unwrap_or(node)
+        drill(node, specification.name_path).unwrap_or(node)
     };
-    let Some(parameters) = container.child_by_field_name(spec.params_field) else {
+    let Some(parameters) = container.child_by_field_name(specification.params_field) else {
         return;
     };
     let mut cursor = parameters.walk();
     for item in parameters.named_children(&mut cursor) {
-        if !spec.param_item_nodes.contains(&item.kind()) {
+        if !specification.param_item_nodes.contains(&item.kind()) {
             continue;
         }
         let mut inner = item.walk();
@@ -236,16 +236,18 @@ fn collect_parameter_bindings(
     }
 }
 
+/// 三种语言的参数/赋值节点形状不同，靠 LangSpec 里的节点名列表统一，
+/// 所以这里必须按节点类型分支，而不是写三段提取器。
 fn collect_bindings(
     node: Node<'_>,
     source: &str,
-    spec: &LangSpec,
+    specification: &LangSpec,
     in_loop_target: bool,
     out: &mut Vec<BindingFacts>,
 ) {
     let kind = node.kind();
-    if spec.assignment_nodes.contains(&kind)
-        && let Some(left) = node.child_by_field_name(spec.assignment_left_field)
+    if specification.assignment_nodes.contains(&kind)
+        && let Some(left) = node.child_by_field_name(specification.assignment_left_field)
     {
         let mut cursor = left.walk();
         for child in left
@@ -258,34 +260,39 @@ fn collect_bindings(
                     line: line_of(child),
                     short_lived: in_loop_target,
                     init_shape: node
-                        .child_by_field_name(spec.assignment_right_field)
+                        .child_by_field_name(specification.assignment_right_field)
                         .map(|right| right.kind().to_string()),
                 });
             }
         }
     }
-    let loop_target = in_loop_target || spec.loop_nodes.contains(&kind);
+    let loop_target = in_loop_target || specification.loop_nodes.contains(&kind);
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
-        collect_bindings(child, source, spec, loop_target, out);
+        collect_bindings(child, source, specification, loop_target, out);
     }
 }
 
-fn collect_false_conditions(node: Node<'_>, spec: &LangSpec, out: &mut Vec<usize>) {
+fn collect_false_conditions(node: Node<'_>, specification: &LangSpec, out: &mut Vec<usize>) {
     if matches!(
         node.kind(),
         "if_statement" | "while_statement" | "if_element"
-    ) && is_false_condition(node, spec)
+    ) && is_false_condition(node, specification)
     {
         out.push(line_of(node));
     }
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
-        collect_false_conditions(child, spec, out);
+        collect_false_conditions(child, specification, out);
     }
 }
 
-fn collect_classes(node: Node<'_>, source: &str, spec: &LangSpec, out: &mut Vec<ClassFacts>) {
+fn collect_classes(
+    node: Node<'_>,
+    source: &str,
+    specification: &LangSpec,
+    out: &mut Vec<ClassFacts>,
+) {
     if matches!(node.kind(), "class_declaration" | "class_definition") {
         let name = node
             .child_by_field_name("name")
@@ -296,7 +303,7 @@ fn collect_classes(node: Node<'_>, source: &str, spec: &LangSpec, out: &mut Vec<
             .map(|body| {
                 let mut cursor = body.walk();
                 body.named_children(&mut cursor)
-                    .filter(|child| spec.function_nodes.contains(&child.kind()))
+                    .filter(|child| specification.function_nodes.contains(&child.kind()))
                     .count()
             })
             .unwrap_or(0);
@@ -308,18 +315,18 @@ fn collect_classes(node: Node<'_>, source: &str, spec: &LangSpec, out: &mut Vec<
     }
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
-        collect_classes(child, source, spec, out);
+        collect_classes(child, source, specification, out);
     }
 }
 
-pub fn extract(source: &str, spec: &LangSpec) -> Result<Facts, String> {
+pub fn extract(source: &str, specification: &LangSpec) -> Result<Facts, String> {
     let mut parser = Parser::new();
     parser
-        .set_language(&(spec.language)())
-        .map_err(|err| format!("{} 语法装不上：{err}", spec.name))?;
+        .set_language(&(specification.language)())
+        .map_err(|error| format!("{} 语法装不上：{error}", specification.name))?;
     let tree = parser
         .parse(source, None)
-        .ok_or_else(|| format!("{} 解析失败", spec.name))?;
+        .ok_or_else(|| format!("{} 解析失败", specification.name))?;
     let root = tree.root_node();
 
     let mut facts = Facts::default();
@@ -328,26 +335,26 @@ pub fn extract(source: &str, spec: &LangSpec) -> Result<Facts, String> {
     let mut cursor = root.walk();
     let top_level: Vec<Node<'_>> = root.named_children(&mut cursor).collect();
     for item in &top_level {
-        if spec.function_nodes.contains(&item.kind()) {
-            let (function, messages) = function_facts(*item, source, spec);
+        if specification.function_nodes.contains(&item.kind()) {
+            let (function, messages) = function_facts(*item, source, specification);
             let mut function = function;
             function.error_messages = messages;
             facts.functions.push(function);
         }
     }
 
-    collect_classes(root, source, spec, &mut facts.classes);
+    collect_classes(root, source, specification, &mut facts.classes);
     for item in &top_level {
-        if spec.function_nodes.contains(&item.kind()) {
-            collect_parameter_bindings(*item, source, spec, &mut facts.bindings);
+        if specification.function_nodes.contains(&item.kind()) {
+            collect_parameter_bindings(*item, source, specification, &mut facts.bindings);
         }
     }
-    collect_bindings(root, source, spec, false, &mut facts.bindings);
-    collect_false_conditions(root, spec, &mut facts.false_conditions);
+    collect_bindings(root, source, specification, false, &mut facts.bindings);
+    collect_false_conditions(root, specification, &mut facts.false_conditions);
 
     facts.top_defs = top_level
         .iter()
-        .filter(|item| spec.definition_nodes.contains(&item.kind()))
+        .filter(|item| specification.definition_nodes.contains(&item.kind()))
         .count();
 
     let lines: Vec<&str> = source.lines().collect();
@@ -359,7 +366,7 @@ pub fn extract(source: &str, spec: &LangSpec) -> Result<Facts, String> {
             .map(|slice| {
                 slice
                     .iter()
-                    .any(|line| line.trim_start().starts_with(spec.comment_prefix))
+                    .any(|line| line.trim_start().starts_with(specification.comment_prefix))
             })
             .unwrap_or(false);
     }

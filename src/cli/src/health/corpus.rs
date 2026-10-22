@@ -44,11 +44,15 @@ pub fn civil_from_ts(ts: f64) -> (String, u32) {
     let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
     let y = yoe + era * 400;
     let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let d = doy - (153 * mp + 2) / 5 + 1;
-    let m = if mp < 10 { mp + 3 } else { mp - 9 };
-    let year = if m <= 2 { y + 1 } else { y };
-    (format!("{year:04}-{m:02}-{d:02}"), hour)
+    let month_position = (5 * doy + 2) / 153;
+    let day = doy - (153 * month_position + 2) / 5 + 1;
+    let month = if month_position < 10 {
+        month_position + 3
+    } else {
+        month_position - 9
+    };
+    let year = if month <= 2 { y + 1 } else { y };
+    (format!("{year:04}-{month:02}-{day:02}"), hour)
 }
 
 /// 读全部用户消息（去重、按时间排序）。`since` 给日期前缀（如 2026-09-01）时只取之后的。
@@ -57,13 +61,13 @@ pub fn load(db: &Path, since: Option<&str>) -> Result<Vec<Message>, String> {
         return Err(format!("会话库不存在：{}", db.display()));
     }
     let conn = Connection::open_with_flags(db, OpenFlags::SQLITE_OPEN_READ_ONLY)
-        .map_err(|err| format!("打不开会话库 {}：{err}", db.display()))?;
+        .map_err(|error| format!("打不开会话库 {}：{error}", db.display()))?;
     let mut stmt = conn
         .prepare(
             "select cast(m.id as text), m.session_id, cast(m.timestamp as real), m.content from messages m \
              where m.role = 'user' and m.content is not null and length(trim(m.content)) > 0",
         )
-        .map_err(|err| format!("查询失败：{err}"))?;
+        .map_err(|error| format!("查询失败：{error}"))?;
     let rows = stmt
         .query_map([], |row| {
             let id: String = row.get(0)?;
@@ -77,11 +81,11 @@ pub fn load(db: &Path, since: Option<&str>) -> Result<Vec<Message>, String> {
                 content,
             ))
         })
-        .map_err(|err| format!("读取失败：{err}"))?;
+        .map_err(|error| format!("读取失败：{error}"))?;
 
     let mut out: Vec<Message> = Vec::new();
     for row in rows {
-        let (id, session_id, ts, content) = row.map_err(|err| format!("行解析失败：{err}"))?;
+        let (id, session_id, ts, content) = row.map_err(|error| format!("行解析失败：{error}"))?;
         let (date, hour) = civil_from_ts(ts);
         if let Some(since) = since
             && date.as_str() < since
@@ -101,13 +105,17 @@ pub fn load(db: &Path, since: Option<&str>) -> Result<Vec<Message>, String> {
 
     let mut seen: HashSet<(String, String)> = HashSet::new();
     let mut deduped = Vec::with_capacity(out.len());
-    for msg in out {
+    for message in out {
         let key = (
-            msg.session_id.clone(),
-            msg.content.split_whitespace().collect::<Vec<_>>().join(" "),
+            message.session_id.clone(),
+            message
+                .content
+                .split_whitespace()
+                .collect::<Vec<_>>()
+                .join(" "),
         );
         if seen.insert(key) {
-            deduped.push(msg);
+            deduped.push(message);
         }
     }
     Ok(deduped)

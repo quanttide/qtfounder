@@ -5,7 +5,7 @@ use super::model::Kind;
 use super::scan;
 
 fn contract() -> Contract {
-    Contract::load(None).expect("仓里应能找到默认契约")
+    Contract::load(None).expect("仓里应能找到默认契约：确认 src/language/default-contract.toml 在，或设 QTFOUNDER_LANGUAGE_CONTRACT")
 }
 
 fn verdicts(text: &str) -> Vec<&'static str> {
@@ -13,7 +13,7 @@ fn verdicts(text: &str) -> Vec<&'static str> {
     let dir = std::env::temp_dir().join(format!("qfl-verdict-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
     let path = dir.join(format!("v-{}.md", text.len()));
-    std::fs::write(&path, text).expect("写样本");
+    std::fs::write(&path, text).expect("写样本失败：检查临时目录的权限与空间");
     let out = scan::check_file(&path, &contract, Some(&dir))
         .into_iter()
         .map(|finding| finding.verdict.key())
@@ -33,7 +33,7 @@ fn kinds(text: &str, rel: &str) -> Vec<&'static str> {
         "sample-{}.md",
         COUNTER.fetch_add(1, Ordering::Relaxed)
     ));
-    std::fs::write(&path, text).expect("写样本");
+    std::fs::write(&path, text).expect("写样本失败：检查临时目录的权限与空间");
     let findings = scan::check_file(&path, &contract, Some(&dir));
     let _ = std::fs::remove_file(&path);
     findings
@@ -45,7 +45,8 @@ fn kinds(text: &str, rel: &str) -> Vec<&'static str> {
 
 #[test]
 fn contract_is_a_real_file_on_disk() {
-    let found = super::contract::find_contract().expect("应能找到契约");
+    let found = super::contract::find_contract()
+        .expect("应能找到契约：把 default-contract.toml 放回 src/language/ 再跑");
     assert!(
         found.is_file(),
         "契约必须是磁盘上的文件：{}",
@@ -136,7 +137,7 @@ fn voice_reports_internal_id_wall() {
     let dir = std::env::temp_dir().join(format!("qfl-voice-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
     let path = dir.join(format!("v-{}.md", std::process::id()));
-    std::fs::write(&path, text).expect("写样本");
+    std::fs::write(&path, text).expect("写样本失败：检查临时目录的权限与空间");
     let found = scan::check_file(&path, &contract, Some(&dir))
         .into_iter()
         .any(|f| f.kind == Kind::Voice);
@@ -156,7 +157,7 @@ fn a_changed_contract_changes_the_verdict() {
     let dir = std::env::temp_dir().join(format!("qfl-change-{}", std::process::id()));
     let _ = std::fs::create_dir_all(&dir);
     let path = dir.join(format!("c-{}.md", std::process::id()));
-    std::fs::write(&path, &text).expect("写样本");
+    std::fs::write(&path, &text).expect("写样本失败：检查临时目录的权限与空间");
     assert!(
         scan::check_file(&path, &contract, Some(&dir))
             .iter()
@@ -241,7 +242,7 @@ fn deep_root_still_counts_as_in_scope() {
     let dir = std::env::temp_dir().join(format!("qfl-deep-{}", std::process::id()));
     let deep = dir.join("docs/handbook");
     let _ = std::fs::create_dir_all(&deep);
-    std::fs::write(deep.join("a.md"), "不变式\n").expect("写样本");
+    std::fs::write(deep.join("a.md"), "不变式\n").expect("写样本失败：检查临时目录的权限与空间");
     let files = scan::markdown_files(&deep, &contract, "default");
     assert_eq!(files.len(), 1, "深层 root 也该在范围内");
     let _ = std::fs::remove_dir_all(&dir);
@@ -260,8 +261,10 @@ fn scope_default_skips_journal() {
     let dir = std::env::temp_dir().join(format!("qfl-scope-{}", std::process::id()));
     let _ = std::fs::create_dir_all(dir.join("docs"));
     let _ = std::fs::create_dir_all(dir.join("data/journal"));
-    std::fs::write(dir.join("docs/a.md"), "不变式\n").expect("写 samples");
-    std::fs::write(dir.join("data/journal/b.md"), "不变式\n").expect("写 samples");
+    std::fs::write(dir.join("docs/a.md"), "不变式\n")
+        .expect("写 samples 失败：检查临时目录的权限与空间");
+    std::fs::write(dir.join("data/journal/b.md"), "不变式\n")
+        .expect("写 samples 失败：检查临时目录的权限与空间");
     let default_files = scan::markdown_files(&dir, &contract, "default");
     let all_files = scan::markdown_files(&dir, &contract, "all");
     assert_eq!(
@@ -287,8 +290,10 @@ fn files_outside_docs_prefix_are_audited() {
     let dir = std::env::temp_dir().join(format!("qfl-layout-{}", std::process::id()));
     let _ = std::fs::create_dir_all(dir.join("domains/human"));
     let _ = std::fs::create_dir_all(dir.join("default/company"));
-    std::fs::write(dir.join("domains/human/a.md"), "不变式\n").expect("写样本");
-    std::fs::write(dir.join("default/company/b.md"), "不变式\n").expect("写样本");
+    std::fs::write(dir.join("domains/human/a.md"), "不变式\n")
+        .expect("写样本失败：检查临时目录的权限与空间");
+    std::fs::write(dir.join("default/company/b.md"), "不变式\n")
+        .expect("写样本失败：检查临时目录的权限与空间");
     let files = scan::markdown_files(&dir, &contract, "default");
     assert_eq!(
         files.len(),

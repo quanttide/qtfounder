@@ -129,11 +129,11 @@ pub fn classify(text: &str, model: &str, base_url: &str, api_key: &str) -> Resul
     .header("Authorization", &format!("Bearer {api_key}"))
     .header("Content-Type", "application/json")
     .send_json(payload)
-    .map_err(|err| format!("模型调用失败：{err}"))?;
+    .map_err(|error| format!("模型调用失败：{error}"))?;
     let parsed: Value = response
         .body_mut()
         .read_json()
-        .map_err(|err| format!("模型返回不是 JSON：{err}"))?;
+        .map_err(|error| format!("模型返回不是 JSON：{error}"))?;
     let raw = parsed["choices"][0]["message"]["content"]
         .as_str()
         .unwrap_or("")
@@ -163,7 +163,10 @@ pub fn parse_verdict(raw: &str) -> Verdict {
 }
 
 /// 跑整层：挑段、逐段判。返回（送判段数，判为操作记录的段数，逐条结果）。
-pub fn run(findings: &[Finding], limit: usize) -> Result<Vec<(Segment, Verdict)>, String> {
+pub fn judge_segments(
+    findings: &[Finding],
+    limit: usize,
+) -> Result<Vec<(Segment, Verdict)>, String> {
     let segments = suspect_segments(findings, limit);
     if segments.is_empty() {
         return Ok(Vec::new());
@@ -172,9 +175,9 @@ pub fn run(findings: &[Finding], limit: usize) -> Result<Vec<(Segment, Verdict)>
     let mut out = Vec::new();
     for segment in segments {
         let verdict =
-            classify(&segment.text, &model, &base_url, &api_key).unwrap_or_else(|err| Verdict {
+            classify(&segment.text, &model, &base_url, &api_key).unwrap_or_else(|error| Verdict {
                 kind: "error".into(),
-                why: err.chars().take(120).collect(),
+                why: error.chars().take(120).collect(),
                 fix: String::new(),
             });
         out.push((segment, verdict));

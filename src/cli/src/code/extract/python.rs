@@ -318,7 +318,7 @@ pub fn extract(source: &str) -> Result<Facts, String> {
     let mut parser = Parser::new();
     parser
         .set_language(&tree_sitter_python::LANGUAGE.into())
-        .map_err(|err| format!("Python 语法装不上：{err}"))?;
+        .map_err(|error| format!("Python 语法装不上：{error}"))?;
     let tree = parser.parse(source, None).ok_or("Python 解析失败")?;
     let root = tree.root_node();
     if root.has_error() {

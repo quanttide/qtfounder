@@ -73,20 +73,20 @@ fn strip_punct(text: &str) -> String {
 pub fn screen(messages: Vec<Message>) -> (Vec<(Message, Vec<String>)>, usize) {
     let mut cands = Vec::new();
     let mut rest = 0usize;
-    for msg in messages {
+    for message in messages {
         let hits: Vec<String> = SIGNAL_WORDS
             .iter()
-            .filter(|word| msg.content.contains(**word))
+            .filter(|word| message.content.contains(**word))
             .map(|word| (*word).to_string())
             .collect();
-        let bare = strip_punct(&msg.content);
+        let bare = strip_punct(&message.content);
         let is_ack = hits.is_empty() && BARE_ACK.iter().any(|ack| bare == strip_punct(ack));
         if is_ack {
             rest += 1;
             continue;
         }
-        if !hits.is_empty() || msg.content.chars().count() >= MIN_CHARS {
-            cands.push((msg, hits));
+        if !hits.is_empty() || message.content.chars().count() >= MIN_CHARS {
+            cands.push((message, hits));
         } else {
             rest += 1;
         }

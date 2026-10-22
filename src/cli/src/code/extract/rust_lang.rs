@@ -141,11 +141,11 @@ impl<'ast> Visit<'ast> for ErrorMessages {
 
 fn doc_text(attrs: &[syn::Attribute]) -> String {
     let mut parts = Vec::new();
-    for attr in attrs {
-        if !attr.path().is_ident("doc") {
+    for attribute in attrs {
+        if !attribute.path().is_ident("doc") {
             continue;
         }
-        if let syn::Meta::NameValue(pair) = &attr.meta
+        if let syn::Meta::NameValue(pair) = &attribute.meta
             && let Expr::Lit(literal) = &pair.value
             && let Lit::Str(text) = &literal.lit
         {
@@ -304,8 +304,10 @@ fn is_false_literal(expr: &Expr) -> bool {
     matches!(expr, Expr::Lit(literal) if matches!(&literal.lit, syn::Lit::Bool(value) if !value.value))
 }
 
+/// 走 syn 而不是 tree-sitter，是因为 Rust 这边要拿类型与签名，语法树给不出；
+/// 分支多是逐项翻译 AST 的必然结果，不是判断多。
 pub fn extract(source: &str) -> Result<Facts, String> {
-    let tree = syn::parse_file(source).map_err(|err| err.to_string())?;
+    let tree = syn::parse_file(source).map_err(|error| error.to_string())?;
     let mut facts = Facts::default();
 
     for item in &tree.items {

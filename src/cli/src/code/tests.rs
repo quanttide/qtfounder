@@ -14,7 +14,7 @@ fn facts_py(source: &str) -> Facts {
 }
 
 fn kinds(facts: &Facts, layer: Layer) -> Vec<&'static str> {
-    let rules = Rules::load(None).expect("仓里应能找到默认契约");
+    let rules = Rules::load(None).expect("仓里应能找到默认契约：确认 src/code/default-contract.toml 在，或设 QTFOUNDER_CODE_CONTRACT");
     let findings = match layer {
         Layer::Lexical => lexical::check(facts, "t", &rules),
         Layer::Syntax => syntax::check(facts, "t", &rules),
@@ -312,13 +312,13 @@ fn dart_reports_params_and_nesting() {
 
 #[test]
 fn five_languages_agree_on_the_same_defect() {
-    let go = "package main\n\nfunc handle(a int, b int, c int, d int) int {\n\tif a > 0 {\n\t\tif b > 0 {\n\t\t\tif c > 0 {\n\t\t\t\tif d > 0 {\n\t\t\t\t\treturn 1\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\treturn 0\n}\n";
-    let ts = "function handle(a: number, b: number, c: number, d: number): number {\n  if (a > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
-    let dart = "int handle(int a, int b, int c, int d) {\n  if (a > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
+    let go_source = "package main\n\nfunc handle(a int, b int, c int, d int) int {\n\tif a > 0 {\n\t\tif b > 0 {\n\t\t\tif c > 0 {\n\t\t\t\tif d > 0 {\n\t\t\t\t\treturn 1\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\treturn 0\n}\n";
+    let ts_source = "function handle(a: number, b: number, c: number, d: number): number {\n  if (a > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
+    let dart_source = "int handle(int a, int b, int c, int d) {\n  if (a > 0) {\n    if (b > 0) {\n      if (c > 0) {\n        if (d > 0) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n";
     for (name, facts) in [
-        ("go", facts_go(go)),
-        ("ts", facts_ts(ts)),
-        ("dart", facts_dart(dart)),
+        ("go", facts_go(go_source)),
+        ("ts", facts_ts(ts_source)),
+        ("dart", facts_dart(dart_source)),
     ] {
         let found = all_kinds(&facts);
         assert!(
@@ -334,7 +334,7 @@ fn five_languages_agree_on_the_same_defect() {
 
 #[test]
 fn contract_is_a_real_file_on_disk() {
-    let rules = Rules::load(None).expect("仓里应能找到默认契约");
+    let rules = Rules::load(None).expect("仓里应能找到默认契约：确认 src/code/default-contract.toml 在，或设 QTFOUNDER_CODE_CONTRACT");
     assert_eq!(rules.syntax.max_depth, 3);
     assert!(rules.lexical.abbreviations.contains_key("ctx"));
     assert!(rules.lexical.whitelist.iter().any(|item| item == "tz"));
@@ -345,7 +345,7 @@ fn a_changed_contract_changes_the_verdict() {
     // 把嵌套阈值放到 10，同一份代码就不该再报深嵌套——证明「只改配置就能改行为」
     let source = "fn f(a: bool, b: bool, c: bool, d: bool) -> u32 {\n    if a {\n        if b {\n            if c {\n                if d {\n                    return 1;\n                }\n            }\n        }\n    }\n    0\n}\n";
     let facts = facts_rs(source);
-    let mut rules = Rules::load(None).expect("仓里应能找到默认契约");
+    let mut rules = Rules::load(None).expect("仓里应能找到默认契约：确认 src/code/default-contract.toml 在，或设 QTFOUNDER_CODE_CONTRACT");
     assert!(kinds_with(&facts, Layer::Syntax, &rules).contains(&"deep_nesting"));
     rules.syntax.max_depth = 10;
     assert!(!kinds_with(&facts, Layer::Syntax, &rules).contains(&"deep_nesting"));
