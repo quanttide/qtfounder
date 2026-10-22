@@ -1,4 +1,4 @@
-//! 阈值全在 `data/rules/code.toml`。改口径不碰代码。
+//! 阈值全在 `resources/default-contract.toml`（本工具的软件工程契约）。改口径不碰代码。
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -6,7 +6,7 @@ use std::path::Path;
 use serde::Deserialize;
 
 /// 默认契约：编译进二进制，装出来的命令不依赖外部文件。
-const DEFAULT_RULES: &str = include_str!("../../data/rules/default-contract.toml");
+const DEFAULT_RULES: &str = include_str!("../../resources/default-contract.toml");
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rules {
