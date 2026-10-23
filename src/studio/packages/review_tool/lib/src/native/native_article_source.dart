@@ -24,7 +24,9 @@ class FsArticleSource implements ArticleSource {
       throw ReviewPathError('知识库根目录不存在: $root');
     }
 
-    final realRoot = await rootDir.resolveSymbolicLinks();
+    // 用词法根目录算相对路径：root 自身可能是符号链接，不能拿 realRoot 去和
+    // Directory.list 返回的路径比较。
+    final lexicalRoot = p.canonicalize(root);
     final articles = <Article>[];
 
     await for (final entity in rootDir.list(
@@ -33,7 +35,7 @@ class FsArticleSource implements ArticleSource {
     )) {
       if (entity is! File) continue;
 
-      final relative = _relativeIfInside(realRoot, entity.path);
+      final relative = _relativeIfInside(lexicalRoot, entity.path);
       if (relative == null) continue;
       if (!relative.toLowerCase().endsWith('.md')) continue;
       if (_isIgnored(relative)) continue;

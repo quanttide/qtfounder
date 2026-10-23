@@ -75,6 +75,16 @@ void main() {
     expect(b.aiProbability, 0);
   });
 
+  test('root 为符号链接时仍能扫描', () async {
+    if (Platform.isWindows) return;
+
+    final link = Link(p.join(temp.path, 'kb_link'));
+    await link.create(root.path);
+
+    final articles = await const FsArticleSource().scan(root: link.path);
+    expect(articles.map((article) => article.id), ['a.md', 'sub/b.md']);
+  });
+
   test('根目录不存在时抛 ReviewPathError', () async {
     expect(
       () => const FsArticleSource().scan(root: p.join(temp.path, 'missing')),
