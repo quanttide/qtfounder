@@ -8,11 +8,13 @@
 
 ### Changed
 
+- studio 文档按当前结构重写：README 与 ROADMAP 改为骨架 + review_tool 的现状；归档 models/screens 的设计合并到 `doc/data-sources.md` 与 `doc/planned-ui.md`
 - 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
 
 ### Removed
 
 - Studio 业务代码（`src/studio/lib/bloc`、`models`、`repositories`、`screens`、`services`、`config.dart`）与测试归档至 `data/archive/platform/qtfounder/studio/`；`src/studio` 仅保留入口 `lib/main.dart` 与最小骨架
+- studio `doc/models/`、`doc/screens/`、`navigation.md`、`router.md` 的过期设计文档；内容合并到 `doc/data-sources.md` 与 `doc/planned-ui.md`
 
 ## [cli/v0.0.2] - 2026-10-22
 
