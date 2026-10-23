@@ -49,6 +49,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.19.1"
+  crypto:
+    dependency: transitive
+    description:
+      name: crypto
+      sha256: c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.0.7"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -203,6 +211,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.1.5+1"
+  review_tool:
+    dependency: "direct main"
+    description:
+      path: "packages/review_tool"
+      relative: true
+    source: path
+    version: "0.1.0"
   sky_engine:
     dependency: transitive
     description: flutter
