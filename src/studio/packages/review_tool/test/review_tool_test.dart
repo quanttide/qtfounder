@@ -101,6 +101,19 @@ ReviewService _service({List<Article>? articles, _FakeStore? store}) {
 
 void main() {
   group('抽样', () {
+    test('Article 默认按 AI 原生处理', () {
+      final article = Article(
+        id: 'a.md',
+        absolutePath: '/kb/a.md',
+        title: 'A',
+        content: '',
+        hash: hashOf(''),
+        lastModified: DateTime(2026, 1, 1),
+      );
+
+      expect(article.aiProbability, 1);
+    });
+
     test('固定 seed 结果可复现', () async {
       final store = _FakeStore();
       final service = _service(store: store);

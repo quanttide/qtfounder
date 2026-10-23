@@ -71,7 +71,8 @@ if (result is ReviewSubmitConflict) {
 
 ## AI 来源
 
-`aiProbability` 默认 0（未知）。要让 `Stratum.aiProbability` / `aiFirst` 真正生效，需要把来源接进来：
+`aiProbability` 默认 1（AI 原生假设）：没有可信来源时按 AI 生成处理，避免漏审。
+要让 `Stratum.aiProbability` / `aiFirst` 更准确，再把来源接进来：
 
 ```dart
 final source = FsArticleSource(
@@ -80,7 +81,7 @@ final source = FsArticleSource(
 );
 ```
 
-没有可信来源时，把 `aiProbability` 保持 0，不要默认归为“非 AI”。
+只有确定是人类写的才返回 0；判定不了就保留默认 1。
 
 ## 验证
 

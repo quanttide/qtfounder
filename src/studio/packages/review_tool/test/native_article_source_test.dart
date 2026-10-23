@@ -39,6 +39,7 @@ void main() {
     expect(articles.first.title, 'Title A');
     expect(articles.last.title, 'Title B');
     expect(articles.first.hash, hashOf('# Title A\n\nbody'));
+    expect(articles.first.aiProbability, 1, reason: '默认按 AI 原生处理');
   });
 
   test('read 返回根目录内的文章', () async {

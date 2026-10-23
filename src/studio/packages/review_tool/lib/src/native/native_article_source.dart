@@ -10,8 +10,8 @@ import '../core/types.dart';
 
 /// 文件系统文章源。
 ///
-/// 只读，不写回原文。默认把 [aiProbability] 置 0（未知）；需要 AI 优先抽样时，
-/// 通过 [aiProbabilityOf] 接入 frontmatter、manifest 或生成时落下的元数据。
+/// 只读，不写回原文。默认把 [aiProbability] 置 1（AI 原生假设）；有可信来源时
+/// 通过 [aiProbabilityOf] 接入 frontmatter、manifest 或生成时落下的元数据覆盖。
 class FsArticleSource implements ArticleSource {
   const FsArticleSource({this.aiProbabilityOf});
 
@@ -102,7 +102,7 @@ class FsArticleSource implements ArticleSource {
   }
 
   double _resolveAiProbability(String id, String content) {
-    final value = aiProbabilityOf?.call(id, content) ?? 0;
+    final value = aiProbabilityOf?.call(id, content) ?? 1;
     return value.clamp(0.0, 1.0);
   }
 

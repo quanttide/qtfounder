@@ -8,7 +8,7 @@ class Article {
     required this.content,
     required this.hash,
     required this.lastModified,
-    this.aiProbability = 0,
+    this.aiProbability = 1,
   });
 
   final ArticleId id;
