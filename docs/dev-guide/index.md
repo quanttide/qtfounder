@@ -14,7 +14,7 @@
 | 模块 | 技术栈 | 职责 | 文档 |
 |------|--------|------|---------|
 | `src/site/` | React + Vite | 创始人官网（创作现场展示） | [site docs](../../src/site/docs/index.md) |
-| `src/studio/` | Flutter | 创始人工作台 | [studio ROADMAP](../../src/studio/docs/dev-guide/roadmap.md) |
+| `src/studio/` | Flutter | 创始人工作台 | [studio ROADMAP](../../src/studio/ROADMAP.md) |
 | `src/provider/` | Go | 创作数据 API | [provider ROADMAP](../../src/provider/docs/dev-guide/roadmap.md) |
 | `src/cli/` | Rust | CLI 工具（脚手架，待新功能） | [cli README](../../src/cli/README.md) |
 

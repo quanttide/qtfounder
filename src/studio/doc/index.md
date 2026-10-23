@@ -63,4 +63,4 @@ CreativeDesk（UI，loader 可注入）
 
 ## 演进方向
 
-见 [ROADMAP.md](../docs/dev-guide/roadmap.md)：章节详情 → Web 端接 provider API → 创作轨迹视图。
+见 [ROADMAP.md](../ROADMAP.md)：章节详情 → Web 端接 provider API → 创作轨迹视图。
