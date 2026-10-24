@@ -2,12 +2,14 @@
 //!
 //! 三要素缺一不可——只有行号没有替代动作，报告退化成数字，读者拿到仍然不知道改哪。
 
-/// 三类检查，名字与契约里的段一一对应。
+/// 五类检查，名字与契约里的段一一对应。
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Kind {
     Table,
     List,
     Density,
+    Bold,
+    Rule,
 }
 
 impl Kind {
@@ -16,13 +18,21 @@ impl Kind {
             Kind::Table => "table",
             Kind::List => "list",
             Kind::Density => "density",
+            Kind::Bold => "bold",
+            Kind::Rule => "rule",
         }
     }
 
     pub fn parse(text: &str) -> Option<Kind> {
-        [Kind::Table, Kind::List, Kind::Density]
-            .into_iter()
-            .find(|kind| kind.key() == text)
+        [
+            Kind::Table,
+            Kind::List,
+            Kind::Density,
+            Kind::Bold,
+            Kind::Rule,
+        ]
+        .into_iter()
+        .find(|kind| kind.key() == text)
     }
 }
 

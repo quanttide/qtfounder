@@ -9,7 +9,7 @@ qtfounder docs check [ROOT]
 
 **ROOT**：目录或单文件，缺省当前目录。递归找 `.md`。
 
-**`--kind`**：`table`／`list`／`density`，只报一层。
+**`--kind`**：`table`／`list`／`density`／`bold`／`rule`，只报一层。
 
 **`--rules PATH`**：指定契约。缺省按 `QTFOUNDER_DOCS_CONTRACT`、再往上找 `src/docs/default-contract.toml`、最后退到 `~/.config/qtfounder/docs/`。
 
@@ -43,7 +43,7 @@ qtfounder docs check [ROOT]
 }
 ```
 
-`severity` 只有 `error` 与 `suspect` 两值：表格与列表命中是 `error`，密度命中是 `suspect`。`excerpt` 最多七十字符，用来定位，不要拿来做断言。
+`severity` 只有 `error` 与 `suspect` 两值：表格、列表、加粗、分割线命中是 `error`，密度与加粗密度是 `suspect`。`excerpt` 最多七十字符，用来定位，不要拿来做断言。
 
 ## 四、契约字段
 
@@ -53,8 +53,12 @@ qtfounder docs check [ROOT]
 
 `[density]` 四个字段：`max_block_ratio`（结构块字数占比上限）、`max_run_ratio`（无过渡段落的块占比上限）、`min_paragraph_chars`（多长才算过渡段）、`min_chars`（文档低于这个字数不判）。前两个默认 0，即关闭。
 
+`[bold]` 四个字段：`max_per_1000`（每千字加粗处数）、`max_per_line`（一行并列加粗处数）、`max_span_chars`（单个加粗的字数）、`min_chars`（低于这个字数不算密度）。
+
+`[rule]` 两个字段：`max`（全文分割线处数）与 `flag_between_sections`（紧挨标题的横线算装饰，单独报）。
+
 所有数值 0 都表示关闭，与 `language` 一致。
 
 ## 五、稳定性承诺
 
-`kind` 的三个取值（`table`、`list`、`density`）与 `severity` 的两个取值不变；`excerpt`、`advice` 的措辞会变，别做断言。新增一层算小版本，删改取值算大版本。
+`kind` 的五个取值（`table`、`list`、`density`、`bold`、`rule`）与 `severity` 的两个取值不变；`excerpt`、`advice` 的措辞会变，别做断言。新增一层算小版本，删改取值算大版本。

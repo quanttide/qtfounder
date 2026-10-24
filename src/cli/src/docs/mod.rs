@@ -1,15 +1,17 @@
 //! `qtfounder docs`：文档结构审计。
 //!
 //! 判的不是「有没有语法错误」，而是**这段内容该不该是这个形状**。
-//! 缺陷规则（表格、列表）逐块定位；密度规则看整篇，只在缺陷规则没命中时兜底。
+//! 缺陷规则（表格、列表、加粗、分割线）逐处定位；密度规则看整篇，只在缺陷规则没命中时兜底。
 //! 契约在 `src/docs/default-contract.toml`。
 
+mod bold;
 mod check;
 mod common;
 mod contract;
 pub mod density;
 mod list;
 mod model;
+mod rule;
 mod scan;
 mod table;
 
@@ -24,7 +26,7 @@ use clap::{Args, Subcommand};
 use contract::Contract;
 use model::{Finding, Kind, Severity};
 
-/// 文档审计：表格、列表与密度三层的结构检查。
+/// 文档审计：表格、列表、密度、加粗与分割线五层。
 #[derive(Args, Debug)]
 pub struct DocsArgs {
     #[command(subcommand)]
@@ -32,7 +34,7 @@ pub struct DocsArgs {
     /// 要扫的目录或文件
     #[arg(default_value = ".")]
     pub root: PathBuf,
-    /// 只看一类：table／list／density
+    /// 只看一层：table／list／density／bold／rule
     #[arg(long)]
     pub kind: Option<String>,
     /// 契约路径（缺省按 src/docs/default-contract.toml 逐级往上找）
@@ -175,7 +177,7 @@ pub fn run_docs(args: &DocsArgs) -> Result<i32, String> {
     if let Some(kind_name) = &args.kind {
         let Some(kind) = Kind::parse(kind_name) else {
             return Err(format!(
-                "不认识的层：{kind_name}（只有 table、list、density）"
+                "不认识的层：{kind_name}（只有 table、list、density、bold、rule）"
             ));
         };
         findings.retain(|finding| finding.kind == kind);

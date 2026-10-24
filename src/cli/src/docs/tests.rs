@@ -1,8 +1,10 @@
 //! 各层一条真样本，加反样本。验收标准要能证伪：只有真样本的检查会「报得越多越对」。
 
+use super::bold::check_bold;
 use super::contract::Contract;
 use super::density;
 use super::list::check_list;
+use super::rule::check_rule;
 use super::table::check_table;
 
 fn contract() -> Contract {
@@ -15,6 +17,8 @@ fn kinds(text: &str) -> Vec<&'static str> {
     let contract = contract();
     let mut findings = check_table("sample.md", text, &contract);
     findings.extend(check_list("sample.md", text, &contract));
+    findings.extend(check_bold("sample.md", text, &contract));
+    findings.extend(check_rule("sample.md", text, &contract));
     findings
         .into_iter()
         .map(|finding| finding.kind.key())
@@ -98,4 +102,53 @@ fn short_document_is_not_judged() {
     contract.density.min_chars = 500;
     let measures = density::measure(text, contract.density.min_paragraph_chars);
     assert!(density::judge("sample.md", &measures, &contract.density).is_none());
+}
+
+#[test]
+fn bold_on_one_line_is_reported() {
+    let text = "这是 **甲** 与 **乙** 与 **丙**。\n";
+    assert!(kinds(text).contains(&"bold"));
+}
+
+#[test]
+fn long_bold_sentence_is_reported() {
+    let bold = "这一整句都加粗了而且它长到超过三十个字应该降为正文处理不要整段强调";
+    let text = format!("**{bold}**\n");
+    assert!(kinds(&text).contains(&"bold"));
+}
+
+#[test]
+fn one_short_bold_is_quiet() {
+    let text = "**要点**：说明。\n";
+    assert!(!kinds(text).contains(&"bold"));
+}
+
+#[test]
+fn bold_density_is_reported() {
+    let text = "**甲** 乙丙丁戊己庚辛壬癸。\n".repeat(20);
+    assert!(kinds(&text).contains(&"bold"));
+}
+
+#[test]
+fn rules_over_limit_are_reported() {
+    let text = "段落。\n\n---\n\n段落。\n\n---\n\n段落。\n\n---\n\n段落。\n\n---\n\n段落。\n";
+    assert!(kinds(text).contains(&"rule"));
+}
+
+#[test]
+fn rule_next_to_heading_is_reported() {
+    let text = "# 标题\n\n---\n\n正文。\n";
+    assert!(kinds(text).contains(&"rule"));
+}
+
+#[test]
+fn frontmatter_and_code_rules_are_ignored() {
+    let text = "---\ntitle: 样本\n---\n\n正文。\n\n```text\n---\n---\n---\n---\n```\n";
+    assert!(!kinds(text).contains(&"rule"));
+}
+
+#[test]
+fn setext_underline_is_not_a_rule() {
+    let text = "甲\n---\n乙\n---\n丙\n---\n丁\n---\n";
+    assert!(!kinds(text).contains(&"rule"));
 }

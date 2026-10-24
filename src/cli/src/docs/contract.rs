@@ -24,6 +24,10 @@ pub struct Contract {
     pub list: List,
     #[serde(default)]
     pub density: Density,
+    #[serde(default)]
+    pub bold: Bold,
+    #[serde(default)]
+    pub rule: Rule,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -79,6 +83,34 @@ pub struct Density {
     /// 文档总字数低于它就不判
     #[serde(default)]
     pub min_chars: usize,
+}
+
+/// 加粗不超过几处：整句加粗、同行并列加粗、满篇重点都是 AI 的常见毛病。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Bold {
+    /// 每千字加粗处数上限
+    #[serde(default)]
+    pub max_per_1000: usize,
+    /// 同一行并列加粗处数上限
+    #[serde(default)]
+    pub max_per_line: usize,
+    /// 单个加粗内的字数上限：超过就是把整句加粗了
+    #[serde(default)]
+    pub max_span_chars: usize,
+    /// 文档低于这个字数就不算密度，短文档几处加粗就能把比例拉满
+    #[serde(default)]
+    pub min_chars: usize,
+}
+
+/// 分割线：分章靠标题，不靠横线。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Rule {
+    /// 全文分割线处数上限
+    #[serde(default)]
+    pub max: usize,
+    /// 紧挨标题的横线只是装饰，单独报
+    #[serde(default)]
+    pub flag_between_sections: bool,
 }
 
 /// 找契约：环境变量 → 当前目录往上找 → 用户级目录 → 都没有就报错。刻意不内置兜底。

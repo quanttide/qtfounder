@@ -9,11 +9,13 @@ use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
+use super::bold::check_bold;
 use super::common::is_excluded;
 use super::contract::Contract;
 use super::density;
 use super::list::check_list;
 use super::model::Finding;
+use super::rule::check_rule;
 use super::table::check_table;
 
 fn rel_of(path: &Path, root: Option<&Path>) -> String {
@@ -27,7 +29,7 @@ fn rel_of(path: &Path, root: Option<&Path>) -> String {
     }
 }
 
-/// 一篇文档：先跑缺陷规则，没命中再跑密度兜底。
+/// 一篇文档：先跑表格与列表，没命中再跑密度兜底；加粗与分割线独立判。
 pub fn check_file(path: &Path, contract: &Contract, root: Option<&Path>) -> Vec<Finding> {
     let rel = rel_of(path, root);
     let text = fs::read_to_string(path).unwrap_or_default();
@@ -39,6 +41,8 @@ pub fn check_file(path: &Path, contract: &Contract, root: Option<&Path>) -> Vec<
             findings.push(finding);
         }
     }
+    findings.extend(check_bold(&rel, &text, contract));
+    findings.extend(check_rule(&rel, &text, contract));
     findings
 }
 
