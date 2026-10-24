@@ -4,13 +4,10 @@
 
 ### Added
 
-- CLI 文档：开发指南路线图新增 `CLI v0.1` 规划——`language` 列表层、密度兜底、`docs check` 与阈值标定四项范围，以及自动改写、多格式、`auto` 推断三条不做与验收口径
-- CLI 文档：新增开发指南「文档审计」（`src/cli/docs/dev-guide/docs/`）——列出 `language` 表格层已覆盖的范围、列表层还缺的三类判定，以及验证、列表层、密度兜底与阈值标定的实施顺序；路线图取自 `data/context` 的草稿并按现有实现改写
 - studio：新增 `packages/review_tool` 审阅抽样包（扫描/抽样/批次/提交/行级 diff；JSONL 存储，Web 禁用），并在 `lib/review/review_service_factory.dart` 提供接线入口
 
 ### Changed
 
-- CLI 文档：v0.1 规划与文档审计路线图改为新起 `docs` 子命令——表格层从 `language` 整层迁入，列表层与密度兜底挂在同一入口，`language` 不再保留表格检查
 - studio 文档按当前结构重写：README 与 ROADMAP 改为骨架 + review_tool 的现状；归档 models/screens 的设计合并到 `doc/data-sources.md` 与 `doc/planned-ui.md`
 - 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
 
@@ -18,6 +15,22 @@
 
 - Studio 业务代码（`src/studio/lib/bloc`、`models`、`repositories`、`screens`、`services`、`config.dart`）与测试归档至 `data/archive/platform/qtfounder/studio/`；`src/studio` 仅保留入口 `lib/main.dart` 与最小骨架
 - studio `doc/models/`、`doc/screens/`、`navigation.md`、`router.md` 的过期设计文档；内容合并到 `doc/data-sources.md` 与 `doc/planned-ui.md`
+
+## [cli/v0.0.3] - 2026-10-24
+
+第四个子命令 `docs` 上线：文档结构审计。表格层从 `language` 整层迁出，再加列表与密度两层。
+
+### Added
+
+- CLI `docs` 子命令：表格、列表、密度三层，判这段内容该不该是这个形状。表格层自 `language` 迁入（`src/docs/table.rs`、`[table]` 契约、`Kind::Table`），行为不变；列表层查单项过长与三段式（`- **要点**：解释` 占比过高）；密度层查结构块占比与无散文率，只在缺陷规则未命中时兜底，严重度固定为嫌疑。契约在 `src/cli/src/docs/default-contract.toml`，查找顺序与 `code`／`language` 一致
+- `docs check`：比对 `.agents/skills/` 实际目录与 `AGENTS.md`、`CONTRIBUTING.md` 里的引用，报缺失索引与失效引用
+- `--stats`：只打每篇的块占比、无散文率、结构块数与字数，不产生命中；密度阈值标定前用它看分布
+- 文档三篇：`user-guide/docs.md`、`api-reference/docs.md`、`dev-guide/docs/`（定位与路线图），`README.md` 与文档站目录同步
+
+### Changed
+
+- `language` 移除表格层：`Kind::Table`、`[table]` 契约段与 `table.rs` 一并移出，`--kind` 剩六个文字层。拆分不留兼容入口，避免两套口径走开
+- 文档审计路线图四项（`docs` 子命令、列表层、密度兜底、`docs check`）随本版落地，只剩阈值标定
 
 ## [cli/v0.0.2] - 2026-10-22
 

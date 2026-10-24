@@ -15,7 +15,6 @@ use super::common::{in_dir, is_excluded};
 use super::contract::Contract;
 use super::model::{Finding, Kind, Verdict};
 use super::syntax::check_syntax;
-use super::table::check_table;
 use super::voice::check_voice;
 
 static QUOTED_OUTPUT: std::sync::LazyLock<Regex> = std::sync::LazyLock::new(|| {
@@ -42,7 +41,6 @@ pub fn check_file(path: &Path, contract: &Contract, root: Option<&Path>) -> Vec<
     findings.extend(check_required(&rel, &text, contract));
     findings.extend(check_numbers(&rel, &text, contract));
     findings.extend(check_syntax(&rel, &text, contract));
-    findings.extend(check_table(&rel, &text, contract));
     findings.extend(check_voice(&rel, &text, contract));
     let lines: Vec<&str> = text.lines().collect();
     for finding in &mut findings {

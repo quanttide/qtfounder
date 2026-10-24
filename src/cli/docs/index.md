@@ -1,11 +1,12 @@
 # qtfounder CLI 文档
 
-命令行工具，两个子命令查两类介质：`code` 查源码，`language` 查文字。
+命令行工具，三个子命令查三类介质：`code` 查源码，`language` 查文字，`docs` 查文档结构。
 
 ## 用户指南
 
 - [`code`](user-guide/code.md)：代码语用检查，四层。先看它怎么查它自己（八十五处命中分四层）。
-- [`language`](user-guide/language.md)：语言检查，七层加语义层，出结果再过一层复核。先看它怎么查本仓文档（三十五处，其中十三处是规则误报）与一个真语料仓（七百六十四处）。
+- [`language`](user-guide/language.md)：语言检查，六层加语义层，出结果再过一层复核。
+- [`docs`](user-guide/docs.md)：文档审计，表格、列表与密度三层；阈值未标定前密度只观测。
 
 ## 开发指南
 
@@ -19,6 +20,7 @@
 
 - [`code` 接口](api-reference/code.md)：参数、退出码、JSON 字段、稳定性承诺。
 - [`language` 接口](api-reference/language.md)：同上，加语义层的环境变量与降级办法。
+- [`docs` 接口](api-reference/docs.md)：三层参数、契约字段与 `docs check` 的退出码。
 
 ## 一条自举约定
 
@@ -26,12 +28,13 @@
 
 ```bash
 cargo run -- language docs
+cargo run -- docs docs
 cargo run -- code src
 ```
 
-两条都还没清零：`language docs` 审十二个文件、报三十五处（真问题二十二处，全是 `voice` 层；另十三处被复核层标成误报），`code src` 八十五处。
+三条都还没清零：`language docs` 审十六个文件、报四十处（真问题二十八处，另十二处被复核层标成误报），`docs docs` 审十六个文件、报九处（全在列表层），`code src` 五十二处。
 
-代码侧剩的欠账，你自己跑一遍 `code src` 就能看到：文件里顶层定义太多，`check_table` 与 `internal_ids` 两个函数过长，命令行入口又长又深。这几条是结构问题，不是措辞问题，要拆就另开一轮。
+代码侧剩的欠账，你自己跑一遍 `code src` 就能看到：文件里顶层定义太多，`check_table` 与 `internal_ids` 两个函数过长，命令行入口又长又深。这几条是结构问题，不是措辞问题，要拆就另开一轮。文档侧那九处命中里，五处是「加粗要点 + 解释」成段排布，四处是单项超过百字，改稿时顺手换掉。
 
 ## 已知边界
 

@@ -9,6 +9,7 @@ project:
       children:
         - file: user-guide/code.md
         - file: user-guide/language.md
+        - file: user-guide/docs.md
     - title: 开发指南
       children:
         - file: dev-guide/index.md
@@ -24,6 +25,7 @@ project:
       children:
         - file: api-reference/code.md
         - file: api-reference/language.md
+        - file: api-reference/docs.md
 site:
   template: book-theme
   options:

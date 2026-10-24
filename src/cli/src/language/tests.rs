@@ -124,12 +124,6 @@ fn count_word_is_reported() {
 }
 
 #[test]
-fn two_column_table_is_reported() {
-    let text = "| 名词 | 解释 |\n|---|---|\n| 甲 | 乙 |\n";
-    assert!(kinds(text, "").contains(&"table"));
-}
-
-#[test]
 fn voice_reports_internal_id_wall() {
     let text =
         "改了 `a/b.md`、`c/d.rs`、`e/f.toml`、`g/h.json`、`i/j.yaml` 这五处，`k/l.sh` 也算。\n";

@@ -1,8 +1,9 @@
 //! 表格层：列数、单元格长度、行数、有无表头，以及「这段内容根本不需要表格」。
 
-use super::common::hanzi_count;
+use super::common::{excerpt_of, hanzi_count};
 use super::contract::{Contract, Table as TableConfig};
 use super::model::{Finding, Kind, Severity};
+
 pub(super) fn check_table(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
     let config = &contract.table;
     let active = config.max_columns > 0
@@ -202,7 +203,7 @@ fn cell_findings(table: &Table, config: &TableConfig, rel: &str, out: &mut Vec<F
                     out,
                     rel,
                     table.start + index,
-                    cell.chars().take(70).collect(),
+                    excerpt_of(cell),
                     format!(
                         "单元格 {count} 汉字（上限 {}）：把段落从格子里拿出来写进正文",
                         config.max_cell_chars

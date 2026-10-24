@@ -8,7 +8,6 @@ pub enum Kind {
     Required,
     Numbers,
     Syntax,
-    Table,
     Voice,
 }
 
@@ -20,7 +19,6 @@ impl Kind {
             Kind::Required => "required",
             Kind::Numbers => "numbers",
             Kind::Syntax => "syntax",
-            Kind::Table => "table",
             Kind::Voice => "voice",
         }
     }
@@ -32,7 +30,6 @@ impl Kind {
             Kind::Required,
             Kind::Numbers,
             Kind::Syntax,
-            Kind::Table,
             Kind::Voice,
         ]
         .into_iter()

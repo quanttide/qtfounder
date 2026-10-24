@@ -1,4 +1,4 @@
-//! `qtfounder language`：文字审计七层。
+//! `qtfounder language`：文字审计六层。
 //!
 //! 判的不是「有没有语法错误」，而是**这段文字是不是在跟读者说话**。
 //! 契约在 `src/language/default-contract.toml`；与 `code` 那份同构——一份契约 = 一类介质的验收标准。
@@ -10,7 +10,6 @@ pub mod model;
 pub mod scan;
 mod sense;
 mod syntax;
-mod table;
 mod voice;
 
 #[cfg(test)]
@@ -24,7 +23,7 @@ use clap::Args;
 use contract::Contract;
 use model::{Finding, Kind, Verdict};
 
-/// 语言检查：落点、自造术语、体系词、数字、句法、表格、语用七层。
+/// 语言检查：落点、自造术语、体系词、数字、句法、语用六层。
 #[derive(Args, Debug)]
 pub struct LanguageArgs {
     /// 要扫的目录或文件
@@ -33,7 +32,7 @@ pub struct LanguageArgs {
     /// 扫描范围：default 审全量（跳过 [scope] exclude 里的流水与第三方）；all 连 exclude 也不放过
     #[arg(long, default_value = "default")]
     pub scope: String,
-    /// 只看一类：placement／banned／required／numbers／syntax／table／voice
+    /// 只看一类：placement／banned／required／numbers／syntax／voice
     #[arg(long)]
     pub kind: Option<String>,
     /// 契约路径（缺省按 src/language/default-contract.toml 逐级往上找）

@@ -4,14 +4,14 @@
 
 ## CLI v0.1
 
-当前为 `cli/v0.0.2`，已落地 `code`、`language`、`health` 三个子命令。v0.1 把文档结构审计从 `language` 拆成独立的 `docs` 子命令，判定从表格扩到列表，并把跨文档的一致性检查做成可跑的命令。
+当前为 `cli/v0.0.3`，已落地 `code`、`language`、`health`、`docs` 四个子命令。v0.1 的文档结构审计四项已随 v0.0.3 提前落地，只剩阈值标定。
 
 ### 范围
 
-- [ ] 新 `docs` 子命令：把表格层从 `language` 整层迁出（`table.rs`、`[table]` 契约、`Kind::Table`），`language` 不再保留表格检查
-- [ ] `docs` 列表层：三段式列表项（`- **要点**：解释` 占比过高）与超长列表项；契约加 `[list]` 段，判定层 `src/docs/list.rs`，报告沿用行号加建议
-- [ ] 密度兜底：结构块占比与无散文率，挂在 `docs` 报告里，只出嫌疑提示，不单独触发修改
-- [ ] `docs check`：`.agents/skills/` 实际目录与 `AGENTS.md`、`CONTRIBUTING.md` 的索引比对，报缺失与多余
+- [x] 新 `docs` 子命令：表格层从 `language` 整层迁出（`table.rs`、`[table]` 契约、`Kind::Table`），`language` 不再保留表格检查
+- [x] `docs` 列表层：三段式列表项与超长列表项；契约 `[list]` 段，判定层 `src/docs/list.rs`
+- [x] 密度兜底：结构块占比与无散文率，挂在 `docs` 报告里，只出嫌疑；阈值默认关闭
+- [x] `docs check`：`.agents/skills/` 实际目录与 `AGENTS.md`、`CONTRIBUTING.md` 的索引比对
 - [ ] 阈值标定：手写组取 `data/journal/` 十五篇，AI 组取 `data/profile/` 与 `data/roadmap/` 十五篇，用分位数替换 `[list]` 与密度层的待定值；`docs/specification/`、`docs/tutorial/` 只做反样本
 
 判定方法与实施顺序见[文档审计路线图](docs/roadmap.md)。

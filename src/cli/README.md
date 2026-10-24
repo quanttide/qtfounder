@@ -15,7 +15,8 @@ cargo test
 | 命令 | 说明 |
 |---|---|
 | `qtfounder code` | 代码语用检查：词汇、句法、语篇、语用四层，判下一个维护者能不能看懂。用法见 [docs/user-guide/code.md](docs/user-guide/code.md) |
-| `qtfounder language` | 语言检查：落点、自造术语、体系词、数字、句法、表格、语用七层，判这段文字是不是在跟读者说话 |
+| `qtfounder language` | 语言检查：落点、自造术语、体系词、数字、句法、语用六层，判这段文字是不是在跟读者说话 |
+| `qtfounder docs` | 文档审计：表格、列表、密度三层，判这段内容该不该是这个形状；`docs check` 比对技能索引与目录。用法见 [docs/user-guide/docs.md](docs/user-guide/docs.md) |
 | `qtfounder health` | 健康检查：从会话库看消耗来自哪里、落在助手哪个环节，每条挂原话。用法见 [docs/user-guide/health.md](docs/user-guide/health.md) |
 
 ## 添加新功能
@@ -35,13 +36,14 @@ cargo build --release
 install -m755 target/release/qtfounder ~/.local/bin/qtfounder
 
 # 契约装到用户级目录，这样脱离源码树也能跑、改阈值不用重编译
-mkdir -p ~/.config/qtfounder/code ~/.config/qtfounder/language ~/.config/qtfounder/health
+mkdir -p ~/.config/qtfounder/code ~/.config/qtfounder/language ~/.config/qtfounder/health ~/.config/qtfounder/docs
 cp src/code/default-contract.toml     ~/.config/qtfounder/code/
 cp src/language/default-contract.toml ~/.config/qtfounder/language/
 cp src/language/sense-prompt.md       ~/.config/qtfounder/language/
 cp src/health/prompt.md               ~/.config/qtfounder/health/
+cp src/docs/default-contract.toml     ~/.config/qtfounder/docs/
 ```
 
-契约查找顺序：`--rules` → 环境变量（`QTFOUNDER_CODE_CONTRACT`／`QTFOUNDER_LANGUAGE_CONTRACT`）→ 从当前目录逐级往上找 → `~/.config/qtfounder/<模块>/`。四道都找不到就以退出码 2 报错，**不内置兜底**——静默回退会让人以为阈值生效了。
+契约查找顺序：`--rules` → 环境变量（`QTFOUNDER_CODE_CONTRACT`／`QTFOUNDER_LANGUAGE_CONTRACT`／`QTFOUNDER_DOCS_CONTRACT`）→ 从当前目录逐级往上找 → `~/.config/qtfounder/<模块>/`。四道都找不到就以退出码 2 报错，**不内置兜底**——静默回退会让人以为阈值生效了。
 
 最后一条容易漏：只装二进制不装契约，在任何非源码目录里跑都会直接报错。

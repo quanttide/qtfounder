@@ -30,8 +30,6 @@ pub struct Contract {
     #[serde(default)]
     pub syntax: Syntax,
     #[serde(default)]
-    pub table: Table,
-    #[serde(default)]
     pub voice: Voice,
 }
 
@@ -91,30 +89,6 @@ pub struct Syntax {
     /// 「三件事：A、B、C」这类先报件数再罗列。值里写正则。
     #[serde(default)]
     pub count_then_list_patterns: Vec<String>,
-}
-
-#[derive(Debug, Clone, Deserialize, Default)]
-pub struct Table {
-    #[serde(default)]
-    pub max_columns: usize,
-    #[serde(default)]
-    pub max_cell_chars: usize,
-    #[serde(default)]
-    pub max_rows: usize,
-    #[serde(default)]
-    pub require_header: bool,
-    #[serde(default)]
-    pub flag_two_column: bool,
-    #[serde(default)]
-    pub min_rows: usize,
-    #[serde(default)]
-    pub sparse_ratio: f64,
-    #[serde(default)]
-    /// 一格超过多少字算段落：口径记在契约里，判定暂用 max_cell_chars
-    #[allow(dead_code)]
-    pub long_cell_chars: usize,
-    #[serde(default)]
-    pub layout_headers: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
