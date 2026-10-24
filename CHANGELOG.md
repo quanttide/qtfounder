@@ -4,6 +4,7 @@
 
 ### Added
 
+- CLI 文档：开发指南路线图新增 `CLI v0.1` 规划——`language` 列表层、密度兜底、`docs check` 与阈值标定四项范围，以及自动改写、多格式、`auto` 推断三条不做与验收口径
 - CLI 文档：新增开发指南「文档审计」（`src/cli/docs/dev-guide/docs/`）——列出 `language` 表格层已覆盖的范围、列表层还缺的三类判定，以及验证、列表层、密度兜底与阈值标定的实施顺序；路线图取自 `data/context` 的草稿并按现有实现改写
 - studio：新增 `packages/review_tool` 审阅抽样包（扫描/抽样/批次/提交/行级 diff；JSONL 存储，Web 禁用），并在 `lib/review/review_service_factory.dart` 提供接线入口
 
