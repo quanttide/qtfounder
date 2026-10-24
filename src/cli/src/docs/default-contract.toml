@@ -72,10 +72,11 @@ keys = [
     "kernel", "number", "parts", "options", "abbreviations", "funding",
     "affiliations", "reviewers", "editors",
     # 本仓自用
-    "name", "author_type", "status",
+    "name", "status",
 ]
-# 谁写的，只限两类。人的具体姓名用 MyST 的 `authors`，两者不冲突。
-author_type = ["agent", "human"]
+# 署名里的 type：每条 `authors` 都要标，写清是谁写的。
+# 写模型的，`name` 就是模型名（如 DeepSeek V4.1 Flash），像人署名一样。
+author_types = ["human", "agent"]
 # 说到哪一步了。三档都在往下走，不循环。
 #   draft   草稿：还在写，随时会变
 #   pending 待验证：写完了，说法未核，不能当定论引用；AI 起草的默认落这里

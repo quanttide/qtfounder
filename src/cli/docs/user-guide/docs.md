@@ -14,9 +14,21 @@
 
 **分割线**：全文超过三处即报；紧挨标题的横线单独报，因为那是装饰，分章该靠标题层级。首尾的 frontmatter 与代码块里的横线不算。
 
-**Front matter**：有才算，没有不管。字段名不在 `[frontmatter] keys` 里报嫌疑；`status` 与 `author_type` 的取值不在表里报错。
+**Front matter**：有才算，没有不管。字段名不在 `[frontmatter] keys` 里报嫌疑；`status` 与署名 `type` 的取值不在表里报错。
 
-`status` 三档，同一条线上下走：`draft` 草稿、`pending` 待验证、`final` 定稿。AI 起草且说法未核的，落 `pending`。谁写的看 `author_type`，只有 `agent` 与 `human` 两个值；具体是谁不写在这里，用 MyST 的 `authors`。三档之外不另造近义词——`待验收`、`待验证`、`悬疑`、`疑惑` 都不是状态，前几个是 `pending` 的具体原因，最后一个该退回 `draft` 重写。
+`status` 三档，同一条线上下走：`draft` 草稿、`pending` 待验证、`final` 定稿。AI 起草且说法未核的，落 `pending`。
+
+谁写的用 MyST 的 `authors`，每条多一个 `type`：人的写 `human`，AI 的写 `agent`，模型名就写在 `name` 里，像人署名一样。不标 `type` 报错，`agent` 缺模型名报嫌疑。
+
+```yaml
+authors:
+  - name: 张三
+    type: human
+  - name: DeepSeek V4.1 Flash
+    type: agent
+```
+
+三档之外不另造近义词——`待验收`、`待验证`、`悬疑`、`疑惑` 都不是状态，前几个是 `pending` 的具体原因，最后一个该退回 `draft` 重写。
 
 ## 二、用法
 

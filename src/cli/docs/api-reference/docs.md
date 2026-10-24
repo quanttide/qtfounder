@@ -55,7 +55,9 @@ qtfounder docs check [ROOT]
 
 `[rule]` 两个字段：`max`（全文分割线处数）与 `flag_between_sections`（紧挨标题的横线算装饰，单独报）。
 
-`[frontmatter]` 三个字段：`keys`（允许出现的字段名，表外的报嫌疑）、`status`（取值表，表外的报错）、`author_type`（取值表）。表为空则不查该项；文档没有 front matter 时整层不动。`keys` 默认已含 MyST 的保留字段（`title`、`authors`、`license`、`exports` 等），站点渲染用的字段一律放行；本仓自用只有 `name`、`description`、`author_type`、`status` 四个。`author_type` 与 `authors` 并存不冲突：前者答「谁写的」，后者记具体姓名。默认取值：`status` 为 `draft`、`pending`、`final`，`author_type` 为 `agent`、`human`。
+`[frontmatter]` 三个字段：`keys`（允许出现的字段名，表外的报嫌疑）、`status`（取值表，表外的报错）、`author_types`（`authors` 每条 `type` 的取值表）。表为空则不查该项；文档没有 front matter 时整层不动。`keys` 默认已含 MyST 的保留字段（`title`、`authors`、`license`、`exports` 等），站点渲染用的字段一律放行；本仓自用只有 `name`、`status` 两个。
+
+署名读 `authors` 的块列表，只看每条内部的 `type` 与有没有 `name`：`type` 缺失报错，`agent` 缺模型名报嫌疑；其他字段（`email`、`affiliations` 等）不查。流式写法（`authors: [...]`）报嫌疑，因为落不了行号。默认取值：`status` 为 `draft`、`pending`、`final`，`author_types` 为 `human`、`agent`。
 
 所有数值 0 都表示关闭，与 `language` 一致。
 
