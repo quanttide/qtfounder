@@ -12,7 +12,7 @@
 - [ ] `docs` 列表层：三段式列表项（`- **要点**：解释` 占比过高）与超长列表项；契约加 `[list]` 段，判定层 `src/docs/list.rs`，报告沿用行号加建议
 - [ ] 密度兜底：结构块占比与无散文率，挂在 `docs` 报告里，只出嫌疑提示，不单独触发修改
 - [ ] `docs check`：`.agents/skills/` 实际目录与 `AGENTS.md`、`CONTRIBUTING.md` 的索引比对，报缺失与多余
-- [ ] 阈值标定：跑三十篇语料（手写与 AI 各十五），用分位数替换 `[list]` 与密度层的待定值
+- [ ] 阈值标定：手写组取 `data/journal/` 十五篇，AI 组取 `data/profile/` 与 `data/roadmap/` 十五篇，用分位数替换 `[list]` 与密度层的待定值；`docs/specification/`、`docs/tutorial/` 只做反样本
 
 判定方法与实施顺序见[文档审计路线图](docs/roadmap.md)。
 
