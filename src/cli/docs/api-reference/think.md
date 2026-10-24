@@ -1,17 +1,17 @@
-# `qtfounder health reflect` 接口
+# `qtfounder think reflect` 接口
 
 ## 一、命令面
 
 ```text
-qtfounder health reflect --stdin [--json]
-qtfounder health reflect --list [--due] [--json]
-qtfounder health reflect --id <ref_id> [--json]
-qtfounder health reflect --observe <ref_id> --result <一句话> [--emotion 0-100] [--json]
+qtfounder think reflect --stdin [--json]
+qtfounder think reflect --list [--due] [--json]
+qtfounder think reflect --id <ref_id> [--json]
+qtfounder think reflect --observe <ref_id> --result <一句话> [--emotion 0-100] [--json]
 ```
 
 四个入口互斥，给零个或多个都报用法错。`--due` 只与 `--list` 同用，`--result` 与 `--emotion` 只与 `--observe` 同用。
 
-不带子命令的 `qtfounder health` 仍是会话语料分析，行为不变。
+不带子命令的 `qtfounder health` 仍是会话语料分析，与 `think reflect` 的数据和口径都不相干。
 
 ## 二、记一条的输入
 
@@ -71,4 +71,4 @@ qtfounder health reflect --observe <ref_id> --result <一句话> [--emotion 0-10
 
 ## 六、落点
 
-`<数据目录>/reflect.json`，单文件 JSON。数据目录取 `QTFOUNDER_DATA`，其次 `$XDG_DATA_HOME/qtfounder`，再次 `~/.local/share/qtfounder`。
+`<数据目录>/think/reflect.json`，单文件 JSON。数据目录取 `QTFOUNDER_DATA`，其次 `$XDG_DATA_HOME/qtfounder`，再次 `~/.local/share/qtfounder`。

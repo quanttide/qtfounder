@@ -1,4 +1,4 @@
-# `qtfounder health reflect` 用户指南
+# `qtfounder think reflect` 用户指南
 
 给创始人自己用的反思记录。它不评情绪好坏，只把一条判断摊开，让事实去顶。
 
@@ -15,10 +15,10 @@
 记一条、看总表、看一条、回填结果，一次只用一个。不设交互问卷：能填表，反思就会退化成填表，问题得在对话里问出来，工具只负责存与翻。
 
 ```bash
-qtfounder health reflect --stdin --json        # 记一条
-qtfounder health reflect --list                # 待复看与未填完
-qtfounder health reflect --id ref_3WT3         # 看一条
-qtfounder health reflect --observe ref_3WT3 --result "只错了一个报价点"
+qtfounder think reflect --stdin --json        # 记一条
+qtfounder think reflect --list                # 待复看与未填完
+qtfounder think reflect --id ref_3WT3         # 看一条
+qtfounder think reflect --observe ref_3WT3 --result "只错了一个报价点"
 ```
 
 记完会给三样东西。`missing` 是还空着的栏，`next_question` 是照第一处空缺给出的下一问，`recurring` 是出现两次以上的认知扭曲。追问由 agent 在对话里做，工具不追问。
@@ -56,4 +56,4 @@ qtfounder health reflect --observe ref_3WT3 --result "只错了一个报价点"
 
 ## 六、落在哪
 
-数据在 `$XDG_DATA_HOME/qtfounder/reflect.json`（未设则 `~/.local/share/qtfounder/reflect.json`），`QTFOUNDER_DATA` 覆盖整个数据目录。与 `docs`、`language` 的契约文件分开放：那是口径，这是记录。
+数据在 `$XDG_DATA_HOME/qtfounder/think/reflect.json`（未设则 `~/.local/share/qtfounder/think/reflect.json`），`QTFOUNDER_DATA` 覆盖整个数据目录。与 `docs`、`language` 的契约文件分开放：那是口径，这是记录。

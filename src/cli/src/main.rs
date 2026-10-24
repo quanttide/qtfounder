@@ -9,6 +9,7 @@ mod code;
 mod docs;
 mod health;
 mod language;
+mod think;
 
 use clap::{Parser, Subcommand};
 
@@ -28,8 +29,10 @@ enum CliCommand {
     Language(language::LanguageArgs),
     /// 文档审计：表格、列表与密度三层
     Docs(docs::DocsArgs),
-    /// 健康检查：从会话库看消耗落在哪；`health reflect` 记一条 CBT 式反思
+    /// 健康检查：从会话库看消耗落在哪、落在助手哪个环节
     Health(health::HealthArgs),
+    /// 认知：按模型记一条反思、到点回收
+    Think(think::ThinkArgs),
 }
 
 fn main() {
@@ -55,21 +58,19 @@ fn main() {
                 std::process::exit(2);
             }
         },
-        Some(CliCommand::Health(args)) => match &args.command {
-            Some(health::HealthCommand::Reflect(reflect)) => match health::reflect::run(reflect) {
-                Ok(exit_code) => std::process::exit(exit_code),
-                Err(message) => {
-                    eprintln!("{message}");
-                    std::process::exit(2);
-                }
-            },
-            None => match health::run_health(&args) {
-                Ok(exit_code) => std::process::exit(exit_code),
-                Err(message) => {
-                    eprintln!("{message}");
-                    std::process::exit(2);
-                }
-            },
+        Some(CliCommand::Health(args)) => match health::run_health(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Think(args)) => match think::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
         },
         None => {
             println!("qtfounder：暂无子命令。");

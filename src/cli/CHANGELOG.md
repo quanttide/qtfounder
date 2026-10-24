@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-10-24
+
+`reflect` 从 `health` 挪到新的 `think` 组：检查器与建模分开。
+
+### Changed
+
+- `health reflect` → `think reflect`。`health` 回到纯语料诊断，不带子命令
+- 数据落点由 `<数据目录>/reflect.json` 改为 `<数据目录>/think/reflect.json`
+- 文档两篇由 `user-guide/health.md`、`api-reference/health.md` 改为 `think.md`
+
 ## [0.0.7] - 2026-10-24
 
 `health` 加子命令 `reflect`：一条反思的 CBT 记录。

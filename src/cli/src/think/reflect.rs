@@ -1,4 +1,4 @@
-//! `health reflect`：一条反思的 CBT 记录。
+//! `think reflect`：一条反思的 CBT 记录。
 //!
 //! 记的不是情绪，是一条可检验的判断链：情境 → 自动思维 → 认知扭曲 → 正反证据 →
 //! 替代思维 → 行为实验。角色归属（`company`/`self`、`scarce`/`grasp`）接
@@ -691,6 +691,7 @@ fn find<'a>(ledger: &'a Ledger, id: &str) -> Result<&'a Reflection, String> {
 // ---------- 存储 ----------
 
 /// 数据目录：`QTFOUNDER_DATA` 优先，其次 `$XDG_DATA_HOME/qtfounder`，再次 `~/.local/share/qtfounder`。
+/// 反思落 `<数据目录>/think/reflect.json`，与其他子命令的数据分开。
 fn data_dir() -> PathBuf {
     if let Some(dir) = std::env::var_os("QTFOUNDER_DATA").filter(|dir| !dir.is_empty()) {
         return PathBuf::from(dir);
@@ -706,7 +707,7 @@ fn data_dir() -> PathBuf {
 }
 
 fn data_file() -> PathBuf {
-    data_dir().join(DATA_FILE)
+    data_dir().join("think").join(DATA_FILE)
 }
 
 fn load() -> Result<Ledger, String> {
