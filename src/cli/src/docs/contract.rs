@@ -124,9 +124,9 @@ pub struct Frontmatter {
     /// status 的取值表；不在表里报错
     #[serde(default)]
     pub status: Vec<String>,
-    /// author 的取值表；不在表里报错
+    /// author_type 的取值表；不在表里报错
     #[serde(default)]
-    pub author: Vec<String>,
+    pub author_type: Vec<String>,
 }
 
 /// 找契约：环境变量 → 当前目录往上找 → 用户级目录 → 都没有就报错。刻意不内置兜底。

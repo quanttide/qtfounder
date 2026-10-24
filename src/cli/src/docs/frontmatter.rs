@@ -63,12 +63,17 @@ pub(super) fn check_frontmatter(path: &str, text: &str, contract: &Frontmatter) 
         }
         let allowed = match key.as_str() {
             "status" => &contract.status,
-            "author" => &contract.author,
+            "author_type" => &contract.author_type,
             _ => continue,
         };
         if allowed.is_empty() || allowed.iter().any(|item| item == &value) {
             continue;
         }
+        let hint = if key == "author_type" {
+            "；人的具体姓名用 MyST 的 `authors`"
+        } else {
+            ""
+        };
         out.push(Finding::new(
             Kind::Frontmatter,
             Severity::Error,
@@ -76,7 +81,7 @@ pub(super) fn check_frontmatter(path: &str, text: &str, contract: &Frontmatter) 
             line,
             excerpt_of(&format!("{key}: {value}")),
             format!(
-                "`{key}` 的取值不在表里：只有 {}；不要另造近义词",
+                "`{key}` 的取值不在表里：只有 {}{hint}；不要另造近义词",
                 allowed.join("、")
             ),
         ));
@@ -94,7 +99,7 @@ mod tests {
             keys: [
                 "name",
                 "description",
-                "author",
+                "author_type",
                 "status",
                 "title",
                 "authors",
@@ -107,7 +112,7 @@ mod tests {
                 .iter()
                 .map(|item| item.to_string())
                 .collect(),
-            author: ["agent", "human"]
+            author_type: ["agent", "human"]
                 .iter()
                 .map(|item| item.to_string())
                 .collect(),
@@ -116,13 +121,13 @@ mod tests {
 
     #[test]
     fn good_front_matter_is_quiet() {
-        let text = "---\nauthor: agent\nstatus: pending\n---\n\n# 标题\n";
+        let text = "---\nauthor_type: agent\nstatus: pending\n---\n\n# 标题\n";
         assert!(check_frontmatter("a.md", text, &contract()).is_empty());
     }
 
     #[test]
     fn unknown_status_is_reported() {
-        let text = "---\nauthor: agent\nstatus: 待验证\n---\n\n# 标题\n";
+        let text = "---\nauthor_type: agent\nstatus: 待验证\n---\n\n# 标题\n";
         let findings = check_frontmatter("a.md", text, &contract());
         assert_eq!(findings.len(), 1);
         assert_eq!(findings[0].line, 3);
