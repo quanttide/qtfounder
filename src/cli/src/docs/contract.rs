@@ -9,9 +9,10 @@ use serde::Deserialize;
 
 pub const CONTRACT_FILE: &str = "default-contract.toml";
 pub const CONTRACT_ENV: &str = "QTFOUNDER_DOCS_CONTRACT";
-const CONTRACT_RELATIVE: [&str; 2] = [
+const CONTRACT_RELATIVE: [&str; 3] = [
     "src/docs/default-contract.toml",
     "src/cli/src/docs/default-contract.toml",
+    "apps/qtfounder/src/cli/src/docs/default-contract.toml",
 ];
 
 #[derive(Debug, Clone, Deserialize, Default)]

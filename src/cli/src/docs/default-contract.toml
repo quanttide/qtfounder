@@ -2,7 +2,19 @@
 
 [scope]
 # 带 / 的按路径前缀算，不带的按同名文件或目录算（任意层级）
-exclude = [".git", "node_modules", "target", "_build", "CHANGELOG.md"]
+# 2026-10-25 巡检：格式类错误 620 处里只有 46 处在活文档，其余来自归档、小说原稿、实验仓。
+# 与 language 契约对齐：这几处不是按正式文档标准写的，不该按正式文档要求。
+exclude = [
+    ".git",
+    "node_modules",
+    "target",
+    "_build",
+    "CHANGELOG.md",
+    "data/archive",
+    "data/journal",
+    "assets",
+    "examples",
+]
 
 [table]
 # 表格本身是认知负担：手机上要横滚、单元格里塞段落、一张表混几个维度。
