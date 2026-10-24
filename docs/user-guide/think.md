@@ -1,6 +1,6 @@
-# health：从对话里看消耗落在哪
+# think load：从对话里看消耗落在哪
 
-`qtfounder health` 读 Hermes 的会话库，把说话人自己说的话过一遍，找出表达「耗」的句子，
+`qtfounder think load` 读 Hermes 的会话库，把说话人自己说的话过一遍，找出表达「耗」的句子，
 判断这股消耗来自哪里、落在助手这一侧的哪个环节，每条都挂一句原话。
 
 它不判「情绪好不好」，也不做情绪画像（那部分归 memory 五轴档案）。它回答一个问题：
@@ -9,12 +9,12 @@
 ## 命令
 
 ```bash
-qtfounder health                     # 读 ~/.hermes/state.db，判最多 200 条
-qtfounder health --dry-run           # 只统计候选量，不够模型
-qtfounder health --since 2026-09-01  # 只看这段时间之后的话
-qtfounder health --limit 40          # 本轮最多判 40 条（控成本）
-qtfounder health --out report.md     # 把完整报告写成 markdown（含原句，别放公开仓）
-qtfounder health --json              # 机器可读输出
+qtfounder think load                 # 读 ~/.hermes/state.db，判最多 200 条
+qtfounder think load --dry-run           # 只统计候选量，不够模型
+qtfounder think load --since 2026-09-01  # 只看这段时间之后的话
+qtfounder think load --limit 40          # 本轮最多判 40 条（控成本）
+qtfounder think load --out report.md     # 把完整报告写成 markdown（含原句，别放公开仓）
+qtfounder think load --json              # 机器可读输出
 ```
 
 | 参数 | 默认 | 说明 |
@@ -40,7 +40,7 @@ qtfounder health --json              # 机器可读输出
 
 ## 判定口径
 
-写在 `src/cli/src/health/prompt.md`，改口径只改这份提示词，不事后改数据。
+写在 `src/cli/src/think/load/prompt.md`，改口径只改这份提示词，不事后改数据。
 
 - 只判说话人**自己**的状态：技术提问、下命令、纠错、评价工具都不算
 - 主语必须是他自己：「读者每处理一个点都要做判断」这类是在评论文档，不算
@@ -83,10 +83,15 @@ D 和 E 是刻意归到助手这边的：把一堆可能摆在他面前让他自
 - 命中要求原话，语气很轻的累会被漏掉；未进池的条数会打印，但没做穿漏抽样
 - 时间按消息发出时间算，不代表疲劳发生在那一刻
 
+## 同组的另外两条
+
+`think` 还带 `reflect`（按 CBT 那套记一条反思、到点回填行为实验）与 `model`（看当前生效的认知模型）。
+两者的契约见 CLI 自己的文档：[think 用户指南](../../src/cli/docs/user-guide/think.md)。
+
 ## 自测
 
 ```bash
-cd src/cli && cargo test health::
+cd src/cli && cargo test think::load::
 ```
 
 十二条离线用例：历法换算、宽筛、JSON 解析容错（两个数组连写、中文键名、无原话即不命中）、

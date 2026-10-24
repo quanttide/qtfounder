@@ -20,7 +20,7 @@ fiction + memory（环境变量 `QTFOUNDER_FICTION_PATH` / `QTFOUNDER_MEMORY_PAT
 
 ## CLI（命令行）
 
-`src/cli/`（Rust）——三个子命令，都是「输入一批东西、输出一份问题清单」的检查器形态：
-`code`（代码四层）、`language`（文字七层）、`health`（消耗归因与责任环节）。
-参数与退出码见各用户指南：[code](user-guide/code.md)、[language](user-guide/language.md)、
-[health](user-guide/health.md)。退出码约定统一：0 无问题、1 有问题、2 跑不起来。
+`src/cli/`（Rust）——四个子命令。`code`（代码四层）、`language`（文字六层）、`docs`（文档结构五层）是检查器，
+`think` 管认知：`load` 看消耗落在哪，`reflect` 记一条反思，`model` 看当前模型。
+消耗归因的完整口径见 [think](user-guide/think.md)，其余见 CLI 自己的文档站。
+退出码约定统一：0 无问题、1 有问题、2 跑不起来。

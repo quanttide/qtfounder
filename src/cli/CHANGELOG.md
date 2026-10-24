@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-10-24
+
+`health` 并进 `think`，认知模型抽成契约。
+
+### Changed
+
+- `qtfounder health` → `qtfounder think load`，模块从 `src/health/` 迁到 `src/think/load/`；提示词与用户级目录路径同步
+- 认知模型从代码搬到 `src/think/default-contract.toml`：认知扭曲词表、归属与控制取值域、栏位顺序、追问用语与中文标签都在里面，判定层只读它
+- 模型查找顺序：`--model` → `QTFOUNDER_THINK_MODEL` → 源码树 → `~/.config/qtfounder/think/model.toml` → 内置兜底
+
+### Added
+
+- `think model`：把当前生效的模型摊开，`--json` 给机器看
+- `reflect --model <PATH>`：临时换一份模型
+- 文档 `user-guide/think.md` 与 `api-reference/think.md` 扩成三个子命令
+
 ## [0.0.8] - 2026-10-24
 
 `reflect` 从 `health` 挪到新的 `think` 组：检查器与建模分开。

@@ -1,24 +1,32 @@
-# `qtfounder think reflect` 接口
+# `qtfounder think` 接口
 
 ## 一、命令面
 
 ```text
-qtfounder think reflect --stdin [--json]
+qtfounder think load [--db PATH] [--since YYYY-MM-DD] [--limit N] [--dry-run] [--json]
+qtfounder think reflect --stdin [--json] [--model PATH]
 qtfounder think reflect --list [--due] [--json]
 qtfounder think reflect --id <ref_id> [--json]
 qtfounder think reflect --observe <ref_id> --result <一句话> [--emotion 0-100] [--json]
+qtfounder think model [--model PATH] [--json]
 ```
 
-四个入口互斥，给零个或多个都报用法错。`--due` 只与 `--list` 同用，`--result` 与 `--emotion` 只与 `--observe` 同用。
+`load` 是诊断，`reflect` 是记录，`model` 只读。`reflect` 的四个入口互斥，给零个或多个都报用法错；`--due` 只与 `--list` 同用，`--result` 与 `--emotion` 只与 `--observe` 同用。
 
-不带子命令的 `qtfounder health` 仍是会话语料分析，与 `think reflect` 的数据和口径都不相干。
+## 二、`load`
 
-## 二、记一条的输入
+读 Hermes 会话库（缺省 `~/.hermes/state.db`，只读），筛掉过短与纯确认的消息，分批送模型判定，按环节汇总。`--limit` 限本轮判多少条，`--batch` 与 `--workers` 控分批与并发，`--dry-run` 只统计候选量不调模型，`--out` 把报告写成 markdown。
+
+判定的口径不在代码里，在 `prompt.md`：查找顺序是 `--prompt` → `QTFOUNDER_THINK_PROMPT` → 从当前目录逐级往上找 `src/think/load/prompt.md` → `~/.config/qtfounder/think/prompt.md` → 内置源码树。四道都找不到就报错，不内置兜底。
+
+信号取值 `fatigue`／`friction`／空，环节取值 A 到 E。每条命中带一句原话，截取六到四十字。命中数超过 `--max-hits` 时以退出码 1 结束。
+
+## 三、`reflect` 的输入
 
 整条 JSON 从标准输入读入，字段名与 `--json` 输出一致。
 
 | 字段 | 必填 | 写什么 |
-|------|------|------|
+|------|------|--------|
 | `situation` | 是 | 情境，一句话，具体到能判断 |
 | `thought` | 是 | 自动思维，用当时的原话 |
 | `emotion` | 否 | 情绪名 |
@@ -33,9 +41,11 @@ qtfounder think reflect --observe <ref_id> --result <一句话> [--emotion 0-100
 
 `experiment` 里 `prediction` 必填，`review_on` 写 `YYYY-MM-DD`。回填字段 `result` 与 `emotion_after` 只能经 `--observe` 写入。
 
-## 三、输出
+认知扭曲与归属、控制的合法取值来自模型文件，不在代码里。`--model` 可临时换一份，缺省按 `QTFOUNDER_THINK_MODEL`、源码树、用户级目录的顺序找。
 
-记一条时给 `id`、`at`、`missing`、`next_question` 与 `recurring`。`missing` 按填栏顺序列出还空的栏，`next_question` 是照第一处空缺给出的那一句，`recurring` 只列出现两次以上的扭曲。
+## 四、`reflect` 的输出
+
+记一条时给 `id`、`at`、`missing`、`next_question` 与 `recurring`。`missing` 按模型里的栏位顺序列出还空的栏，`next_question` 是照第一处空缺给出的那一句，`recurring` 只列出现两次以上的扭曲。
 
 ```json
 {
@@ -47,15 +57,21 @@ qtfounder think reflect --observe <ref_id> --result <一句话> [--emotion 0-100
 }
 ```
 
-`--list` 给三段，`due` 是到期的实验，`open` 是栏位没填完的记录，`recurring` 同上。`--due` 时 `open` 为空。`--json` 永远给全量，人读时 `open` 只列最近三条。
+`--list` 给三段，`due` 是到期的实验，`open` 是栏位没填完的记录，`recurring` 同上。`--due` 时 `open` 为空；`--json` 永远给全量，人读时 `open` 只列最近三条。
 
 `--id` 给记录本身加一个 `missing`。`--observe` 回 `id`、`prediction`、`result` 与可选的 `emotion_after`。
 
-## 四、退出码
+## 五、`model`
 
-成功一律 0，没有「有记录就报 1」的语义——记录本身不是缺陷。错误一律 2，消息走标准错误，包括找不到 id 和记录没有行为实验。
+输出当前生效的模型与来源。`--json` 给 `source`、`role`（`domains` 与 `controls`）、`fields`（栏位顺序）、`labels`、`questions`、`distortions`（键与标签）。
 
-## 五、错误
+模型查找顺序是 `--model` → `QTFOUNDER_THINK_MODEL` → 从当前目录逐级往上找 `src/think/default-contract.toml` → `~/.config/qtfounder/think/model.toml` → 内置。前两道指向的文件不存在时报错，后面两道找不到就用内置。
+
+## 六、退出码
+
+`think` 没有「有命中就报 1」的语义——记录本身不是缺陷。`load` 在命中数超过 `--max-hits` 时退 1，其余情况成功都是 0。错误一律 2，消息走标准错误，包括找不到 id、记录没有行为实验、模型格式不对。
+
+## 七、错误
 
 - 入口给了零个或多个——`四选一：--stdin（记一条）、--list（看待办与重复）、--id（看一条）、--observe（回填结果）`
 - 缺 `situation` 或 `thought`——`缺字段 thought（不能为空）`
@@ -68,7 +84,8 @@ qtfounder think reflect --observe <ref_id> --result <一句话> [--emotion 0-100
 - 记录没有行为实验——`ref_XXXX 没有行为实验，无从回填`
 - id 不存在——`找不到反思 ref_XXXX，用 --list 看有哪些记录`
 - 标准输入不是 JSON——`标准输入不是合法 JSON：…`
+- 模型文件读不了或格式不对——`模型 <路径> 格式不对：…`
 
-## 六、落点
+## 八、落点
 
-`<数据目录>/think/reflect.json`，单文件 JSON。数据目录取 `QTFOUNDER_DATA`，其次 `$XDG_DATA_HOME/qtfounder`，再次 `~/.local/share/qtfounder`。
+`reflect` 的账本在 `<数据目录>/think/reflect.json`，数据目录取 `QTFOUNDER_DATA`，其次 `$XDG_DATA_HOME/qtfounder`，再次 `~/.local/share/qtfounder`。`load` 只读会话库，不写文件。

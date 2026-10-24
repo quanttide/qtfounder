@@ -4,7 +4,7 @@
 
 ## CLI v0.1
 
-当前为 `cli/v0.0.8`，已落地 `code`、`language`、`health`、`docs` 四个检查器，以及认知侧的 `think reflect`。v0.1 的文档结构审计五项已随 v0.0.3 与 v0.0.5 提前落地，只剩阈值标定。
+当前为 `cli/v0.0.9`，已落地 `code`、`language`、`docs` 三个检查器，以及认知侧的 `think load`、`think reflect`、`think model`。v0.1 的文档结构审计五项已随 v0.0.3 与 v0.0.5 提前落地，只剩阈值标定。
 
 ### 范围
 

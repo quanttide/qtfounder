@@ -1,8 +1,31 @@
-# `qtfounder think reflect` 用户指南
+# `qtfounder think` 用户指南
 
-给创始人自己用的反思记录。它不评情绪好坏，只把一条判断摊开，让事实去顶。
+认知这一侧的命令。`code`／`language`／`docs` 查的是产出物，`think` 查的是怎么想、怎么应对。
 
-## 一、它记什么
+三个入口：`load` 从会话语料里看消耗落在哪，`reflect` 按模型记一条反思并到点回收，`model` 把当前生效的模型摊开看。
+
+## 一、`load`：这股消耗落在哪
+
+读 Hermes 会话库里的用户消息，筛掉过短与纯确认，分批送模型判定，最后按环节汇总。判的不是「情绪好不好」，而是消耗来自哪里、落在助手的哪个环节。
+
+信号只有两类：`fatigue` 是自己的精力被耗掉，`friction` 是事情反复、被替做决定、信息对不上带来的烦躁。环节固定五个，全部记在助手一侧：
+
+- `A`：没照做、忘了、擅自改
+- `B`：输出太复杂、看不懂
+- `C`：没给判据、没法验证
+- `D`：没把选项收敛到能拍
+- `E`：没把外部条件的坑先探掉
+
+每条命中都要挂一句原话，截取六到四十字，不许改写；没有原话就不算命中。命中数超过 `--max-hits` 就以退出码 1 结束，所以能定期跑。
+
+```bash
+qtfounder think load --since 2026-10-01
+qtfounder think load --dry-run          # 只统计候选量，不调模型
+```
+
+需要会话库和模型凭据。口径在 `prompt.md` 里，不在代码里。
+
+## 二、`reflect`：记一条可检验的判断
 
 认知行为疗法把一次卡住的念头拆成五栏：情境、情绪、自动思维、正反证据、替代思维，最后复评情绪强度。这套结构有效不在栏多，而在每一栏都能被事实顶住：「他会谈砸」是判断，「团队谈过三次只差一个点」是事实。
 
@@ -10,9 +33,7 @@
 
 两个诊断问题落在 `domain` 与 `control` 上。前者判这件事属于公司还是属于我这个人，后者判是真的只有我能做（`scarce`）还是我不放心（`grasp`）。生活侧的事只填 `domain`，硬套一个控制属性反而失真。
 
-## 二、四个入口
-
-记一条、看总表、看一条、回填结果，一次只用一个。不设交互问卷：能填表，反思就会退化成填表，问题得在对话里问出来，工具只负责存与翻。
+四个入口互斥，一次只用一个：
 
 ```bash
 qtfounder think reflect --stdin --json        # 记一条
@@ -21,39 +42,36 @@ qtfounder think reflect --id ref_3WT3         # 看一条
 qtfounder think reflect --observe ref_3WT3 --result "只错了一个报价点"
 ```
 
-记完会给三样东西。`missing` 是还空着的栏，`next_question` 是照第一处空缺给出的下一问，`recurring` 是出现两次以上的认知扭曲。追问由 agent 在对话里做，工具不追问。
+记完给三样东西。`missing` 是还空着的栏，`next_question` 是照第一处空缺给出的下一问，`recurring` 是出现两次以上的认知扭曲。追问由 agent 在对话里做，工具不追问。
 
-## 三、认知扭曲词表
+认知扭曲只用来帮人看清念头，不用来贴标签。词表在模型里，`think model` 能看到当前那一份。
 
-只用来帮人看清念头，不用来给人贴标签。英文键与中文标签都认，落库统一存中文。
+## 三、`model`：改模型不用改代码
 
-| 键 | 标签 | 常见的样子 |
-|----|------|-----------|
-| `all_or_nothing` | 全或无 | 公司不好就是我不行 |
-| `catastrophizing` | 灾难化 | 交出去一定砸 |
-| `mind_reading` | 读心 | 他们肯定觉得我不管事 |
-| `should` | 应该式 | 我应该随时在线 |
-| `personalization` | 个人化 | 出事就是我的责任 |
-| `emotional_reasoning` | 情绪化推理 | 感到失控就等于失控 |
-| `discounting_positive` | 贬低积极面 | 做成了是运气 |
-| `overgeneralization` | 过度概括 | 这次没做好就什么都做不好 |
-| `labeling` | 贴标签 | 我就是个控制狂 |
-| `mental_filter` | 心理过滤 | 只看见错的那一处 |
+栏位顺序、追问用语、认知扭曲词表、归属与控制的取值域，全部在模型文件里。默认读仓库里的 `src/think/default-contract.toml`；装到用户级目录后读 `~/.config/qtfounder/think/model.toml`。
 
-## 四、到期回填
+```bash
+qtfounder think model            # 人读
+qtfounder think model --json     # 给机器看
+```
 
-`--list` 把过了复看日、还没回填的实验单列在最前面。回填用 `--observe`，`--result` 写实际发生了什么，不写感受；`--emotion` 填回填时的强度，和记录时的数字对照着看。
+```text
+认知模型：src/think/default-contract.toml
+归属：company / self
+控制：scarce / grasp
+栏位顺序：emotion → distortions → evidence_against → balanced → experiment
+认知扭曲：全或无、灾难化、读心、应该式、个人化、情绪化推理、贬低积极面、过度概括、贴标签、心理过滤
+收尾问：到复看日回填结果：实际发生的事，比任何推理都算数。
+```
 
-回填不改写原来的判断，也不自动得出结论。预测被推翻这件事，由人和 agent 在对话里说，工具只把两条摆在一起。
+与其他三份契约不同，认知模型有内置兜底：`reflect` 是记录本，不该因为找不到配置文件就记不了账。
 
-人读时未填完的记录最多列最近三条，其余折成一句计数。欠账全摊出来，列表就成了新的负担；`--json` 不受此限。
-
-## 五、什么时候别记
+## 四、什么时候别记
 
 默认不留痕，说完就结束。值得记的是带判断和动作的事：要不要接、要不要亲自做、放不放手。纯感受的记录留在日志里，不必变成一条实验。
 
 日志里读得到的是事后叙述，不是当时那句话。所以自动思维必须由 agent 提出候选、本人确认才能写进去——不问就写，等于替人编念头，整条记录的根就是假的。反对证据和替代思维通常已经写在同一天稍后几行，先翻日志再问人。
 
-## 六、落在哪
+## 五、落在哪
 
-数据在 `$XDG_DATA_HOME/qtfounder/think/reflect.json`（未设则 `~/.local/share/qtfounder/think/reflect.json`），`QTFOUNDER_DATA` 覆盖整个数据目录。与 `docs`、`language` 的契约文件分开放：那是口径，这是记录。
+`load` 读 `~/.hermes/state.db`，不写任何东西。`reflect` 的账本在 `<数据目录>/think/reflect.json`，数据目录取 `QTFOUNDER_DATA`，其次 `$XDG_DATA_HOME/qtfounder`，再次 `~/.local/share/qtfounder`。

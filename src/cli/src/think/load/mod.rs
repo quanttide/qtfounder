@@ -1,4 +1,4 @@
-//! `qtfounder health`：从对话语料里看消耗落在哪。
+//! `think load`：从对话语料里看消耗落在哪。
 //!
 //! 判的不是「情绪好不好」，而是**这股消耗来自哪里、落在助手哪个环节上**——
 //! 每条命中都要挂一句原话，判不动的就明说不判，不用「双方都有」含糊过去。
@@ -18,9 +18,9 @@ use clap::Args;
 
 use judge::{Judged, STAGES};
 
-/// 健康检查：从会话库看消耗信号落在助手的哪个环节。
+/// 负载：从会话库看消耗信号落在助手的哪个环节。
 #[derive(Args, Debug)]
-pub struct HealthArgs {
+pub struct LoadArgs {
     /// Hermes 会话库（只读）
     #[arg(long, default_value = "~/.hermes/state.db")]
     pub db: String,
@@ -71,14 +71,14 @@ struct Hit {
 
 /// 报告长、分支多，是因为它同时做四件事：取语料、过筛、送判、按「消耗去向」汇总。
 /// 不拆开是因为四步共用同一批计数，拆了就要互相传十来个临时量，读者反而要来回跳。
-pub fn run_health(args: &HealthArgs) -> Result<i32, String> {
+pub fn run_load(args: &LoadArgs) -> Result<i32, String> {
     let db = corpus::expand_home(&args.db);
     let messages = corpus::load(&db, args.since.as_deref())?;
     let total = messages.len();
     let (cands, rest) = screen::screen(messages);
     let cand_total = cands.len();
 
-    println!("qtfounder health");
+    println!("qtfounder think load");
     println!(
         "语料：{} 条用户消息（同会话同内容已去重，来自 {}）",
         total,
@@ -334,7 +334,7 @@ fn truncate(text: &str, max: usize) -> String {
 /// 参数多，是因为报告里每一节都要不同的计数；与其在函数里回头算，不如一次传齐。
 #[allow(clippy::too_many_arguments)]
 fn render_markdown(
-    args: &HealthArgs,
+    args: &LoadArgs,
     total: usize,
     cand_total: usize,
     rest: usize,

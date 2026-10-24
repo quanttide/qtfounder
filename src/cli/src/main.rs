@@ -7,7 +7,6 @@
 
 mod code;
 mod docs;
-mod health;
 mod language;
 mod think;
 
@@ -29,9 +28,7 @@ enum CliCommand {
     Language(language::LanguageArgs),
     /// 文档审计：表格、列表与密度三层
     Docs(docs::DocsArgs),
-    /// 健康检查：从会话库看消耗落在哪、落在助手哪个环节
-    Health(health::HealthArgs),
-    /// 认知：按模型记一条反思、到点回收
+    /// 认知：负载看消耗落点、reflect 记一条、model 看模型
     Think(think::ThinkArgs),
 }
 
@@ -52,13 +49,6 @@ fn main() {
             }
         },
         Some(CliCommand::Docs(args)) => match docs::run_docs(&args) {
-            Ok(exit_code) => std::process::exit(exit_code),
-            Err(message) => {
-                eprintln!("{message}");
-                std::process::exit(2);
-            }
-        },
-        Some(CliCommand::Health(args)) => match health::run_health(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

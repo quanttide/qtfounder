@@ -1,0 +1,81 @@
+# 认知模型：reflect 只认字段，不认内容。改模型改这份文件，不动判定代码。
+#
+# 查找顺序：--model → QTFOUNDER_THINK_MODEL → 从当前目录往上找 src/think/default-contract.toml
+# → ~/.config/qtfounder/think/model.toml → 内置兜底（就是这份）。
+
+[role]
+# 这件事属于公司，还是属于我这个人
+domains = ["company", "self"]
+# 结构性稀缺（真的只有我能做），还是心理性抓取（不放心）
+controls = ["scarce", "grasp"]
+
+[fields]
+# missing 与 next_question 按这个顺序走，从最该先问的开始
+order = ["emotion", "distortions", "evidence_against", "balanced", "experiment"]
+
+[labels]
+emotion = "情绪与强度"
+distortions = "认知扭曲"
+evidence_against = "反对证据"
+balanced = "替代思维"
+experiment = "行为实验"
+
+[questions]
+emotion = "这件事让你感到什么？强度大概几分（0-100）？"
+distortions = "这个念头属于哪种思维陷阱？全或无、灾难化、读心、应该式、个人化、情绪化推理、贬低积极面、过度概括"
+evidence_against = "有什么事实说明这件事没你想的那么糟？"
+balanced = "如果朋友遇到同样的事，你会怎么对他说？"
+experiment = "打算怎么验证这个判断？给一个预测和一个复看日期。"
+complete = "到复看日回填结果：实际发生的事，比任何推理都算数。"
+
+# 顺序即展示顺序：从最常见的开始。中英文都认，落库统一存中文。
+
+[[distortions]]
+key = "all_or_nothing"
+label = "全或无"
+sample = "非黑即白，没有中间地带"
+
+[[distortions]]
+key = "catastrophizing"
+label = "灾难化"
+sample = "直接想到最坏的结果"
+
+[[distortions]]
+key = "mind_reading"
+label = "读心"
+sample = "认定别人怎么想，不问"
+
+[[distortions]]
+key = "should"
+label = "应该式"
+sample = "用「应该」要求自己和别人"
+
+[[distortions]]
+key = "personalization"
+label = "个人化"
+sample = "把责任全揽到自己身上"
+
+[[distortions]]
+key = "emotional_reasoning"
+label = "情绪化推理"
+sample = "感到失控就等于失控"
+
+[[distortions]]
+key = "discounting_positive"
+label = "贬低积极面"
+sample = "做成了算运气"
+
+[[distortions]]
+key = "overgeneralization"
+label = "过度概括"
+sample = "一次没做好就次次做不好"
+
+[[distortions]]
+key = "labeling"
+label = "贴标签"
+sample = "给人或自己下一个定论"
+
+[[distortions]]
+key = "mental_filter"
+label = "心理过滤"
+sample = "只看见错的那一处"

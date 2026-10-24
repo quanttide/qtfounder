@@ -59,8 +59,8 @@ impl Judged {
     }
 }
 
-/// 提示词查找顺序：`--prompt` → `QTFOUNDER_HEALTH_PROMPT` → 从当前目录逐级往上找 →
-/// `~/.config/qtfounder/health/`。四道都找不到就报错，**不内置兜底**——
+/// 提示词查找顺序：`--prompt` → `QTFOUNDER_THINK_PROMPT` → 从当前目录逐级往上找 →
+/// `~/.config/qtfounder/think/`。四道都找不到就报错，**不内置兜底**——
 /// 静默回退会让人以为改过的口径生效了。
 pub fn prompt_path(custom: Option<&Path>) -> Result<PathBuf, String> {
     if let Some(path) = custom {
@@ -69,21 +69,22 @@ pub fn prompt_path(custom: Option<&Path>) -> Result<PathBuf, String> {
         }
         return Err(format!("--prompt 指的文件不存在：{}", path.display()));
     }
-    if let Ok(env_path) = std::env::var("QTFOUNDER_HEALTH_PROMPT")
+    if let Ok(env_path) = std::env::var("QTFOUNDER_THINK_PROMPT")
         && !env_path.is_empty()
     {
         let path = PathBuf::from(&env_path);
         if path.is_file() {
             return Ok(path);
         }
-        return Err(format!(
-            "QTFOUNDER_HEALTH_PROMPT 指的文件不存在：{env_path}"
-        ));
+        return Err(format!("QTFOUNDER_THINK_PROMPT 指的文件不存在：{env_path}"));
     }
     if let Ok(start) = std::env::current_dir() {
         let mut dir = start.as_path();
         loop {
-            for candidate in ["src/health/prompt.md", "src/cli/src/health/prompt.md"] {
+            for candidate in [
+                "src/think/load/prompt.md",
+                "src/cli/src/think/load/prompt.md",
+            ] {
                 let path = dir.join(candidate);
                 if path.is_file() {
                     return Ok(path);
@@ -96,17 +97,17 @@ pub fn prompt_path(custom: Option<&Path>) -> Result<PathBuf, String> {
         }
     }
     if let Ok(home) = std::env::var("HOME") {
-        let path = Path::new(&home).join(".config/qtfounder/health/prompt.md");
+        let path = Path::new(&home).join(".config/qtfounder/think/prompt.md");
         if path.is_file() {
             return Ok(path);
         }
     }
-    let bundled = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/health/prompt.md");
+    let bundled = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/think/load/prompt.md");
     if bundled.is_file() {
         return Ok(bundled);
     }
     Err(
-        "找不到判定口径（prompt.md）：用 --prompt 指定，或把它装到 ~/.config/qtfounder/health/"
+        "找不到判定口径（prompt.md）：用 --prompt 指定，或把它装到 ~/.config/qtfounder/think/"
             .to_string(),
     )
 }

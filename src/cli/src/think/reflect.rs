@@ -17,47 +17,13 @@ use clap::Args;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use super::model::Model;
+
 const DATA_FILE: &str = "reflect.json";
 const APP_DIR: &str = "qtfounder";
 
 /// 人读时最多列几条未填完的记录：欠账全摊出来，列表就成了新的负担。
 const OPEN_SHOWN: usize = 3;
-
-/// 认知扭曲词表：英文键与中文标签互为别名，落库统一用中文。
-const DISTORTIONS: &[(&str, &str)] = &[
-    ("all_or_nothing", "全或无"),
-    ("catastrophizing", "灾难化"),
-    ("mind_reading", "读心"),
-    ("should", "应该式"),
-    ("personalization", "个人化"),
-    ("emotional_reasoning", "情绪化推理"),
-    ("discounting_positive", "贬低积极面"),
-    ("overgeneralization", "过度概括"),
-    ("labeling", "贴标签"),
-    ("mental_filter", "心理过滤"),
-];
-
-/// 归属：这件事属于公司，还是属于我这个人。
-const DOMAINS: &[&str] = &["company", "self"];
-/// 控制：结构性稀缺（真的只有我能做）还是心理性抓取（不放心）。
-const CONTROLS: &[&str] = &["scarce", "grasp"];
-
-/// 还缺哪一栏、下一问是什么，按 CBT 的填栏顺序。
-const QUESTIONS: &[(&str, &str)] = &[
-    ("emotion", "这件事让你感到什么？强度大概几分（0-100）？"),
-    (
-        "distortions",
-        "这个念头属于哪种思维陷阱？全或无、灾难化、读心、应该式、个人化、情绪化推理、贬低积极面、过度概括",
-    ),
-    ("evidence_against", "有什么事实说明这件事没你想的那么糟？"),
-    ("balanced", "如果朋友遇到同样的事，你会怎么对他说？"),
-    (
-        "experiment",
-        "打算怎么验证这个判断？给一个预测和一个复看日期。",
-    ),
-];
-
-const COMPLETE_QUESTION: &str = "到复看日回填结果：实际发生的事，比任何推理都算数。";
 
 /// 反思侧的四个入口，恰好用一个。
 #[derive(Args, Debug)]
@@ -86,6 +52,9 @@ pub struct ReflectArgs {
     /// 输出 JSON
     #[arg(long)]
     pub json: bool,
+    /// 认知模型路径；缺省按 QTFOUNDER_THINK_MODEL、源码树、~/.config/qtfounder/think/model.toml 找
+    #[arg(long)]
+    pub model: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -156,16 +125,17 @@ pub fn run(args: &ReflectArgs) -> Result<i32, String> {
         return Err("--emotion 只与 --observe 一起用".to_string());
     }
 
+    let (model, _origin) = Model::load(args.model.as_deref())?;
     if args.list {
-        print_list(args.due, args.json)?;
+        print_list(args.due, args.json, &model)?;
         return Ok(0);
     }
     if args.stdin {
-        record(args.json)?;
+        record(args.json, &model)?;
         return Ok(0);
     }
     if let Some(id) = &args.id {
-        print_one(id, args.json)?;
+        print_one(id, args.json, &model)?;
         return Ok(0);
     }
     let id = args.observe.as_deref().unwrap_or_default();
@@ -189,19 +159,19 @@ struct Recurring {
 struct RecordOutcome {
     id: String,
     at: String,
-    missing: Vec<&'static str>,
-    next_question: &'static str,
+    missing: Vec<String>,
+    next_question: String,
     recurring: Vec<Recurring>,
 }
 
-fn record(json: bool) -> Result<(), String> {
+fn record(json: bool, model: &Model) -> Result<(), String> {
     let mut text = String::new();
     io::stdin()
         .read_to_string(&mut text)
         .map_err(|err| format!("读取标准输入失败：{err}"))?;
     let value: Value =
         serde_json::from_str(&text).map_err(|err| format!("标准输入不是合法 JSON：{err}"))?;
-    let mut reflection = parse_input(&value)?;
+    let mut reflection = parse_input(&value, model)?;
 
     let mut ledger = load()?;
     let id = new_id(|candidate| ledger.reflections.iter().any(|item| item.id == candidate));
@@ -210,19 +180,19 @@ fn record(json: bool) -> Result<(), String> {
     ledger.reflections.push(reflection.clone());
     save(&ledger)?;
 
-    let missing = missing_fields(&reflection);
+    let missing = missing_fields(&reflection, model);
     let outcome = RecordOutcome {
         id: reflection.id.clone(),
         at: reflection.at.clone(),
         missing: missing.clone(),
-        next_question: next_question(&missing),
+        next_question: next_question(&missing, model),
         recurring: recurring(&ledger),
     };
     if json {
         print_json(&outcome)?;
     } else {
         println!("已记 {}", outcome.id);
-        println!("还差：{}", summarize_missing(&missing));
+        println!("还差：{}", summarize_missing(&missing, model));
         println!("下一问：{}", outcome.next_question);
         print_recurring(&outcome.recurring);
     }
@@ -235,13 +205,13 @@ fn record(json: bool) -> Result<(), String> {
 struct One {
     #[serde(flatten)]
     reflection: Reflection,
-    missing: Vec<&'static str>,
+    missing: Vec<String>,
 }
 
-fn print_one(id: &str, json: bool) -> Result<(), String> {
+fn print_one(id: &str, json: bool, model: &Model) -> Result<(), String> {
     let ledger = load()?;
     let reflection = find(&ledger, id)?;
-    let missing = missing_fields(reflection);
+    let missing = missing_fields(reflection, model);
     if json {
         return print_json(&One {
             reflection: reflection.clone(),
@@ -275,7 +245,7 @@ fn print_one(id: &str, json: bool) -> Result<(), String> {
             println!("结果：{result}");
         }
     }
-    println!("还差：{}", summarize_missing(&missing));
+    println!("还差：{}", summarize_missing(&missing, model));
     Ok(())
 }
 
@@ -291,7 +261,7 @@ struct DueItem {
 struct OpenItem {
     id: String,
     situation: String,
-    missing: Vec<&'static str>,
+    missing: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -301,9 +271,9 @@ struct ListOutcome {
     recurring: Vec<Recurring>,
 }
 
-fn print_list(due_only: bool, json: bool) -> Result<(), String> {
+fn print_list(due_only: bool, json: bool, model: &Model) -> Result<(), String> {
     let ledger = load()?;
-    let outcome = list_outcome(&ledger, &today(), due_only);
+    let outcome = list_outcome(&ledger, &today(), due_only, model);
     if json {
         return print_json(&outcome);
     }
@@ -324,14 +294,14 @@ fn print_list(due_only: bool, json: bool) -> Result<(), String> {
     if outcome.open.is_empty() {
         println!("没有半截的记录");
     } else {
-        print_open(&outcome.open);
+        print_open(&outcome.open, model);
     }
     print_recurring(&outcome.recurring);
     Ok(())
 }
 
 /// 人读只列最近几条：欠账全摊出来，列表就成了新的负担。
-fn print_open(open: &[OpenItem]) {
+fn print_open(open: &[OpenItem], model: &Model) {
     let shown = OPEN_SHOWN.min(open.len());
     if open.len() > OPEN_SHOWN {
         println!("未填完 {} 条（只列最近 {shown} 条）", open.len());
@@ -343,7 +313,7 @@ fn print_open(open: &[OpenItem]) {
             "  {} {}  还差：{}",
             item.id,
             item.situation,
-            summarize_missing(&item.missing)
+            summarize_missing(&item.missing, model)
         );
     }
     if open.len() > OPEN_SHOWN {
@@ -355,7 +325,7 @@ fn print_open(open: &[OpenItem]) {
 }
 
 /// 到期与未填完各是哪些。今天按 UTC 算，与 `at` 同一口径。
-fn list_outcome(ledger: &Ledger, today: &str, due_only: bool) -> ListOutcome {
+fn list_outcome(ledger: &Ledger, today: &str, due_only: bool, model: &Model) -> ListOutcome {
     let mut due = Vec::new();
     let mut open = Vec::new();
     for reflection in &ledger.reflections {
@@ -371,7 +341,7 @@ fn list_outcome(ledger: &Ledger, today: &str, due_only: bool) -> ListOutcome {
                 prediction: experiment.prediction.clone(),
             });
         }
-        let missing = missing_fields(reflection);
+        let missing = missing_fields(reflection, model);
         if !due_only && experiment_result_is_none(reflection) && !missing.is_empty() {
             open.push(OpenItem {
                 id: reflection.id.clone(),
@@ -444,19 +414,19 @@ fn observe_result(
 
 // ---------- 解析与校验 ----------
 
-fn parse_input(value: &Value) -> Result<Reflection, String> {
+fn parse_input(value: &Value, model: &Model) -> Result<Reflection, String> {
     Ok(Reflection {
         id: String::new(),
         at: String::new(),
         situation: required_text(value, "situation")?,
         thought: required_text(value, "thought")?,
         emotion: parse_emotion(value)?,
-        distortions: parse_distortions(value)?,
+        distortions: parse_distortions(value, model)?,
         evidence_for: text_list(value, "evidence_for")?,
         evidence_against: text_list(value, "evidence_against")?,
         balanced: optional_text(value, "balanced")?,
-        domain: parse_enum(value, "domain", DOMAINS)?,
-        control: parse_enum(value, "control", CONTROLS)?,
+        domain: parse_enum(value, "domain", &model.domains)?,
+        control: parse_enum(value, "control", &model.controls)?,
         experiment: parse_experiment(value)?,
     })
 }
@@ -480,18 +450,18 @@ fn parse_emotion(value: &Value) -> Result<Option<Emotion>, String> {
     }
 }
 
-fn parse_distortions(value: &Value) -> Result<Vec<String>, String> {
+fn parse_distortions(value: &Value, model: &Model) -> Result<Vec<String>, String> {
     text_list(value, "distortions")?
         .iter()
-        .map(|item| normalize_distortion(item))
+        .map(|item| normalize_distortion(item, model))
         .collect()
 }
 
-fn parse_enum(value: &Value, field: &str, allowed: &[&str]) -> Result<Option<String>, String> {
+fn parse_enum(value: &Value, field: &str, allowed: &[String]) -> Result<Option<String>, String> {
     let Some(text) = optional_text(value, field)? else {
         return Ok(None);
     };
-    if allowed.contains(&text.as_str()) {
+    if allowed.iter().any(|item| item == &text) {
         return Ok(Some(text));
     }
     Err(format!(
@@ -522,18 +492,13 @@ fn parse_experiment(value: &Value) -> Result<Option<Experiment>, String> {
     }))
 }
 
-fn normalize_distortion(raw: &str) -> Result<String, String> {
-    let key = raw.trim();
-    if let Some((_, chinese)) = DISTORTIONS
-        .iter()
-        .find(|(english, chinese)| key.eq_ignore_ascii_case(english) || key == *chinese)
-    {
-        return Ok((*chinese).to_string());
+fn normalize_distortion(raw: &str, model: &Model) -> Result<String, String> {
+    if let Some(label) = model.distortion_label(raw) {
+        return Ok(label.to_string());
     }
-    let known: Vec<&str> = DISTORTIONS.iter().map(|(_, chinese)| *chinese).collect();
     Err(format!(
-        "不认识的认知扭曲「{key}」，可用：{}",
-        known.join("／")
+        "不认识的认知扭曲「{raw}」，可用：{}",
+        model.distortion_labels().join("／")
     ))
 }
 
@@ -594,51 +559,45 @@ fn is_date(text: &str) -> bool {
 
 // ---------- 汇总 ----------
 
-fn missing_fields(reflection: &Reflection) -> Vec<&'static str> {
-    let mut out = Vec::new();
-    if reflection.emotion.is_none() {
-        out.push("emotion");
-    }
-    if reflection.distortions.is_empty() {
-        out.push("distortions");
-    }
-    if reflection.evidence_against.is_empty() {
-        out.push("evidence_against");
-    }
-    if reflection.balanced.is_none() {
-        out.push("balanced");
-    }
-    if reflection.experiment.is_none() {
-        out.push("experiment");
-    }
-    out
-}
-
-fn next_question(missing: &[&str]) -> &'static str {
-    let Some(first) = missing.first() else {
-        return COMPLETE_QUESTION;
-    };
-    QUESTIONS
+fn missing_fields(reflection: &Reflection, model: &Model) -> Vec<String> {
+    model
+        .order
         .iter()
-        .find(|(field, _)| field == first)
-        .map(|(_, question)| *question)
-        .unwrap_or(COMPLETE_QUESTION)
+        .filter(|field| field_is_missing(reflection, field))
+        .cloned()
+        .collect()
 }
 
-fn summarize_missing(missing: &[&str]) -> String {
+/// 哪一栏算空。字段名的含义写在代码里，顺序与叫法归模型管。
+fn field_is_missing(reflection: &Reflection, field: &str) -> bool {
+    match field {
+        "emotion" => reflection.emotion.is_none(),
+        "distortions" => reflection.distortions.is_empty(),
+        "evidence_for" => reflection.evidence_for.is_empty(),
+        "evidence_against" => reflection.evidence_against.is_empty(),
+        "balanced" => reflection.balanced.is_none(),
+        "experiment" => reflection.experiment.is_none(),
+        _ => false,
+    }
+}
+
+fn next_question(missing: &[String], model: &Model) -> String {
+    let Some(first) = missing.first() else {
+        return model.complete_question().to_string();
+    };
+    model
+        .question(first)
+        .map(str::to_string)
+        .unwrap_or_else(|| model.complete_question().to_string())
+}
+
+fn summarize_missing(missing: &[String], model: &Model) -> String {
     if missing.is_empty() {
         return "无，记录完整".to_string();
     }
     let names: Vec<&str> = missing
         .iter()
-        .map(|field| match *field {
-            "emotion" => "情绪与强度",
-            "distortions" => "认知扭曲",
-            "evidence_against" => "反对证据",
-            "balanced" => "替代思维",
-            "experiment" => "行为实验",
-            other => other,
-        })
+        .map(|field| model.label(field).unwrap_or(field))
         .collect();
     names.join("、")
 }
