@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-10-24
+
+拿 `docs` 查自己的文档站，清掉全部命中。
+
+### Changed
+
+- 三处退出码列表改为散文：`api-reference/` 下的 `code`、`docs`、`language` 三篇
+- 一处验收标准分类改为散文：`user-guide/code.md`；`dev-guide/adding-a-check.md` 的四处清单同样并成段落
+- 两处超长列表项拆开：`dev-guide/roadmap.md` 的阈值标定项、`dev-guide/docs/roadmap.md` 的阶段一步骤
+- `dev-guide/index.md` 去掉一处三十四字的整句加粗
+- 开发指南路线图的当前版本与已落地项更新到 `cli/v0.0.6`
+
 ## [0.0.5] - 2026-10-24
 
 `docs` 加两层：加粗与分割线。

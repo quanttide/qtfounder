@@ -4,7 +4,7 @@
 
 ## CLI v0.1
 
-当前为 `cli/v0.0.3`，已落地 `code`、`language`、`health`、`docs` 四个子命令。v0.1 的文档结构审计四项已随 v0.0.3 提前落地，只剩阈值标定。
+当前为 `cli/v0.0.6`，已落地 `code`、`language`、`health`、`docs` 四个子命令。v0.1 的文档结构审计五项已随 v0.0.3 与 v0.0.5 提前落地，只剩阈值标定。
 
 ### 范围
 
@@ -13,9 +13,9 @@
 - [x] 密度兜底：结构块占比与无散文率，挂在 `docs` 报告里，只出嫌疑；阈值默认关闭
 - [x] `docs check`：`.agents/skills/` 实际目录与 `AGENTS.md`、`CONTRIBUTING.md` 的索引比对
 - [x] 加粗与分割线：每千字加粗处数、一行并列加粗、整句加粗；分割线总数与紧挨标题的装饰线
-- [ ] 阈值标定：手写组取 `data/journal/` 十五篇，AI 组取 `data/profile/` 与 `data/roadmap/` 十五篇，用分位数替换 `[list]` 与密度层的待定值；`docs/specification/`、`docs/tutorial/` 只做反样本
+- [ ] 阈值标定：两组语料各十五篇，用分位数替换 `[list]` 与密度层的待定值
 
-判定方法与实施顺序见[文档审计路线图](docs/roadmap.md)。
+取法与反样本目录见[文档审计路线图](docs/roadmap.md)「阶段三」。
 
 ### 不做
 
