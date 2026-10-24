@@ -21,6 +21,13 @@ fn parse(text: &str) -> Option<(Vec<(usize, String, String)>, usize)> {
         if trimmed == "---" {
             return Some((fields, index + 1));
         }
+        // 只认顶格的 `键: 值`：缩进行是上一个键的值，列表项不是字段。
+        if raw.starts_with(char::is_whitespace)
+            || trimmed.starts_with('-')
+            || trimmed.starts_with('#')
+        {
+            continue;
+        }
         let Some((key, value)) = trimmed.split_once(':') else {
             continue;
         };
@@ -84,10 +91,18 @@ mod tests {
 
     fn contract() -> Frontmatter {
         Frontmatter {
-            keys: ["name", "description", "author", "status"]
-                .iter()
-                .map(|item| item.to_string())
-                .collect(),
+            keys: [
+                "name",
+                "description",
+                "author",
+                "status",
+                "title",
+                "authors",
+                "exports",
+            ]
+            .iter()
+            .map(|item| item.to_string())
+            .collect(),
             status: ["draft", "pending", "final"]
                 .iter()
                 .map(|item| item.to_string())
@@ -125,6 +140,12 @@ mod tests {
     #[test]
     fn document_without_front_matter_is_ignored() {
         let text = "# 标题\n\n正文。\n";
+        assert!(check_frontmatter("a.md", text, &contract()).is_empty());
+    }
+
+    #[test]
+    fn nested_values_are_not_fields() {
+        let text = "---\ntitle: 测试\nauthors:\n  - 甲\nexports:\n  - format: pdf\n---\n\n# 标题\n";
         assert!(check_frontmatter("a.md", text, &contract()).is_empty());
     }
 }

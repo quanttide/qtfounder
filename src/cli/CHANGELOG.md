@@ -5,6 +5,7 @@
 ### Added
 
 - `qtfounder docs` 新增 front matter 层：字段名不在契约表里报嫌疑，`status` 与 `author` 的取值不在表里报错；没有 front matter 的文档不动
+- front matter 的键表收入 MyST 保留字段（`title`、`authors`、`exports` 等），站点渲染用的字段一律放行；缩进值与列表项不当字段读
 - `qtfounder audit`：合并 `language` 与 `docs` 两套审计，按「一个词、一条规则」归堆，每期只报一处最值得改的。术语优先，目录级体裁要求与三类误报不进报告；`--json` 出结构化的数
 - `audit --patrol`：存量巡检。逐仓抽历史提交（默认 40 个，两端必取、中间等距），导出成树后用今天的契约重判，再和今天逐条比，分「随文件消失」「在留存文件里改掉」「今天还在」三档；`--samples` 调抽样深度
 

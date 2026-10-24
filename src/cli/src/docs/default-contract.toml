@@ -62,7 +62,18 @@ flag_between_sections = true   # 紧挨标题的横线只是装饰，单独报
 [frontmatter]
 # 文件头那几行 YAML。没有 front matter 的文档不管，有就按下面两张表查。
 # keys 之外的字段报嫌疑：字段名先写进契约，别各写各的。
-keys = ["name", "description", "author", "status"]
+#
+# MyST 的保留字段一律放行：站点要用它们渲染，不是我们的标记。
+keys = [
+    # MyST 保留
+    "title", "short_title", "subtitle", "description", "authors",
+    "keywords", "license", "copyright", "date", "subject", "doi", "venue",
+    "biblio", "math", "exports", "downloads", "thumbnail", "site", "jupyter",
+    "kernel", "number", "parts", "options", "abbreviations", "funding",
+    "affiliations", "reviewers", "editors",
+    # 本仓自用
+    "name", "author", "status",
+]
 # 谁写的。agent = AI 起草，human = 人写的。
 author = ["agent", "human"]
 # 说到哪一步了。三档都在往下走，不循环。
