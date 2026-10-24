@@ -2,7 +2,7 @@
 
 量潮创始人工作台服务端（Go）——创作数据 API。
 
-现状订正（2026-10-21）：目标 3 的三项均已完成而条目未勾——`internal/creative/auth.go` 实现基于 `QTFOUNDER_SECRET_KEY` 的访问限制并已在 `cmd/server/main.go` 接线（`/health` 免鉴权）；`Dockerfile` 与 `manifests/terraform` 已在仓；`.github/workflows/` 有 `ci.yml`、`deploy-provider.yml`（另有 `deploy-lite.yml`、`deploy-site.yml`）。
+现状订正（2026-10-21）：目标 3 的三项均已完成而清单未勾——`internal/creative/auth.go` 实现基于 `QTFOUNDER_SECRET_KEY` 的访问限制并已在 `cmd/server/main.go` 接线（`/health` 免鉴权）；`Dockerfile` 与 `manifests/terraform` 已在仓；`.github/workflows/` 有 `ci.yml`、`deploy-provider.yml`（另有 `deploy-lite.yml`、`deploy-site.yml`）。
 
 ## 目标 1：创作数据 API（当前）
 
