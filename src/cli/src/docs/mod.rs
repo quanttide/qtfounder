@@ -87,7 +87,7 @@ fn line_of(finding: &Finding) -> String {
 
 fn print_report(findings: &[Finding], scanned: usize, top: usize) {
     if findings.is_empty() {
-        println!("审了 {scanned} 个文件，没有命中：表格与列表没有滥用形状");
+        println!("审了 {scanned} 个文件，没有命中：表格、列表、密度、加粗与分割线都没有越界");
         return;
     }
     let mut by_file: HashMap<&str, Vec<&Finding>> = HashMap::new();

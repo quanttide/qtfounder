@@ -25,6 +25,10 @@ pub(super) fn check_bold(rel: &str, text: &str, contract: &Contract) -> Vec<Find
         if in_code {
             continue;
         }
+        // 表格行不算：表头加粗是表格自己的写法，不是正文在标重点
+        if raw.trim().starts_with('|') {
+            continue;
+        }
         chars += char_count(raw);
         let spans = bold_spans(raw);
         total += spans.len();

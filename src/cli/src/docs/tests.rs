@@ -124,6 +124,12 @@ fn one_short_bold_is_quiet() {
 }
 
 #[test]
+fn bold_table_header_is_not_counted() {
+    let text = "| **验收标准** | **待标定** |\n| :-- | :-- |\n| 甲 | 乙 |\n";
+    assert!(!kinds(text).contains(&"bold"));
+}
+
+#[test]
 fn bold_density_is_reported() {
     let text = "**甲** 乙丙丁戊己庚辛壬癸。\n".repeat(20);
     assert!(kinds(&text).contains(&"bold"));
