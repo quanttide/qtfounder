@@ -28,7 +28,7 @@ enum CliCommand {
     Language(language::LanguageArgs),
     /// 文档审计：表格、列表与密度三层
     Docs(docs::DocsArgs),
-    /// 健康检查：从会话库看消耗来自哪里、落在助手哪个环节
+    /// 健康检查：从会话库看消耗落在哪；`health reflect` 记一条 CBT 式反思
     Health(health::HealthArgs),
 }
 
@@ -55,12 +55,21 @@ fn main() {
                 std::process::exit(2);
             }
         },
-        Some(CliCommand::Health(args)) => match health::run_health(&args) {
-            Ok(exit_code) => std::process::exit(exit_code),
-            Err(message) => {
-                eprintln!("{message}");
-                std::process::exit(2);
-            }
+        Some(CliCommand::Health(args)) => match &args.command {
+            Some(health::HealthCommand::Reflect(reflect)) => match health::reflect::run(reflect) {
+                Ok(exit_code) => std::process::exit(exit_code),
+                Err(message) => {
+                    eprintln!("{message}");
+                    std::process::exit(2);
+                }
+            },
+            None => match health::run_health(&args) {
+                Ok(exit_code) => std::process::exit(exit_code),
+                Err(message) => {
+                    eprintln!("{message}");
+                    std::process::exit(2);
+                }
+            },
         },
         None => {
             println!("qtfounder：暂无子命令。");

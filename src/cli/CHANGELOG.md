@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-10-24
+
+`health` 加子命令 `reflect`：一条反思的 CBT 记录。
+
+### Added
+
+- `health reflect`：情境、自动思维、认知扭曲、正反证据、替代思维，加一个能回填的行为实验；角色归属接 `founder-reflect` 的两问。四个入口互斥：`--stdin` 记一条、`--list`（`--due` 只看到期）、`--id` 看一条、`--observe` 回填结果
+- 记完返回 `missing` 与 `next_question`，按填栏顺序给出下一问；`recurring` 只列出现两次以上的认知扭曲
+- 认知扭曲词表十项，中英文互为别名，落库统一存中文
+- 数据落 `$XDG_DATA_HOME/qtfounder/reflect.json`，`QTFOUNDER_DATA` 覆盖
+- 文档两篇：`user-guide/health.md`、`api-reference/health.md`，目录与首页同步
+
+### Changed
+
+- `health` 从叶子命令改为可选子命令组；不带子命令仍是原来的会话语料分析，行为不变
+
 ## [0.0.6] - 2026-10-24
 
 拿 `docs` 查自己的文档站，清掉全部命中。

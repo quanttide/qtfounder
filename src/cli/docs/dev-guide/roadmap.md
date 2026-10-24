@@ -4,7 +4,7 @@
 
 ## CLI v0.1
 
-当前为 `cli/v0.0.6`，已落地 `code`、`language`、`health`、`docs` 四个子命令。v0.1 的文档结构审计五项已随 v0.0.3 与 v0.0.5 提前落地，只剩阈值标定。
+当前为 `cli/v0.0.7`，已落地 `code`、`language`、`health`、`docs` 四个子命令，`health` 下另有 `reflect`。v0.1 的文档结构审计五项已随 v0.0.3 与 v0.0.5 提前落地，只剩阈值标定。
 
 ### 范围
 

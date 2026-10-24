@@ -6,6 +6,7 @@
 
 pub mod corpus;
 pub mod judge;
+pub mod reflect;
 pub mod screen;
 
 #[cfg(test)]
@@ -14,13 +15,25 @@ mod tests;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use clap::Args;
+use clap::{Args, Subcommand};
 
 use judge::{Judged, STAGES};
+
+/// `health` 下的子命令。
+///
+/// 不带子命令时跑语料分析（默认行为），带 `reflect` 时走反思记录。
+#[derive(Subcommand, Debug)]
+pub enum HealthCommand {
+    /// 反思记录：情境、自动思维、认知扭曲、证据、行为实验
+    Reflect(reflect::ReflectArgs),
+}
 
 /// 健康检查：从会话库看消耗信号落在助手的哪个环节。
 #[derive(Args, Debug)]
 pub struct HealthArgs {
+    /// 子命令；不给则跑会话语料分析
+    #[command(subcommand)]
+    pub command: Option<HealthCommand>,
     /// Hermes 会话库（只读）
     #[arg(long, default_value = "~/.hermes/state.db")]
     pub db: String,

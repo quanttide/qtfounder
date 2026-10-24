@@ -570,7 +570,7 @@ dependencies = [
 
 [[package]]
 name = "qtfounder-cli"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "clap",
  "proc-macro2",
