@@ -8,7 +8,7 @@
 
 ## 已有的能力
 
-表格层已经落在 `qtfounder language` 里，契约在 `src/language/default-contract.toml` 的 `[table]` 段：
+表格层目前在 `language` 里，契约在 `src/language/default-contract.toml` 的 `[table]` 段：
 
 - `max_columns`、`max_rows`：列或行太多，手机上要横滚；
 - `max_cell_chars`、`long_cell_chars`：单元格塞段落，等于该拆成正文；
@@ -16,6 +16,8 @@
 - `sparse_ratio`、`require_header`、`layout_headers`：内容撑不起表格形状，或表头只是排版词。
 
 报告已经带文件、行号与建议，按严重度排序，`--kind table` 可单跑，`--top` 截断。所以路线图里的「退化表格」不必另写：单列表格由 `flag_two_column` 与 `min_rows` 覆盖，单元格过长由 `max_cell_chars` 覆盖。
+
+这套判定判的是文档结构，不是文字本身，放在 `language` 里并不合适。v0.1 把它整层迁出。
 
 ## 还缺的
 
@@ -25,6 +27,6 @@
 
 ## 落在哪里
 
-先作为 `language` 的列表层加，不另起子命令：同一份契约、同一个 `Finding` 形状、同一套报告与 `--top`。等密度指标稳定、需要跨文件汇总时，再讨论是否独立成 `qtfounder docs`。现在拆出去只会多一套重复的扫描与输出。
+新起 `qtfounder docs` 子命令，把 `language` 的表格层整层迁过来，再在同一入口上加列表层。表格和列表是同一类介质——都在说「这段内容该不该是这个形状」，共用一份契约、同一个 `Finding` 形状、同一套报告与 `--top`。
 
-实施步骤见[路线图](roadmap.md)。
+`language` 保留词汇、句法、语用这些文字层，`[table]` 段与 `Kind::Table` 一并移出，不在两处留口径。迁移的细节与停止条件见[路线图](roadmap.md)阶段一。

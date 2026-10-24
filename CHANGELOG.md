@@ -10,6 +10,7 @@
 
 ### Changed
 
+- CLI 文档：v0.1 规划与文档审计路线图改为新起 `docs` 子命令——表格层从 `language` 整层迁入，列表层与密度兜底挂在同一入口，`language` 不再保留表格检查
 - studio 文档按当前结构重写：README 与 ROADMAP 改为骨架 + review_tool 的现状；归档 models/screens 的设计合并到 `doc/data-sources.md` 与 `doc/planned-ui.md`
 - 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
 
