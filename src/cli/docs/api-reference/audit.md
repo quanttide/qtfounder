@@ -10,6 +10,8 @@
 | `--language-rules <PATH>` | 逐级往上找 | 语言契约 |
 | `--docs-rules <PATH>` | 逐级往上找 | 文档契约 |
 | `--json` | 关 | 输出 JSON |
+| `--patrol` | 关 | 换成存量巡检：抽历史快照重判，不与体检报告同出 |
+| `--samples <N>` | 40 | 巡检时每个仓抽多少个提交（两端必取，中间等距） |
 
 ## 退出码
 
@@ -18,6 +20,8 @@
 | 0 | 没查出真问题 |
 | 1 | 有真问题 |
 | 2 | 契约读不了 |
+
+`--patrol` 恒返回 0：巡检只给基线，不下结论。
 
 ## JSON
 
@@ -37,6 +41,31 @@
 ```
 
 `top` 是本该先改的那一处，没有问题时为 `null`。`categories` 是归堆后的类数，不等于命中数。
+
+## 巡检的 JSON
+
+`audit --patrol --json` 换一组字段：
+
+```json
+{
+  "repos": 24,
+  "snapshots": 573,
+  "seen": 1405,
+  "alive": 284,
+  "file_gone": 1058,
+  "fixed": 63,
+  "terminology_gone": 491,
+  "terminology_fixed": 36,
+  "sampled": 36,
+  "targeted": 19,
+  "incidental": 17,
+  "today_errors": 425
+}
+```
+
+`seen` 是历史快照里出现过的不同命中，按「同一文件同一规则」算，同一个词在多行命中只计一次。`today_errors` 是按条数算的今天。`terminology_fixed` 是消失的术语命中里、改在留存文件中的那部分，`sampled` 是其中真去回溯了提交的条数。
+
+`seen` 随 `--samples` 变，越深越大，是个下界；比例比绝对量稳。
 
 ## 稳定性
 

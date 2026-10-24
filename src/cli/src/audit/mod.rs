@@ -5,6 +5,10 @@
 //!
 //! 排序上术语优先。格式小事命中再多，也只是小事；读者要先把词翻译一遍才读得懂的，
 //! 才是先该动的那一处。
+//!
+//! `--patrol` 换成存量巡检：抽历史快照重判，数出当年漏过去的量与后来被改掉的比例。
+
+mod patrol;
 
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
@@ -33,6 +37,12 @@ pub struct AuditArgs {
     /// 输出 JSON
     #[arg(long)]
     pub json: bool,
+    /// 换成存量巡检：抽历史快照重判，数出漏过去的量与后来被改掉的比例
+    #[arg(long)]
+    pub patrol: bool,
+    /// 巡检时每个仓抽多少个提交（两端必取，中间等距）
+    #[arg(long, default_value_t = 40)]
+    pub samples: usize,
 }
 
 /// 一处问题按「层 + 改法」归堆后的样子：改一次能带走几处、散在几篇里。
@@ -214,6 +224,22 @@ fn render_json(digest: &Digest) {
 pub fn run_audit(args: &AuditArgs) -> Result<i32, String> {
     let language = LanguageContract::load(args.language_rules.as_deref())?;
     let docs = DocsContract::load(args.docs_rules.as_deref())?;
+
+    if args.patrol {
+        let report = patrol::run(
+            &args.roots,
+            args.samples,
+            &language,
+            &docs,
+            args.json || !std::io::IsTerminal::is_terminal(&std::io::stderr()),
+        )?;
+        if args.json {
+            patrol::render_json(&report);
+        } else {
+            patrol::print_report(&report);
+        }
+        return Ok(0);
+    }
 
     let digest = collect(&args.roots, &language, &docs);
 
