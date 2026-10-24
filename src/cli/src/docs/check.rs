@@ -15,7 +15,7 @@ pub fn run_check(root: &Path) -> Result<i32, String> {
     }
     let skills = find_skills_dir(root);
     let mut on_disk = BTreeSet::new();
-    if let Some(dir) = &skills {
+    if let Some((dir, _)) = &skills {
         for entry in
             std::fs::read_dir(dir).map_err(|error| format!("读不了 {}：{error}", dir.display()))?
         {
@@ -50,21 +50,35 @@ pub fn run_check(root: &Path) -> Result<i32, String> {
         ));
     }
 
-    let missing_index: Vec<&String> = on_disk.difference(&referenced).collect();
+    let missing_index: Vec<&String> = if skills.as_ref().is_some_and(|(_, under_root)| *under_root)
+    {
+        on_disk.difference(&referenced).collect()
+    } else {
+        // 技能目录在祖先仓：索引归祖先仓管，本仓只负责自己的引用能对上
+        Vec::new()
+    };
     let dangling: Vec<&String> = referenced.difference(&on_disk).collect();
 
     println!(
-        "文档索引：读 {}，技能目录 {} 个，正文引用 {} 个",
+        "文档索引：读 {}，技能目录 {} 个（{}），正文引用 {} 个",
         if read.is_empty() {
             "（无 AGENTS.md / CONTRIBUTING.md）".to_string()
         } else {
             read.join("、")
         },
         on_disk.len(),
+        match &skills {
+            Some((dir, true)) => format!("{}", dir.display()),
+            Some((dir, false)) => format!("{}，在祖先仓", dir.display()),
+            None => "未找到".to_string(),
+        },
         referenced.len()
     );
     if missing_index.is_empty() && dangling.is_empty() {
-        println!("索引与目录一致");
+        match &skills {
+            Some((_, false)) => println!("本仓引用都能对上（索引归祖先仓）"),
+            _ => println!("索引与目录一致"),
+        }
         return Ok(0);
     }
     if !missing_index.is_empty() {
@@ -83,13 +97,14 @@ pub fn run_check(root: &Path) -> Result<i32, String> {
 }
 
 /// 找 `.agents/skills`：先看给定目录，再最多上溯三层（从子目录跑也能找到）。
-fn find_skills_dir(root: &Path) -> Option<PathBuf> {
+/// 第二个返回值表示它是否就在给定目录之下——在祖先仓时不查索引缺漏。
+fn find_skills_dir(root: &Path) -> Option<(PathBuf, bool)> {
     let mut dir = Some(root);
-    for _ in 0..4 {
+    for depth in 0..4 {
         let base = dir?;
         let candidate = base.join(".agents/skills");
         if candidate.is_dir() {
-            return Some(candidate);
+            return Some((candidate, depth == 0));
         }
         dir = base.parent();
     }
