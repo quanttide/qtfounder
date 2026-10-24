@@ -2,13 +2,14 @@
 //!
 //! 判的不是「有没有语法错误」，而是**这段内容该不该是这个形状**。
 //! 缺陷规则（表格、列表、加粗、分割线）逐处定位；密度规则看整篇，只在缺陷规则没命中时兜底。
-//! 契约在 `src/docs/default-contract.toml`。
+//! front matter 另查字段名与取值。契约在 `src/docs/default-contract.toml`。
 
 mod bold;
 mod check;
 mod common;
 pub mod contract;
 pub mod density;
+mod frontmatter;
 mod list;
 pub mod model;
 mod rule;
@@ -26,7 +27,7 @@ use clap::{Args, Subcommand};
 use contract::Contract;
 use model::{Finding, Kind, Severity};
 
-/// 文档审计：表格、列表、密度、加粗与分割线五层。
+/// 文档审计：表格、列表、密度、加粗、分割线五层，加 front matter 字段。
 #[derive(Args, Debug)]
 pub struct DocsArgs {
     #[command(subcommand)]
@@ -34,7 +35,7 @@ pub struct DocsArgs {
     /// 要扫的目录或文件
     #[arg(default_value = ".")]
     pub root: PathBuf,
-    /// 只看一层：table／list／density／bold／rule
+    /// 只看一层：table／list／density／bold／rule／frontmatter
     #[arg(long)]
     pub kind: Option<String>,
     /// 契约路径（缺省按 src/docs/default-contract.toml 逐级往上找）
@@ -87,7 +88,9 @@ fn line_of(finding: &Finding) -> String {
 
 fn print_report(findings: &[Finding], scanned: usize, top: usize) {
     if findings.is_empty() {
-        println!("审了 {scanned} 个文件，没有命中：表格、列表、密度、加粗与分割线都没有越界");
+        println!(
+            "审了 {scanned} 个文件，没有命中：表格、列表、密度、加粗、分割线与 front matter 都没有越界"
+        );
         return;
     }
     let mut by_file: HashMap<&str, Vec<&Finding>> = HashMap::new();
@@ -177,7 +180,7 @@ pub fn run_docs(args: &DocsArgs) -> Result<i32, String> {
     if let Some(kind_name) = &args.kind {
         let Some(kind) = Kind::parse(kind_name) else {
             return Err(format!(
-                "不认识的层：{kind_name}（只有 table、list、density、bold、rule）"
+                "不认识的层：{kind_name}（只有 table、list、density、bold、rule、frontmatter）"
             ));
         };
         findings.retain(|finding| finding.kind == kind);

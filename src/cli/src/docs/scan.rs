@@ -13,6 +13,7 @@ use super::bold::check_bold;
 use super::common::is_excluded;
 use super::contract::Contract;
 use super::density;
+use super::frontmatter::check_frontmatter;
 use super::list::check_list;
 use super::model::Finding;
 use super::rule::check_rule;
@@ -33,7 +34,8 @@ fn rel_of(path: &Path, root: Option<&Path>) -> String {
 pub fn check_file(path: &Path, contract: &Contract, root: Option<&Path>) -> Vec<Finding> {
     let rel = rel_of(path, root);
     let text = fs::read_to_string(path).unwrap_or_default();
-    let mut findings = check_table(&rel, &text, contract);
+    let mut findings = check_frontmatter(&rel, &text, &contract.frontmatter);
+    findings.extend(check_table(&rel, &text, contract));
     findings.extend(check_list(&rel, &text, contract));
     if findings.is_empty() {
         let measures = density::measure(&text, contract.density.min_paragraph_chars);

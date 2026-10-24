@@ -29,6 +29,8 @@ pub struct Contract {
     pub bold: Bold,
     #[serde(default)]
     pub rule: Rule,
+    #[serde(default)]
+    pub frontmatter: Frontmatter,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -112,6 +114,19 @@ pub struct Rule {
     /// 紧挨标题的横线只是装饰，单独报
     #[serde(default)]
     pub flag_between_sections: bool,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Frontmatter {
+    /// 允许出现的字段；出现其他字段报嫌疑
+    #[serde(default)]
+    pub keys: Vec<String>,
+    /// status 的取值表；不在表里报错
+    #[serde(default)]
+    pub status: Vec<String>,
+    /// author 的取值表；不在表里报错
+    #[serde(default)]
+    pub author: Vec<String>,
 }
 
 /// 找契约：环境变量 → 当前目录往上找 → 用户级目录 → 都没有就报错。刻意不内置兜底。

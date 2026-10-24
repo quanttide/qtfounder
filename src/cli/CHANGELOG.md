@@ -4,11 +4,13 @@
 
 ### Added
 
+- `qtfounder docs` 新增 front matter 层：字段名不在契约表里报嫌疑，`status` 与 `author` 的取值不在表里报错；没有 front matter 的文档不动
 - `qtfounder audit`：合并 `language` 与 `docs` 两套审计，按「一个词、一条规则」归堆，每期只报一处最值得改的。术语优先，目录级体裁要求与三类误报不进报告；`--json` 出结构化的数
 - `audit --patrol`：存量巡检。逐仓抽历史提交（默认 40 个，两端必取、中间等距），导出成树后用今天的契约重判，再和今天逐条比，分「随文件消失」「在留存文件里改掉」「今天还在」三档；`--samples` 调抽样深度
 
 ### Changed
 
+- `docs` 契约新增 `[frontmatter]`：`keys` 定字段名，`status` 与 `author` 定取值；状态统一为 `draft`、`pending`、`final` 三档
 - `docs` 模块的 `contract`、`model`、`scan` 改为 `pub`，供 `audit` 直接复用扫描
 - 契约查找多认一条仓内路径 `apps/qtfounder/src/cli/src/...`：在主仓根跑 `audit` 时不再落到 `~/.config` 的旧文件（缺 10-24 新增的「记账」类词条，体检少报 13 处）
 - `docs` 契约补上 `data/archive`、`data/journal`、`assets`、`examples` 四个排除项，与 `language` 契约对齐：格式类错误从 620 处降到 54 处，嫌疑从 787 降到 340

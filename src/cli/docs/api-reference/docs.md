@@ -9,7 +9,7 @@ qtfounder docs check [ROOT]
 
 **ROOT**：目录或单文件，缺省当前目录。递归找 `.md`。
 
-**`--kind`**：`table`／`list`／`density`／`bold`／`rule`，只报一层。
+**`--kind`**：`table`／`list`／`density`／`bold`／`rule`／`frontmatter`，只报一层。
 
 **`--rules PATH`**：指定契约。缺省按 `QTFOUNDER_DOCS_CONTRACT`、再往上找 `src/docs/default-contract.toml`、最后退到 `~/.config/qtfounder/docs/`。
 
@@ -55,8 +55,10 @@ qtfounder docs check [ROOT]
 
 `[rule]` 两个字段：`max`（全文分割线处数）与 `flag_between_sections`（紧挨标题的横线算装饰，单独报）。
 
+`[frontmatter]` 三个字段：`keys`（允许出现的字段名，表外的报嫌疑）、`status`（取值表，表外的报错）、`author`（取值表）。表为空则不查该项；文档没有 front matter 时整层不动。默认取值：`status` 为 `draft`、`pending`、`final`，`author` 为 `agent`、`human`。
+
 所有数值 0 都表示关闭，与 `language` 一致。
 
 ## 五、稳定性承诺
 
-`kind` 的五个取值（`table`、`list`、`density`、`bold`、`rule`）与 `severity` 的两个取值不变；`excerpt`、`advice` 的措辞会变，别做断言。新增一层算小版本，删改取值算大版本。
+`kind` 的六个取值（`table`、`list`、`density`、`bold`、`rule`、`frontmatter`）与 `severity` 的两个取值不变；`excerpt`、`advice` 的措辞会变，别做断言。新增一层算小版本，删改取值算大版本。

@@ -1,8 +1,8 @@
 # `qtfounder docs` 用户指南
 
-文档审计：判的不是语法和错别字，而是这段内容该不该是这个形状。表格和列表是 AI 生成文档时的默认形状，该讲成段落的地方也被切成一条条；加粗和分割线则是「满篇重点」与「横线分章」两类毛病。
+文档审计：判的不是语法和错别字，而是这段内容该不该是这个形状。表格和列表是 AI 生成文档时的默认形状，该讲成段落的地方也被切成一条条；加粗和分割线则是「满篇重点」与「横线分章」两类毛病；front matter 查的是标记本身说不说得清。
 
-## 一、五层查什么
+## 一、六层查什么
 
 **表格**：列数、行数、单元格长度、有没有表头、空单元格比例、是不是两列表、表头是不是「说明」「备注」这类排版词。两列表本质是名词加一段解释，改成列表更自然；一格塞进一段话，说明这段该搬到正文。
 
@@ -14,11 +14,16 @@
 
 **分割线**：全文超过三处即报；紧挨标题的横线单独报，因为那是装饰，分章该靠标题层级。首尾的 frontmatter 与代码块里的横线不算。
 
+**Front matter**：有才算，没有不管。字段名不在 `[frontmatter] keys` 里报嫌疑；`status` 与 `author` 的取值不在表里报错。
+
+`status` 三档，同一条线上下走：`draft` 草稿、`pending` 待验证、`final` 定稿。AI 起草且说法未核的，落 `pending`；`author` 写 `agent` 或 `human`。三档之外不另造近义词——`待验收`、`待验证`、`悬疑`、`疑惑` 都不是状态，前几个是 `pending` 的具体原因，最后一个该退回 `draft` 重写。
+
 ## 二、用法
 
 ```bash
 cargo run -- docs docs                 # 审文档站的 16 个文件
 cargo run -- docs docs --kind list     # 只看列表
+cargo run -- docs docs --kind frontmatter  # 只看 front matter
 cargo run -- docs docs --kind bold     # 只看加粗
 cargo run -- docs docs --stats         # 只打密度数字，不下结论
 cargo run -- docs docs --json

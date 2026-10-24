@@ -58,3 +58,17 @@ min_chars = 300          # 文档低于这个字数不算密度
 # 分章靠标题，横线不承担结构。
 max = 3                  # 全文分割线处数上限；0 = 关闭
 flag_between_sections = true   # 紧挨标题的横线只是装饰，单独报
+
+[frontmatter]
+# 文件头那几行 YAML。没有 front matter 的文档不管，有就按下面两张表查。
+# keys 之外的字段报嫌疑：字段名先写进契约，别各写各的。
+keys = ["name", "description", "author", "status"]
+# 谁写的。agent = AI 起草，human = 人写的。
+author = ["agent", "human"]
+# 说到哪一步了。三档都在往下走，不循环。
+#   draft   草稿：还在写，随时会变
+#   pending 待验证：写完了，说法未核，不能当定论引用；AI 起草的默认落这里
+#   final   定稿：已验证，可以引用
+# 同一个意思不另造近义词：「待验证」「悬疑」「疑惑」不属于状态，
+# 前两个是待验证的具体原因，第三个该退回 draft 重写。
+status = ["draft", "pending", "final"]

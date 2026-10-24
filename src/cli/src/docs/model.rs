@@ -2,7 +2,7 @@
 //!
 //! 三要素缺一不可——只有行号没有替代动作，报告退化成数字，读者拿到仍然不知道改哪。
 
-/// 五类检查，名字与契约里的段一一对应。
+/// 六类检查，名字与契约里的段一一对应。
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Kind {
     Table,
@@ -10,6 +10,7 @@ pub enum Kind {
     Density,
     Bold,
     Rule,
+    Frontmatter,
 }
 
 impl Kind {
@@ -20,6 +21,7 @@ impl Kind {
             Kind::Density => "density",
             Kind::Bold => "bold",
             Kind::Rule => "rule",
+            Kind::Frontmatter => "frontmatter",
         }
     }
 
@@ -30,6 +32,7 @@ impl Kind {
             Kind::Density,
             Kind::Bold,
             Kind::Rule,
+            Kind::Frontmatter,
         ]
         .into_iter()
         .find(|kind| kind.key() == text)
