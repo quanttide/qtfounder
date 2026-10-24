@@ -15,9 +15,9 @@ qtfounder think model [--model PATH] [--json]
 
 ## 二、`load`
 
-读 Hermes 会话库（缺省 `~/.hermes/state.db`，只读），筛掉过短与纯确认的消息，分批送模型判定，按环节汇总。`--limit` 限本轮判多少条，`--batch` 与 `--workers` 控分批与并发，`--dry-run` 只统计候选量不调模型，`--out` 把报告写成 markdown。
+读 Hermes 会话库（缺省 `~/.hermes/state.db`，只读），筛掉过短与纯确认的消息，分批送模型判断，按环节汇总。`--limit` 限本轮判多少条，`--batch` 与 `--workers` 控分批与并发，`--dry-run` 只统计候选量不调模型，`--out` 把报告写成 markdown。
 
-判定的口径不在代码里，在 `prompt.md`：查找顺序是 `--prompt` → `QTFOUNDER_THINK_PROMPT` → 从当前目录逐级往上找 `src/think/load/prompt.md` → `~/.config/qtfounder/think/prompt.md` → 内置源码树。四道都找不到就报错，不内置兜底。
+怎么判不在代码里，在 `prompt.md`：查找顺序是 `--prompt` → `QTFOUNDER_THINK_PROMPT` → 从当前目录逐级往上找 `src/think/load/prompt.md` → `~/.config/qtfounder/think/prompt.md` → 内置源码树。四道都找不到就报错，不内置兜底。
 
 信号取值 `fatigue`／`friction`／空，环节取值 A 到 E。每条命中带一句原话，截取六到四十字。命中数超过 `--max-hits` 时以退出码 1 结束。
 

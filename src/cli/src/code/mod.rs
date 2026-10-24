@@ -119,7 +119,7 @@ fn collect(
                 continue;
             }
         };
-        // 解析交给语言提取器；判定层只认 Facts，加语言不改这里
+        // 解析交给语言提取器；判断层只认 Facts，加语言不改这里
         let facts = match extract::extract(&source, &path) {
             Some(Ok(facts)) => facts,
             Some(Err(error)) => {

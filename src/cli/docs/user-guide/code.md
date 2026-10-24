@@ -50,7 +50,7 @@ cargo run -- code src --rules my.toml   # 换契约
 
 `rs` 走 `syn`；`py` 走 tree-sitter-python；`go`、`ts`／`mts`／`cts`、`dart` 共用一份通用 tree-sitter 提取器，差异全在 `src/code/extract/specs.rs` 的 `LangSpec` 里。
 
-**加语言只写配置，`判定层`一行不改**——这是这条路成立的唯一验收。三种新语言暂时缺三条验收标准：调用链长度、文档复述、名实不符。缺就写明，别当成没问题。
+**加语言只写配置，`判断层`一行不改**——这是这条路成立的唯一验收。三种新语言暂时缺三条验收标准：调用链长度、文档复述、名实不符。缺就写明，别当成没问题。
 
 ## 五、和 rustc 的分工
 

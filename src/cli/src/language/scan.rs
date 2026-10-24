@@ -80,7 +80,7 @@ fn quoted_word(advice: &str) -> Option<&str> {
 }
 
 /// 词在行里只当「被引的东西」出现：包在「」或反引号里，或作为反引号内术语的一部分
-/// （`判定层` 这种组件名，词本身没被单独拿来用）。
+/// （`判断层` 这种组件名，词本身没被单独拿来用）。
 fn is_quoted(line: &str, word: &str) -> bool {
     if line.contains(&format!("「{word}」")) || line.contains(&format!("`{word}`")) {
         return true;

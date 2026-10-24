@@ -13,7 +13,7 @@
 ## 开发指南
 
 - [架构](dev-guide/architecture.md)：五段流水，为什么 `code` 要 IR 而 `language` 不要。
-- [加一门语言](dev-guide/code/adding-a-language.md)：只写一份配置，`判定层`一行不改。
+- [加一门语言](dev-guide/code/adding-a-language.md)：只写一份配置，`判断层`一行不改。
 - [加一条验收标准](dev-guide/adding-a-check.md)：一条检查住在四处，另加三种不该加的验收标准。
 - [测试](dev-guide/testing.md)：真样本、反样本、契约可变，以及并行测试的临时文件坑。
 - [路线图](dev-guide/roadmap.md)。

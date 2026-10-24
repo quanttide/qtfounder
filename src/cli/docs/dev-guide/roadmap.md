@@ -9,7 +9,7 @@
 ### 范围
 
 - [x] 新 `docs` 子命令：表格层从 `language` 整层迁出（`table.rs`、`[table]` 契约、`Kind::Table`），`language` 不再保留表格检查
-- [x] `docs` 列表层：三段式列表项与超长列表项；契约 `[list]` 段，判定层 `src/docs/list.rs`
+- [x] `docs` 列表层：三段式列表项与超长列表项；契约 `[list]` 段，判断层 `src/docs/list.rs`
 - [x] 密度兜底：结构块占比与无散文率，挂在 `docs` 报告里，只出嫌疑；阈值默认关闭
 - [x] `docs check`：`.agents/skills/` 实际目录与 `AGENTS.md`、`CONTRIBUTING.md` 的索引比对
 - [x] 加粗与分割线：每千字加粗处数、一行并列加粗、整句加粗；分割线总数与紧挨标题的装饰线
