@@ -5,6 +5,7 @@
 
 pub mod checks;
 mod common;
+mod context;
 pub mod contract;
 pub mod model;
 pub mod scan;

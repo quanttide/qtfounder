@@ -130,6 +130,9 @@ pub struct Frontmatter {
     /// 法人署名可用的名字；写入其他名字报错，避免各种简称混用
     #[serde(default)]
     pub orgs: Vec<String>,
+    /// context 的取值表；不在表里报错，否则声明了也不生效
+    #[serde(default)]
+    pub contexts: Vec<String>,
 }
 
 /// 找契约：环境变量 → 当前目录往上找 → 用户级目录 → 都没有就报错。刻意不内置兜底。

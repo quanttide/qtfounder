@@ -61,6 +61,19 @@ fn banned_word_is_reported() {
 }
 
 #[test]
+fn declared_finance_context_quiets_accounting_words() {
+    let declared = "---\ncontext: finance\n---\n\n每月做一次记账。\n";
+    assert!(!kinds(declared, "").contains(&"banned"));
+    assert!(kinds("每月做一次记账。\n", "").contains(&"banned"));
+}
+
+#[test]
+fn declared_context_only_quiets_its_own_words() {
+    let declared = "---\ncontext: finance\n---\n\n这里写了不变式三个字。\n";
+    assert!(kinds(declared, "").contains(&"banned"));
+}
+
+#[test]
 fn placement_misplacement_is_reported() {
     let contract = contract();
     let findings = scan::check_file(std::path::Path::new("data/essay/x.md"), &contract, None);

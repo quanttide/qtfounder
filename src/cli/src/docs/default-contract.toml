@@ -72,8 +72,11 @@ keys = [
     "kernel", "number", "parts", "options", "abbreviations", "funding",
     "affiliations", "reviewers", "editors",
     # 本仓自用
-    "name", "status",
+    "name", "status", "context",
 ]
+# 允许的语境声明。文件在 front matter 写 `context: finance`，就表示它的主题就是财务；
+# 语言检查据此放行该语境里的词（字面（记账类）在财务语境里不算错配）。
+contexts = ["finance", "technology", "law"]
 # 署名里的 type：每条 `authors` 都要标，写清是谁写的。
 # 写模型的，`name` 就是模型名（如 DeepSeek V4.1 Flash），像人署名一样。
 author_types = ["human", "agent", "org"]

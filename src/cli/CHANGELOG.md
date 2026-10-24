@@ -4,6 +4,7 @@
 
 ### Added
 
+- 语言检查认语境声明：文件头写 `context: finance`，契约里标了同一语境的词（记账、账目、账本、对账、口径与两笔账类）就不再报。没声明的文件照报——例外要说出来，不能靠读的人猜
 - `qtfounder docs` 新增 front matter 层：字段名不在契约表里报嫌疑，`status` 与署名 `type` 的取值不在表里报错；没有 front matter 的文档不动
 - front matter 的键表收入 MyST 保留字段（`title`、`authors`、`exports` 等），站点渲染用的字段一律放行；缩进值与列表项不当字段读
 - `qtfounder audit`：合并 `language` 与 `docs` 两套审计，按「一个词、一条规则」归堆，每期只报一处最值得改的。术语优先，目录级体裁要求与三类误报不进报告；`--json` 出结构化的数
@@ -11,7 +12,8 @@
 
 ### Changed
 
-- `docs` 契约新增 `[frontmatter]`：`keys` 定字段名，`status` 定三档，`author_types` 定署名类型，`orgs` 定法人全名；`authors` 每条必须标 `type`，`agent` 写模型名，`org` 只认四个全名
+- `language` 契约的禁用词新增 `contexts`：写清词属于哪个语场，file 声明同一语境时放行；目前只标了财务一族
+- `docs` 契约新增 `[frontmatter]`：`keys` 定字段名，`status` 定三档，`author_types` 定署名类型，`orgs` 定法人全名，`contexts` 定语境取值；`authors` 每条必须标 `type`，`agent` 写模型名，`org` 只认四个全名
 - `docs` 模块的 `contract`、`model`、`scan` 改为 `pub`，供 `audit` 直接复用扫描
 - 契约查找多认一条仓内路径 `apps/qtfounder/src/cli/src/...`：在主仓根跑 `audit` 时不再落到 `~/.config` 的旧文件（缺 10-24 新增的「记账」类词条，体检少报 13 处）
 - `docs` 契约补上 `data/archive`、`data/journal`、`assets`、`examples` 四个排除项，与 `language` 契约对齐：格式类错误从 620 处降到 54 处，嫌疑从 787 降到 340

@@ -41,6 +41,9 @@ exclude = [".git", "_build", "__pycache__", "node_modules", "CHANGELOG.md", "dat
 #   ③ 有替代写法——他的口径里对应哪个词；没有对应就写「实现细节，不进正文」。
 # 出库一条：用户开始用这个词 → 立刻移出（「交付物」就是这么出库的）。
 # evidence 写「哪次、在哪、用户当时怎么说」，没有出处的词只能标「自造，待核」。
+#
+# contexts 写这个词属于哪个语境。文件头声明 `context: finance` 时，标了 finance 的词就不再报：
+# 财务报表写「记账」是本职，小说里写才是借词。没声明的文件按跨语境算，照报。
 
 [banned."不变式"]
 advice = "约束"
@@ -107,6 +110,8 @@ evidence = "2026-10-22 用户：这类词被滥用。手写语料（五万字）
 [banned."账本"]
 advice = "记录；只有澄清账本（clarify.json 的记录库）该用它"
 evidence = "2026-10-22 用户：这类词被滥用。手写语料（五万字）零命中；规格 20 次"
+contexts = ["finance"]
+
 
 [banned."证据"]
 advice = "凭据、实测记录"
@@ -127,32 +132,46 @@ evidence = "2026-10-22 用户：这类词被滥用。手写语料（五万字）
 [banned."对账"]
 advice = "核对、当面查清"
 evidence = "2026-10-22 用户：这类词被滥用。手写语料（五万字）只 1 次，在定稿台词「我们两个一对账都惊呆了」；规格 9 次"
+contexts = ["finance"]
+
 
 [banned."口径"]
 advice = "怎么算、算法"
 evidence = "2026-10-22 用户：这类词被滥用。手写语料（五万字）零命中；规格 5 次"
+contexts = ["finance"]
 
 # 2026-10-24 用户：非财务语境不用记账类术语（原稿「人机协作的两笔账」被要求删掉全部记账表述）。
 # 同义的「账本」「对账」「口径」已在上面的 2026-10-22 批次里。
+
 [banned."记账"]
 advice = "记录、记下来"
 evidence = "2026-10-24 用户：删除所有和记账相关的表述；财务语境之外不用"
+contexts = ["finance"]
+
 
 [banned."账目"]
 advice = "记录、明细"
 evidence = "2026-10-24 同上；只在财务语境成立"
+contexts = ["finance"]
+
 
 [banned."两笔账"]
 advice = "两件事、两项；不拿「笔」数事"
 evidence = "2026-10-24 同上（原稿标题「人机协作的两笔账」）"
+contexts = ["finance"]
+
 
 [banned."第一笔账"]
 advice = "第一件事、第一项"
 evidence = "2026-10-24 同上（原稿小节「第一笔账发生在生成之前」）"
+contexts = ["finance"]
+
 
 [banned."第二笔账"]
 advice = "第二件事、第二项"
 evidence = "2026-10-24 同上（原稿小节「第二笔账更晚才被发现」）"
+contexts = ["finance"]
+
 
 [banned."副本"]
 advice = "复制件"

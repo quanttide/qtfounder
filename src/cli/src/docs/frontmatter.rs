@@ -172,6 +172,25 @@ pub(super) fn check_frontmatter(path: &str, text: &str, contract: &Frontmatter) 
         if field.key == "authors" {
             out.extend(check_authors(path, &field, contract));
         }
+
+        if field.key == "context" {
+            if contract.contexts.is_empty()
+                || contract.contexts.iter().any(|item| item == &field.value)
+            {
+                continue;
+            }
+            out.push(Finding::new(
+                Kind::Frontmatter,
+                Severity::Error,
+                path,
+                field.line,
+                excerpt_of(&format!("context: {}", field.value)),
+                format!(
+                    "`context` 的取值不在表里：只有 {}；写错了，语言检查不会放行该语境的词",
+                    contract.contexts.join("、")
+                ),
+            ));
+        }
     }
     out
 }
@@ -283,6 +302,7 @@ mod tests {
                 "title",
                 "authors",
                 "exports",
+                "context",
             ]
             .iter()
             .map(|item| item.to_string())
@@ -296,6 +316,10 @@ mod tests {
                 .map(|item| item.to_string())
                 .collect(),
             orgs: ["量潮创始人", "量潮科技", "量潮实训基地", "量潮创新联盟"]
+                .iter()
+                .map(|item| item.to_string())
+                .collect(),
+            contexts: ["finance", "technology", "law"]
                 .iter()
                 .map(|item| item.to_string())
                 .collect(),
@@ -368,5 +392,19 @@ mod tests {
     fn nested_values_are_not_fields() {
         let text = "---\ntitle: 测试\nauthors:\n  - name: 甲\n    type: human\nexports:\n  - format: pdf\n---\n\n# 标题\n";
         assert!(check_frontmatter("a.md", text, &contract()).is_empty());
+    }
+
+    #[test]
+    fn declared_context_is_allowed() {
+        let text = "---\ncontext: finance\n---\n\n# 标题\n";
+        assert!(check_frontmatter("a.md", text, &contract()).is_empty());
+    }
+
+    #[test]
+    fn unknown_context_is_reported() {
+        let text = "---\ncontext: financ\n---\n\n# 标题\n";
+        let findings = check_frontmatter("a.md", text, &contract());
+        assert_eq!(findings.len(), 1);
+        assert!(findings[0].advice.contains("finance"));
     }
 }

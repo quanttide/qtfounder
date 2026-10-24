@@ -1,7 +1,8 @@
 //! 词与数字两层：落点、自造术语、体系词、论据数字。
 
 use super::common::in_dir;
-use super::contract::Contract;
+use super::context;
+use super::contract::{BannedEntry, Contract};
 use super::model::{Finding, Kind, Severity};
 use regex::Regex;
 pub(super) fn check_placement(rel: &str, contract: &Contract) -> Vec<Finding> {
@@ -22,10 +23,21 @@ pub(super) fn check_placement(rel: &str, contract: &Contract) -> Vec<Finding> {
 }
 
 /// 词汇层：自造术语。每次命中都带替代写法，否则读者不知道换成什么。
+///
+/// 词在自己的语境里合格：文件声明了 `context`，标了同一语境的词就不报。
 pub(super) fn check_banned(rel: &str, text: &str, contract: &Contract) -> Vec<Finding> {
+    let declared = context::declared(text);
+    let in_own_context = |entry: &BannedEntry| {
+        declared
+            .as_deref()
+            .is_some_and(|name| entry.contexts.iter().any(|item| item == name))
+    };
     let mut out = Vec::new();
     for (lineno, line) in text.lines().enumerate() {
         for (word, entry) in &contract.banned {
+            if in_own_context(entry) {
+                continue;
+            }
             if line.contains(word.as_str()) {
                 out.push(Finding::new(
                     Kind::Banned,

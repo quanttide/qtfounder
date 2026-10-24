@@ -50,6 +50,9 @@ pub struct BannedEntry {
     #[serde(default)]
     #[allow(dead_code)]
     pub evidence: String,
+    /// 这个词属于哪些语境。文件在 front matter 里声明了其中之一，就不报这个词。
+    #[serde(default)]
+    pub contexts: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
