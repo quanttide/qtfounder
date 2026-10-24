@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- `qtfounder audit`：合并 `language` 与 `docs` 两套审计，按「一个词、一条规则」归堆，每期只报一处最值得改的。术语优先，目录级体裁要求与三类误报不进报告；`--json` 出结构化的数
+
+### Changed
+
+- `docs` 模块的 `contract`、`model`、`scan` 改为 `pub`，供 `audit` 直接复用扫描
+
 ## [0.0.9] - 2026-10-24
 
 `health` 并进 `think`，认知模型抽成契约。

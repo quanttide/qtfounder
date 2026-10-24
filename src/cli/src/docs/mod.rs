@@ -7,12 +7,12 @@
 mod bold;
 mod check;
 mod common;
-mod contract;
+pub mod contract;
 pub mod density;
 mod list;
-mod model;
+pub mod model;
 mod rule;
-mod scan;
+pub mod scan;
 mod table;
 
 #[cfg(test)]

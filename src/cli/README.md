@@ -1,6 +1,6 @@
 # qtfounder-cli
 
-量潮创始人 CLI 工具。四个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知（含负载诊断与反思记录）。
+量潮创始人 CLI 工具。五个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知（含负载诊断与反思记录），`audit` 出体检报告。
 
 ## 开发
 
@@ -18,6 +18,7 @@ cargo test
 | `qtfounder language` | 语言检查：落点、自造术语、体系词、数字、句法、语用六层，判这段文字是不是在跟读者说话 |
 | `qtfounder docs` | 文档审计：表格、列表、密度、加粗、分割线五层，判这段内容该不该是这个形状；`docs check` 比对技能索引与目录。用法见 [docs/user-guide/docs.md](docs/user-guide/docs.md) |
 | `qtfounder think` | 认知：`load` 从会话库看消耗落在哪，`reflect` 按 CBT 那套记一条并到点回填，`model` 看当前模型。用法见 [docs/user-guide/think.md](docs/user-guide/think.md) |
+| `qtfounder audit` | 文字体检：合并 `language` 与 `docs`，按「一个词、一条规则」归堆，每期只报一处。用法见 [docs/user-guide/audit.md](docs/user-guide/audit.md) |
 
 ## 添加新功能
 

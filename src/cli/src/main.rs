@@ -5,6 +5,7 @@
 //! 2. 在 `CliCommand` 枚举里注册一个子命令分支
 //! 3. 把该功能的依赖加回 `Cargo.toml`
 
+mod audit;
 mod code;
 mod docs;
 mod language;
@@ -30,6 +31,8 @@ enum CliCommand {
     Docs(docs::DocsArgs),
     /// 认知：负载看消耗落点、reflect 记一条、model 看模型
     Think(think::ThinkArgs),
+    /// 文字体检：合并文字与文档审计，每期只说一处
+    Audit(audit::AuditArgs),
 }
 
 fn main() {
@@ -56,6 +59,13 @@ fn main() {
             }
         },
         Some(CliCommand::Think(args)) => match think::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Audit(args)) => match audit::run_audit(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
