@@ -239,6 +239,32 @@ fn check_authors(path: &str, field: &Field, contract: &Frontmatter) -> Vec<Findi
                 "agent 署名缺模型名：把模型名写进 `name`，将来才知道是谁写的".to_string(),
             ));
         }
+        if kind == "org" {
+            let Some(name) = author.get("name") else {
+                out.push(Finding::new(
+                    Kind::Frontmatter,
+                    Severity::Error,
+                    path,
+                    author.line,
+                    excerpt_of("- type: org"),
+                    "法人署名要写全名：见契约 `orgs`，四个写法照抄".to_string(),
+                ));
+                continue;
+            };
+            if !contract.orgs.is_empty() && !contract.orgs.iter().any(|org| org == name) {
+                out.push(Finding::new(
+                    Kind::Frontmatter,
+                    Severity::Error,
+                    path,
+                    author.line,
+                    excerpt_of(&format!("name: {name}")),
+                    format!(
+                        "法人名不在表里：只有 {}；不写简称、不改字",
+                        contract.orgs.join("、")
+                    ),
+                ));
+            }
+        }
     }
     out
 }
@@ -265,7 +291,11 @@ mod tests {
                 .iter()
                 .map(|item| item.to_string())
                 .collect(),
-            author_types: ["human", "agent"]
+            author_types: ["human", "agent", "org"]
+                .iter()
+                .map(|item| item.to_string())
+                .collect(),
+            orgs: ["量潮创始人", "量潮科技", "量潮实训基地", "量潮创新联盟"]
                 .iter()
                 .map(|item| item.to_string())
                 .collect(),
@@ -322,6 +352,16 @@ mod tests {
         let findings = check_frontmatter("a.md", text, &contract());
         assert_eq!(findings.len(), 1);
         assert_eq!(findings[0].severity.label(), "嫌疑");
+    }
+
+    #[test]
+    fn org_name_must_come_from_the_list() {
+        let good = "---\nauthors:\n  - name: 量潮科技\n    type: org\n---\n\n# 标题\n";
+        assert!(check_frontmatter("a.md", good, &contract()).is_empty());
+        let bad = "---\nauthors:\n  - name: 量潮\n    type: org\n---\n\n# 标题\n";
+        let findings = check_frontmatter("a.md", bad, &contract());
+        assert_eq!(findings.len(), 1);
+        assert!(findings[0].advice.contains("量潮科技"));
     }
 
     #[test]

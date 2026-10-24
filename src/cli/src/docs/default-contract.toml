@@ -76,7 +76,9 @@ keys = [
 ]
 # 署名里的 type：每条 `authors` 都要标，写清是谁写的。
 # 写模型的，`name` 就是模型名（如 DeepSeek V4.1 Flash），像人署名一样。
-author_types = ["human", "agent"]
+author_types = ["human", "agent", "org"]
+# 法人署名用全名，照抄下面四个，不写简称、不改字。
+orgs = ["量潮创始人", "量潮科技", "量潮实训基地", "量潮创新联盟"]
 # 说到哪一步了。三档都在往下走，不循环。
 #   draft   草稿：还在写，随时会变
 #   pending 待验证：写完了，说法未核，不能当定论引用；AI 起草的默认落这里

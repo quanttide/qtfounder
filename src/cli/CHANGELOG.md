@@ -11,7 +11,7 @@
 
 ### Changed
 
-- `docs` 契约新增 `[frontmatter]`：`keys` 定字段名，`status` 定三档，`author_types` 定署名类型；`authors` 每条必须标 `type`，`agent` 署名写模型名
+- `docs` 契约新增 `[frontmatter]`：`keys` 定字段名，`status` 定三档，`author_types` 定署名类型，`orgs` 定法人全名；`authors` 每条必须标 `type`，`agent` 写模型名，`org` 只认四个全名
 - `docs` 模块的 `contract`、`model`、`scan` 改为 `pub`，供 `audit` 直接复用扫描
 - 契约查找多认一条仓内路径 `apps/qtfounder/src/cli/src/...`：在主仓根跑 `audit` 时不再落到 `~/.config` 的旧文件（缺 10-24 新增的「记账」类词条，体检少报 13 处）
 - `docs` 契约补上 `data/archive`、`data/journal`、`assets`、`examples` 四个排除项，与 `language` 契约对齐：格式类错误从 620 处降到 54 处，嫌疑从 787 降到 340

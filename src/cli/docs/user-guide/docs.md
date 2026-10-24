@@ -18,7 +18,7 @@
 
 `status` 三档，同一条线上下走：`draft` 草稿、`pending` 待验证、`final` 定稿。AI 起草且说法未核的，落 `pending`。
 
-谁写的用 MyST 的 `authors`，每条多一个 `type`：人的写 `human`，AI 的写 `agent`，模型名就写在 `name` 里，像人署名一样。不标 `type` 报错，`agent` 缺模型名报嫌疑。
+谁写的用 MyST 的 `authors`，每条多一个 `type`：人的写 `human`，AI 的写 `agent`，机构写 `org`。模型名写在 `name` 里，像人署名一样；机构只认四个全名，照契约抄：量潮创始人、量潮科技、量潮实训基地、量潮创新联盟。不标 `type` 报错，`agent` 缺模型名报嫌疑，法人名写错报错。
 
 ```yaml
 authors:
@@ -26,6 +26,8 @@ authors:
     type: human
   - name: DeepSeek V4.1 Flash
     type: agent
+  - name: 量潮科技
+    type: org
 ```
 
 三档之外不另造近义词——`待验收`、`待验证`、`悬疑`、`疑惑` 都不是状态，前几个是 `pending` 的具体原因，最后一个该退回 `draft` 重写。
