@@ -799,8 +799,8 @@ dependencies = [
 
 [[package]]
 name = "quanttide-founder"
-version = "0.1.0-alpha.2"
-source = "git+https://github.com/quanttide/quanttide-founder-toolkit?branch=main#6f7c70c91e2d4b91a123ef90b505e77e013324df"
+version = "0.1.0-alpha.3"
+source = "git+https://github.com/quanttide/quanttide-founder-toolkit?tag=rust%2Fv0.1.0-alpha.3#c35662d8854a66d7fe96387bdb3d402986c44bae"
 dependencies = [
  "agent-skills-rs",
 ]
@@ -1474,7 +1474,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]

@@ -12,7 +12,7 @@ mod tests;
 use std::path::{Path, PathBuf};
 
 use clap::{Args, Subcommand};
-use quanttide_founder::skills::{self, EmbeddedSkill, InstallOptions, Mode, Status};
+use quanttide_founder::agent::skills::{self, EmbeddedSkill, InstallOptions, Mode, Status};
 
 /// `skill` 下的子命令。
 #[derive(Subcommand, Debug)]

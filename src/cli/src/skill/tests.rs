@@ -3,7 +3,7 @@
 //! 清单由 `build.rs` 生成：从主仓构建时有九条，单独 clone 这个仓时为空。
 //! 空清单不算错，但来源存在就必须有条目。
 
-use quanttide_founder::skills;
+use quanttide_founder::agent::skills;
 
 use super::registry;
 

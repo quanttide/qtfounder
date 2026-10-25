@@ -3,7 +3,7 @@
 //! 生成文件在 `OUT_DIR`：从主仓构建时嵌的是 `.agents/skills` 里的全部 Skill，
 //! 单独 clone 这个仓时是空清单。改来源用 `QTFOUNDER_SKILLS_DIR`。
 
-use quanttide_founder::skills::EmbeddedSkill;
+use quanttide_founder::agent::skills::EmbeddedSkill;
 
 include!(concat!(env!("OUT_DIR"), "/embedded_skills.rs"));
 
