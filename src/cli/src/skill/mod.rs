@@ -12,7 +12,9 @@ mod tests;
 use std::path::{Path, PathBuf};
 
 use clap::{Args, Subcommand};
-use quanttide_founder::agent::skills::{self, EmbeddedSkill, InstallOptions, Mode, Status};
+use quanttide_founder::agent::skills::{
+    self, EmbeddedSkill, InstallOptions, Mode, Status, install_report,
+};
 
 /// `skill` 下的子命令。
 #[derive(Subcommand, Debug)]
@@ -34,12 +36,9 @@ pub struct SkillArgs {
 
 #[derive(Args, Debug)]
 pub struct ListArgs {
-    /// 目标仓根目录
-    #[arg(long, default_value = ".")]
-    pub root: PathBuf,
-    /// 看当前用户主目录下的安装
+    /// 哪个仓的安装；不给就看系统位置（$HOME/.agents/skills）
     #[arg(long)]
-    pub global: bool,
+    pub root: Option<PathBuf>,
     /// 输出 JSON
     #[arg(long)]
     pub json: bool,
@@ -49,12 +48,9 @@ pub struct ListArgs {
 pub struct InstallArgs {
     /// Skill id；不给就装全部
     pub id: Option<String>,
-    /// 目标仓根目录
-    #[arg(long, default_value = ".")]
-    pub root: PathBuf,
-    /// 装到当前用户主目录
+    /// 装到哪个仓；不给就装到系统位置（$HOME/.agents/skills）
     #[arg(long)]
-    pub global: bool,
+    pub root: Option<PathBuf>,
     /// 复制而不是链接
     #[arg(long)]
     pub copy: bool,
@@ -79,12 +75,12 @@ pub fn run(args: &SkillArgs) -> Result<i32, String> {
 
 /// `list` 与 `check` 共用一张表，区别只在报什么、怎么退出。
 fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
-    let root = resolve_root(&args.root, args.global)?;
+    let root = resolve_root(args.root.as_deref())?;
     let entries = registry::all();
 
     if entries.is_empty() {
         let note =
-            "这个二进制没嵌 Skill：从主仓构建，或设 QTFOUNDER_SKILLS_DIR 指向 .agents/skills";
+            "这个二进制没嵌 Skill：构建时 skills/ 是空的，或 QTFOUNDER_SKILLS_DIR 指错了目录";
         if args.json {
             println!(
                 "{}",
@@ -144,7 +140,7 @@ fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
             rows.len(),
             registry::source().unwrap_or("未标注")
         );
-        println!("目标仓：{}", root.display());
+        println!("安装位置：{}", root.display());
         println!();
         for (id, _, status) in &rows {
             if check && *status == Status::Current {
@@ -181,11 +177,11 @@ fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
 }
 
 fn install(args: &InstallArgs) -> Result<i32, String> {
-    let root = resolve_root(&args.root, args.global)?;
+    let root = resolve_root(args.root.as_deref())?;
     let entries = registry::all();
     if entries.is_empty() {
         return Err(
-            "这个二进制没嵌 Skill：从主仓构建，或设 QTFOUNDER_SKILLS_DIR 指向 .agents/skills"
+            "这个二进制没嵌 Skill：构建时 skills/ 是空的，或 QTFOUNDER_SKILLS_DIR 指错了目录"
                 .to_string(),
         );
     }
@@ -210,11 +206,22 @@ fn install(args: &InstallArgs) -> Result<i32, String> {
 
     let mut installed = Vec::new();
     let mut failed = Vec::new();
+    let mut warnings = Vec::new();
     for entry in targets {
-        match skills::install(entry, &options) {
-            Ok(item) => installed.push(item),
+        match install_report(entry, &options) {
+            Ok((item, note)) => {
+                installed.push(item);
+                if let Some(note) = note
+                    && !warnings.contains(&note)
+                {
+                    warnings.push(note);
+                }
+            }
             Err(error) => failed.push((entry.id.to_string(), error)),
         }
+    }
+    for warning in &warnings {
+        eprintln!("! {warning}");
     }
 
     if args.json {
@@ -255,11 +262,12 @@ fn install(args: &InstallArgs) -> Result<i32, String> {
     Ok(if failed.is_empty() { 0 } else { 2 })
 }
 
-fn resolve_root(root: &Path, global: bool) -> Result<PathBuf, String> {
-    if !global {
-        return Ok(root.to_path_buf());
+/// 不给 `--root` 就装到系统位置：`$HOME`，落到 `$HOME/.agents/skills`。
+fn resolve_root(root: Option<&Path>) -> Result<PathBuf, String> {
+    if let Some(path) = root {
+        return Ok(path.to_path_buf());
     }
     std::env::var_os("HOME")
         .map(PathBuf::from)
-        .ok_or_else(|| "--global 要读 HOME，但没读到".to_string())
+        .ok_or_else(|| "装到系统位置要读 HOME，但没读到；用 --root 指定目标仓".to_string())
 }

@@ -1,7 +1,7 @@
 //! 编译期嵌入的 Skill 清单，由 `build.rs` 生成。
 //!
-//! 生成文件在 `OUT_DIR`：从主仓构建时嵌的是 `.agents/skills` 里的全部 Skill，
-//! 单独 clone 这个仓时是空清单。改来源用 `QTFOUNDER_SKILLS_DIR`。
+//! 生成文件在 `OUT_DIR`：嵌的是本包 `skills/` 里的全部 Skill，随二进制一起发布。
+//! 改来源用 `QTFOUNDER_SKILLS_DIR`。
 
 use quanttide_founder::agent::skills::EmbeddedSkill;
 

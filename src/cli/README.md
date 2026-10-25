@@ -19,7 +19,7 @@ cargo test
 | `qtfounder docs` | 文档审计：表格、列表、密度、加粗、分割线五层，判这段内容该不该是这个形状；`docs check` 比对技能索引与目录。用法见 [docs/user-guide/docs.md](docs/user-guide/docs.md) |
 | `qtfounder think` | 认知：`load` 从会话库看消耗落在哪，`reflect` 按 CBT 那套记一条并到点回填，`model` 看当前模型。用法见 [docs/user-guide/think.md](docs/user-guide/think.md) |
 | `qtfounder meta` | 归位：`classify` 给一段内容一张落位卡——域、格、档、写法；判不了只问一句，套不上就不收。用法见 [docs/user-guide/meta.md](docs/user-guide/meta.md) |
-| `qtfounder skill` | Skill：构建时把主仓 `.agents/skills` 嵌进二进制，`list` 看目标仓装到哪一步，`install` 装出去，`check` 只查差异。用法见 [docs/user-guide/skill.md](docs/user-guide/skill.md) |
+| `qtfounder skill` | Skill：随 CLI 发布三条（`meta-classify`、`language-governance`、`founder-reflect`），`install` 装到系统位置 `~/.agents/skills`，`list` 看状态，`check` 只查差异。用法见 [docs/user-guide/skill.md](docs/user-guide/skill.md) |
 | `qtfounder audit` | 文字体检：合并 `language` 与 `docs`，按「一个词、一条规则」归堆，每期只报一处。用法见 [docs/user-guide/audit.md](docs/user-guide/audit.md) |
 
 ## 添加新功能

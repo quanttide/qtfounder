@@ -1,8 +1,6 @@
-//! 嵌入清单的冒烟测试：能注册，才装得出去。
-//!
-//! 清单由 `build.rs` 生成：从主仓构建时有九条，单独 clone 这个仓时为空。
-//! 空清单不算错，但来源存在就必须有条目。
-
+/// 嵌入清单的冒烟测试：能注册，才装得出去。
+///
+/// 清单来自本包 `skills/`：三条随 CLI 发布的 Skill。改这里就要同步 `skills/`。
 use quanttide_founder::agent::skills;
 
 use super::registry;
@@ -28,12 +26,14 @@ fn 有来源就得有条目() {
 }
 
 #[test]
-fn 主仓构建时带上归位与提交两个入口() {
+fn 嵌入清单只有三条() {
     let ids: Vec<&str> = registry::all().iter().map(|entry| entry.id).collect();
-    for expected in ["meta-classify", "git-commit"] {
-        if ids.is_empty() {
-            return;
-        }
-        assert!(ids.contains(&expected), "清单里缺 {expected}：{ids:?}");
+    if ids.is_empty() {
+        return;
     }
+    assert_eq!(
+        ids,
+        vec!["founder-reflect", "language-governance", "meta-classify"],
+        "随 CLI 发布的 Skill 应当只有这三条"
+    );
 }

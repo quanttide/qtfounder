@@ -4,12 +4,14 @@
 
 ### Added
 
-- `qtfounder skill`：把二进制里嵌的 Skill 装进目标仓。`list` 看已装状态，`install` 装一条或全部（可 `--copy`、`--claude`、`--force`），`check` 只查未装与不一致并以 1 退出；落点是 `.agents/skills/<id>`，同时维护 `.agents/.skill-lock.json`
-- 嵌入清单在构建时生成：来源默认是主仓 `.agents/skills`，可用 `QTFOUNDER_SKILLS_DIR` 换；单独 clone 本仓构建时清单为空，仍然编得过
+- `qtfounder skill`：把二进制里嵌的 Skill 装进目标位置。`list` 看已装状态，`install` 装一条或全部（可 `--copy`、`--claude`、`--force`），`check` 只查未装与不一致并以 1 退出；落点是 `$HOME/.agents/skills/<id>`，同时维护 `.agents/.skill-lock.json`
+- 随 CLI 发布三条 Skill：`meta-classify`、`language-governance`、`founder-reflect`。它们的正文点名的命令都由本 CLI 提供，必须同版本
+- 清单在构建时从包内 `skills/` 嵌入，可用 `QTFOUNDER_SKILLS_DIR` 换来源；目录为空时清单为空，仍能构建
 - 文档 `user-guide/skill.md` 与 `api-reference/skill.md`，目录与首页同步
 
 ### Changed
 
+- 安装位置缺省改为系统位置（`$HOME/.agents/skills`），不装进当前仓；只装某个仓时给 `--root`。去掉 `--global`：它现在是默认行为
 - 依赖工具箱的 `agent::skills` 模块：从 crates.io 取 `quanttide-founder` 0.1.0-alpha.3；嵌装逻辑在库里，CLI 只登记清单与命令行
 - 跨域提示与用户指南里的 Skill 名改为 `meta-classify`：原来的 `meta-domain` 与 `meta-category` 已合并
 

@@ -1,7 +1,7 @@
-//! 把主仓 `.agents/skills` 嵌入二进制。
+//! 把本包的 `skills/` 嵌入二进制。
 //!
-//! 来源按这个顺序取：`QTFOUNDER_SKILLS_DIR` → 主仓相对路径 `../../../../.agents/skills`。
-//! 找不到就生成空清单——从主仓构建时装得上，单独 clone 这个仓也编得过。
+//! 来源按这个顺序取：`QTFOUNDER_SKILLS_DIR` → 包内的 `skills/`。
+//! 找不到就生成空清单，构建不因此失败。
 //! 生成的是 `include_str!` 声明，正文在编译期进二进制，装的时候不读源码树。
 
 use std::fmt::Write as _;
@@ -20,7 +20,7 @@ fn main() {
         PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("cargo 会设 CARGO_MANIFEST_DIR"));
     let source = std::env::var_os("QTFOUNDER_SKILLS_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|| manifest.join("../../../../.agents/skills"));
+        .unwrap_or_else(|| manifest.join("skills"));
     let source = std::fs::canonicalize(&source).unwrap_or(source);
 
     let entries = collect(&source);

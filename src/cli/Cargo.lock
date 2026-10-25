@@ -799,9 +799,9 @@ dependencies = [
 
 [[package]]
 name = "quanttide-founder"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b54c9d2c40426d85b70f7958e5777d9fe789ba4ac03c9342c5d7b695a3ad0f75"
+checksum = "53dfe18eab8b6299dde63eff576e331356294423750985d1d97679ab85b2b64e"
 dependencies = [
  "agent-skills-rs",
 ]
