@@ -10,7 +10,7 @@
 
 ### Changed
 
-- 依赖工具箱的 `skills` 模块（`quanttide-founder` 路径依赖）：嵌装逻辑在库里，CLI 只登记清单与命令行
+- 依赖工具箱的 `skills` 模块：改为 GitHub 依赖（`quanttide-founder-toolkit` 的 main 分支），`Cargo.lock` 锁定提交；嵌装逻辑在库里，CLI 只登记清单与命令行
 - 跨域提示与用户指南里的 Skill 名改为 `meta-classify`：原来的 `meta-domain` 与 `meta-category` 已合并
 
 ## [0.0.11] - 2026-10-25

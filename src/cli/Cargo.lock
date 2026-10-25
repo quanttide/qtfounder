@@ -800,6 +800,7 @@ dependencies = [
 [[package]]
 name = "quanttide-founder"
 version = "0.1.0-alpha.2"
+source = "git+https://github.com/quanttide/quanttide-founder-toolkit?branch=main#6f7c70c91e2d4b91a123ef90b505e77e013324df"
 dependencies = [
  "agent-skills-rs",
 ]
