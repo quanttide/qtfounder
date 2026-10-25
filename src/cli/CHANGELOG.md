@@ -2,19 +2,24 @@
 
 ## [Unreleased]
 
+## [0.0.12] - 2026-10-25
+
+`agent` 组：装 Skill，查写法。
+
 ### Added
 
-- `qtfounder agent skill`：查 Skill 的名字、说明与正文是否合标准——目录名与 `name` 一致、范围-动词、动词原形、说明写触发时机、正文有标题、命令组名字要点名对应命令、同名只许一份。规则在 `src/agent/default-contract.toml`，标准未定，逻辑先留在 CLI，不进工具箱
-- `qtfounder skill`：把二进制里嵌的 Skill 装进目标位置。`list` 看已装状态，`install` 装一条或全部（可 `--copy`、`--claude`、`--force`），`check` 只查未装与不一致并以 1 退出；落点是 `$HOME/.agents/skills/<id>`，同时维护 `.agents/.skill-lock.json`
+- `qtfounder agent skill`：一组四个入口。`list` 与 `check` 看装到哪一步，`install` 装一条或全部（`--copy`、`--claude`、`--force`、`--root`），`lint` 查名字、说明与正文
+- `lint` 查七样：目录名与 `name` 一致、小写连字符与分段、登记过的范围、动词原形、说明写触发时机、正文有标题、命令组名字要点名对应命令；另查跨文件重名。标准未定，逻辑先留在 CLI，不进工具箱
 - 随 CLI 发布三条 Skill：`meta-classify`、`language-govern`、`think-reflect`。它们的正文点名的命令都由本 CLI 提供，必须同版本
 - 清单在构建时从包内 `skills/` 嵌入，可用 `QTFOUNDER_SKILLS_DIR` 换来源；目录为空时清单为空，仍能构建
-- 文档 `user-guide/skill.md` 与 `api-reference/skill.md`，目录与首页同步
+- 文档合并成 `user-guide/agent.md` 与 `api-reference/agent.md`
 
 ### Changed
 
-- 安装实现从 `src/skill/` 移进 `src/agent/`：`install` 管装，`registry` 管嵌入清单，与 `agent skill` 的检查同域；命令名不变
-- 安装位置缺省改为系统位置（`$HOME/.agents/skills`），不装进当前仓；只装某个仓时给 `--root`。去掉 `--global`：它现在是默认行为
-- 依赖工具箱的 `agent::skill` 模块：从 crates.io 取 `quanttide-founder`，嵌装逻辑在库里，CLI 只登记清单与命令行
+- 安装命令从顶层 `skill` 并进 `agent skill`：`skill list/install/check` 不再单独存在，装了 CLI 只有一组入口
+- 安装位置缺省是系统位置（`$HOME/.agents/skills`），不装进当前仓；只装某个仓时给 `--root`。去掉 `--global`：它现在是默认行为
+- 安装实现从 `src/skill/` 移进 `src/agent/`：`install` 管装，`registry` 管嵌入清单，`lint` 管检查
+- 依赖工具箱的 `agent::skill` 模块：从 crates.io 取 `quanttide-founder`；嵌装逻辑在库里，CLI 只登记清单与命令行
 - 跨域提示与用户指南里的 Skill 名改为 `meta-classify`：原来的 `meta-domain` 与 `meta-category` 已合并
 
 ## [0.0.11] - 2026-10-25

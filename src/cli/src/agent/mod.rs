@@ -1,11 +1,12 @@
 //! `qtfounder agent`：给 Agent 用的资产。
 //!
-//! 两层：`install` 把嵌入的 Skill 装到目标仓（命令名是 `qtfounder skill`），
-//! `skill` 查 Skill 的命名与写法（命令名是 `qtfounder agent skill`）。
-//! 后者标准还在试，规则在 `default-contract.toml`。
+//! 一组命令两件事：`install` 把嵌入的 Skill 装到目标位置，
+//! `lint` 查 Skill 的命名与写法。前者只搬运，后者只读。
+//! 检查标准还在试，规则在 `default-contract.toml`。
 
-pub mod contract;
-pub mod install;
+mod contract;
+mod install;
+mod lint;
 mod registry;
 mod skill;
 
@@ -17,7 +18,7 @@ use clap::Subcommand;
 /// `agent` 下的子命令。
 #[derive(Subcommand, Debug)]
 pub enum AgentCommand {
-    /// Skill：查命名、说明与正文的写法
+    /// Skill：装 Skill、查安装状态、查写法
     Skill(skill::SkillArgs),
 }
 

@@ -1,35 +1,17 @@
-//! `qtfounder skill`：把二进制里嵌的 Skill 装进目标仓。
+//! `agent skill` 的安装侧：把二进制里嵌的 Skill 装到目标位置。
 //!
-//! 与另外几个子命令不同，它不改任何内容，只搬运：canonical 落点是
+//! 与另外几个子命令不同，它不改任何内容，只搬运：canonical 装到
 //! `<root>/.agents/skills/<id>`，同时维护 `.agents/.skill-lock.json`。
 //! 嵌入清单由 `build.rs` 生成，来源是包内的 `skills/`。
 
 use std::path::{Path, PathBuf};
 
-use clap::{Args, Subcommand};
+use clap::Args;
 use quanttide_founder::agent::skill::{
     self, EmbeddedSkill, InstallOptions, Mode, Status, install_report,
 };
 
 use super::registry;
-
-/// `skill` 下的子命令。
-#[derive(Subcommand, Debug)]
-pub enum SkillCommand {
-    /// 看嵌了哪些 Skill，目标仓装到哪一步
-    List(ListArgs),
-    /// 装一个或全部到目标仓
-    Install(InstallArgs),
-    /// 只查未装与不一致；有就退 1
-    Check(ListArgs),
-}
-
-/// `skill` 入口。
-#[derive(Args, Debug)]
-pub struct SkillArgs {
-    #[command(subcommand)]
-    pub command: SkillCommand,
-}
 
 #[derive(Args, Debug)]
 pub struct ListArgs {
@@ -62,16 +44,8 @@ pub struct InstallArgs {
     pub json: bool,
 }
 
-pub fn run(args: &SkillArgs) -> Result<i32, String> {
-    match &args.command {
-        SkillCommand::List(list) => report(list, false),
-        SkillCommand::Check(list) => report(list, true),
-        SkillCommand::Install(command) => install(command),
-    }
-}
-
 /// `list` 与 `check` 共用一张表，区别只在报什么、怎么退出。
-fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
+pub(super) fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
     let root = resolve_root(args.root.as_deref())?;
     let entries = registry::all();
 
@@ -173,7 +147,7 @@ fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
     Ok(0)
 }
 
-fn install(args: &InstallArgs) -> Result<i32, String> {
+pub(super) fn install(args: &InstallArgs) -> Result<i32, String> {
     let root = resolve_root(args.root.as_deref())?;
     let entries = registry::all();
     if entries.is_empty() {

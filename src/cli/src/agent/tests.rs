@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use super::contract::Contract;
-use super::skill::{Finding, Severity, SkillFile, duplicates, inspect, parse};
+use super::lint::{Finding, Severity, SkillFile, duplicates, inspect, parse};
 
 fn run(dir: &str, text: &str) -> Vec<Finding> {
     let contract = Contract::bundled();
@@ -134,7 +134,7 @@ fn 多行说明也会读全() {
 
 #[test]
 fn 跳过契约里排除的目录() {
-    use super::skill::scan;
+    use super::lint::scan;
     let contract = Contract::bundled();
     let dir = std::env::temp_dir().join(format!("qtfounder-agent-{}", std::process::id()));
     let skipped = dir.join("target/skills/git-commit");
