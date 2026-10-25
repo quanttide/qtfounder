@@ -1,6 +1,6 @@
 # qtfounder-cli
 
-量潮创始人 CLI 工具。七个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知（含负载诊断与反思记录），`meta` 判归位，`skill` 装 Skill，`audit` 出体检报告。
+量潮创始人 CLI 工具。八个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知（含负载诊断与反思记录），`meta` 判归位，`skill` 装 Skill，`agent` 查 Skill 写法，`audit` 出体检报告。
 
 ## 开发
 
@@ -20,6 +20,7 @@ cargo test
 | `qtfounder think` | 认知：`load` 从会话库看消耗落在哪，`reflect` 按 CBT 那套记一条并到点回填，`model` 看当前模型。用法见 [docs/user-guide/think.md](docs/user-guide/think.md) |
 | `qtfounder meta` | 归位：`classify` 给一段内容一张落位卡——域、格、档、写法；判不了只问一句，套不上就不收。用法见 [docs/user-guide/meta.md](docs/user-guide/meta.md) |
 | `qtfounder skill` | Skill：随 CLI 发布三条（`meta-classify`、`language-govern`、`think-reflect`），`install` 装到系统位置 `~/.agents/skills`，`list` 看状态，`check` 只查差异。用法见 [docs/user-guide/skill.md](docs/user-guide/skill.md) |
+| `qtfounder agent` | Agent：`skill` 查 Skill 的名字、说明与正文是否合标准（范围-动词、触发时机、一级标题、点名命令）。用法见 [docs/user-guide/agent.md](docs/user-guide/agent.md) |
 | `qtfounder audit` | 文字体检：合并 `language` 与 `docs`，按「一个词、一条规则」归堆，每期只报一处。用法见 [docs/user-guide/audit.md](docs/user-guide/audit.md) |
 
 ## 添加新功能

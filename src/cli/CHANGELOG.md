@@ -4,6 +4,7 @@
 
 ### Added
 
+- `qtfounder agent skill`：查 Skill 的名字、说明与正文是否合标准——目录名与 `name` 一致、范围-动词、动词原形、说明写触发时机、正文有标题、命令组名字要点名对应命令、同名只许一份。规则在 `src/agent/default-contract.toml`，标准未定，逻辑先留在 CLI，不进工具箱
 - `qtfounder skill`：把二进制里嵌的 Skill 装进目标位置。`list` 看已装状态，`install` 装一条或全部（可 `--copy`、`--claude`、`--force`），`check` 只查未装与不一致并以 1 退出；落点是 `$HOME/.agents/skills/<id>`，同时维护 `.agents/.skill-lock.json`
 - 随 CLI 发布三条 Skill：`meta-classify`、`language-govern`、`think-reflect`。它们的正文点名的命令都由本 CLI 提供，必须同版本
 - 清单在构建时从包内 `skills/` 嵌入，可用 `QTFOUNDER_SKILLS_DIR` 换来源；目录为空时清单为空，仍能构建

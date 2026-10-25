@@ -1,0 +1,28 @@
+# Skill 命名的验收标准。这份口径还在试，改词表改这里，判断层只读它。
+#
+# 名字 = 范围 + 动词，两段，连字符。范围是命令入口或业务域，
+# 动词用原形：classify、reflect、govern，不用 -ance / -ment 这种名词化后缀。
+
+[scope]
+exclude = [".git", "node_modules", "target", "_build", "data/archive"]
+
+[name]
+# 两段：范围-动词。多了少了都报，但只当嫌疑，留一点余地。
+segments = 2
+max_chars = 32
+# 登记过的范围。新范围先写进来，再起名。
+scopes = ["agent", "audit", "code", "docs", "language", "meta", "skill", "think", "git", "devops", "product"]
+# 这些范围对应 CLI 的命令组：正文里应当出现 `qtfounder <范围>`，否则名与实对不上。
+cli_scopes = ["agent", "audit", "code", "docs", "language", "meta", "skill", "think"]
+# 名词化后缀：第二段以它们收尾，说明写成了名词而不是动词。
+noun_suffixes = ["ance", "ence", "ment", "tion", "sion", "ing", "ity", "ness"]
+
+[description]
+# 主流客户端的上限是 1024，超了会被截断。
+max_chars = 1024
+# 说明里要写出什么时候用；缺了就是没说清楚触发时机。
+trigger_words = ["当", "时使用", "时调用", "适用", "用于", "使用本", "触发"]
+
+[body]
+# 正文要有一级标题，不然打开不知道这是什么。
+require_heading = true

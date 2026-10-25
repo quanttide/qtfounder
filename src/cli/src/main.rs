@@ -5,6 +5,7 @@
 //! 2. 在 `CliCommand` 枚举里注册一个子命令分支
 //! 3. 把该功能的依赖加回 `Cargo.toml`
 
+mod agent;
 mod audit;
 mod code;
 mod docs;
@@ -37,6 +38,8 @@ enum CliCommand {
     Meta(meta::MetaArgs),
     /// Skill：把嵌入的 Skill 装进目标仓
     Skill(skill::SkillArgs),
+    /// Agent：查 Skill 的命名与写法
+    Agent(agent::AgentArgs),
     /// 文字体检：合并文字与文档审计，每期只说一处
     Audit(audit::AuditArgs),
 }
@@ -79,6 +82,13 @@ fn main() {
             }
         },
         Some(CliCommand::Skill(args)) => match skill::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Agent(args)) => match agent::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
