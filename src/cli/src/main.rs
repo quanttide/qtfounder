@@ -9,6 +9,7 @@ mod audit;
 mod code;
 mod docs;
 mod language;
+mod meta;
 mod think;
 
 use clap::{Parser, Subcommand};
@@ -31,6 +32,8 @@ enum CliCommand {
     Docs(docs::DocsArgs),
     /// 认知：负载看消耗落点、reflect 记一条、model 看模型
     Think(think::ThinkArgs),
+    /// 归位：判一段内容该进哪一格、要不要跨域
+    Meta(meta::MetaArgs),
     /// 文字体检：合并文字与文档审计，每期只说一处
     Audit(audit::AuditArgs),
 }
@@ -59,6 +62,13 @@ fn main() {
             }
         },
         Some(CliCommand::Think(args)) => match think::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Meta(args)) => match meta::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
