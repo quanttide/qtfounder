@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 跨域提示与用户指南里的 Skill 名改为 `meta-classify`：原来的 `meta-domain` 与 `meta-category` 已合并
+
 ## [0.0.11] - 2026-10-25
 
 ### Fixed

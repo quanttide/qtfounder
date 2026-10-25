@@ -364,7 +364,7 @@ fn print_card(card: &Card, contract: &Contract) {
                 println!("理由：{reason}");
             }
             if card.domain.is_some() {
-                println!("本仓十八格都套不上，按 meta-domain 搬走。");
+                println!("本仓十八格都套不上，按 meta-classify 搬走。");
             }
         }
     }

@@ -3,7 +3,7 @@
 //! 检查器问「写得好不好」，这里问「该放在哪」。十八格的目录、每个领域的线索、
 //! 降格规则与分辨句都在 `default-contract.toml` 里，判定层只读它。
 //!
-//! 只判定，不改写、不落盘、不搬文件：跨域搬迁按 `meta-domain` 执行。
+//! 只判定，不改写、不落盘、不搬文件：跨域搬迁按 `meta-classify` 执行。
 
 pub mod classify;
 pub mod contract;
