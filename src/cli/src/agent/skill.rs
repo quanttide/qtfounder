@@ -421,7 +421,7 @@ fn is_kebab(name: &str) -> bool {
 
 fn print_report(findings: &[Finding], scanned: usize, top: usize) {
     if findings.is_empty() {
-        println!("审了 {scanned} 个 Skill，没有命中：命名、说明与正文都合口径");
+        println!("审了 {scanned} 个 Skill，没有命中：命名、说明与正文都合标准");
         return;
     }
     println!("审了 {scanned} 个 Skill，{} 处待改\n", findings.len());
@@ -448,7 +448,7 @@ fn print_report(findings: &[Finding], scanned: usize, top: usize) {
         findings.len(),
         findings.len() - errors
     );
-    println!("口径还在试：报的是嫌疑不是判决，读上下文再改。");
+    println!("标准还在试：报的是嫌疑不是判决，读上下文再改。");
 }
 
 fn print_json(findings: &[Finding], scanned: usize) {
