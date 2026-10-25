@@ -2,8 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- `qtfounder skill`：把二进制里嵌的 Skill 装进目标仓。`list` 看已装状态，`install` 装一条或全部（可 `--copy`、`--claude`、`--force`），`check` 只查未装与不一致并以 1 退出；落点是 `.agents/skills/<id>`，同时维护 `.agents/.skill-lock.json`
+- 嵌入清单在构建时生成：来源默认是主仓 `.agents/skills`，可用 `QTFOUNDER_SKILLS_DIR` 换；单独 clone 本仓构建时清单为空，仍然编得过
+- 文档 `user-guide/skill.md` 与 `api-reference/skill.md`，目录与首页同步
+
 ### Changed
 
+- 依赖工具箱的 `skills` 模块（`quanttide-founder` 路径依赖）：嵌装逻辑在库里，CLI 只登记清单与命令行
 - 跨域提示与用户指南里的 Skill 名改为 `meta-classify`：原来的 `meta-domain` 与 `meta-category` 已合并
 
 ## [0.0.11] - 2026-10-25

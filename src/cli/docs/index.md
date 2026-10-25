@@ -1,6 +1,6 @@
 # qtfounder CLI 文档
 
-命令行工具，六个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知，`meta` 判归位，`audit` 出体检报告。
+命令行工具，七个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知，`meta` 判归位，`skill` 装 Skill，`audit` 出体检报告。
 
 ## 用户指南
 
@@ -9,6 +9,7 @@
 - [`docs`](user-guide/docs.md)：文档审计，表格、列表、密度、加粗与分割线五层；阈值未标定前密度只观测。
 - [`think`](user-guide/think.md)：认知侧，`load` 看消耗落点、`reflect` 记一条反思、`model` 看模型。
 - [`meta`](user-guide/meta.md)：归位，`classify` 给一段内容一张落位卡：域、格、档、写法。
+- [`skill`](user-guide/skill.md)：把二进制里嵌的 Skill 装到目标仓，`list` 看状态、`check` 查差异。
 - [`audit`](user-guide/audit.md)：文字体检，合并两套审计，每期只说一处。
 
 ## 开发指南
@@ -26,6 +27,7 @@
 - [`docs` 接口](api-reference/docs.md)：三层参数、契约字段与 `docs check` 的退出码。
 - [`think` 接口](api-reference/think.md)：三个子命令的参数、输入字段、JSON 与错误表。
 - [`meta` 接口](api-reference/meta.md)：怎么判、落位卡字段、退出码与契约结构。
+- [`skill` 接口](api-reference/skill.md)：嵌入清单、装到哪、JSON 与退出码。
 - [`audit` 接口](api-reference/audit.md)：参数、退出码与报告 JSON。
 
 ## 一条自举约定
