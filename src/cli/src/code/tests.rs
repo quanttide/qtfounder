@@ -341,6 +341,22 @@ fn contract_is_a_real_file_on_disk() {
 }
 
 #[test]
+fn uninformative_names_come_from_contract() {
+    let facts = facts_rs("fn handle() {}\n");
+    let mut rules = Rules::load(None)
+        .expect("仓里应能找到默认契约：确认 src/code/default-contract.toml 在，或设 QTFOUNDER_CODE_CONTRACT");
+    assert!(
+        kinds_with(&facts, Layer::Pragmatic, &rules).contains(&"uninformative_name"),
+        "默认契约里的词表应先命中"
+    );
+    rules.pragmatic.uninformative_names.clear();
+    assert!(
+        !kinds_with(&facts, Layer::Pragmatic, &rules).contains(&"uninformative_name"),
+        "清空契约词表后不应再报"
+    );
+}
+
+#[test]
 fn a_changed_contract_changes_the_verdict() {
     // 把嵌套阈值放到 10，同一份代码就不该再报深嵌套——证明「只改配置就能改行为」
     let source = "fn f(a: bool, b: bool, c: bool, d: bool) -> u32 {\n    if a {\n        if b {\n            if c {\n                if d {\n                    return 1;\n                }\n            }\n        }\n    }\n    0\n}\n";

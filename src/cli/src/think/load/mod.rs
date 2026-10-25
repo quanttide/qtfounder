@@ -16,6 +16,7 @@ use std::path::PathBuf;
 
 use clap::Args;
 
+use crate::think::model::Model;
 use judge::{Judged, STAGES};
 
 /// 负载：从会话库看消耗信号落在助手的哪个环节。
@@ -74,8 +75,9 @@ struct Hit {
 pub fn run_load(args: &LoadArgs) -> Result<i32, String> {
     let db = corpus::expand_home(&args.db);
     let messages = corpus::load(&db, args.since.as_deref())?;
+    let (model, _) = Model::load(None)?;
     let total = messages.len();
-    let (cands, rest) = screen::screen(messages);
+    let (cands, rest) = screen::screen(messages, &model.screen);
     let cand_total = cands.len();
 
     println!("qtfounder think load");

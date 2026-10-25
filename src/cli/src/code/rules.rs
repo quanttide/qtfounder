@@ -18,6 +18,8 @@ const CONTRACT_RELATIVE: [&str; 2] = [
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rules {
     #[serde(default)]
+    pub scope: ScopeRules,
+    #[serde(default)]
     pub lexical: LexicalRules,
     #[serde(default)]
     pub syntax: SyntaxRules,
@@ -25,6 +27,12 @@ pub struct Rules {
     pub module: ModuleRules,
     #[serde(default)]
     pub pragmatic: PragmaticRules,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct ScopeRules {
+    #[serde(default)]
+    pub exclude: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -69,6 +77,10 @@ pub struct PragmaticRules {
     pub error_msg_min_chars: usize,
     #[serde(default = "default_missing_why_lines")]
     pub missing_why_lines: usize,
+    #[serde(default)]
+    pub uninformative_names: Vec<String>,
+    #[serde(default)]
+    pub action_words: Vec<String>,
 }
 
 fn default_vague_names() -> Vec<String> {
@@ -159,6 +171,8 @@ impl Default for PragmaticRules {
         Self {
             error_msg_min_chars: default_error_min_chars(),
             missing_why_lines: default_missing_why_lines(),
+            uninformative_names: Vec::new(),
+            action_words: Vec::new(),
         }
     }
 }

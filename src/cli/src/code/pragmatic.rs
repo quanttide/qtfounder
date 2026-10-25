@@ -6,17 +6,14 @@ use super::ir::{Facts, FunctionFacts};
 use super::model::{Finding, Layer, Principle};
 use super::rules::Rules;
 
-const UNINFORMATIVE_NAMES: [&str; 15] = [
-    "handle", "process", "do_it", "run", "exec", "execute", "work", "deal", "manage", "util",
-    "utils", "helper", "helpers", "func", "stuff",
-];
-const ACTION_WORDS: [&str; 10] = [
-    "请", "检查", "应该", "必须", "不能", "需要", "配置", "传入", "指定", "重试",
-];
-
-fn name_finding(function: &FunctionFacts, path: &str) -> Option<Finding> {
+fn name_finding(function: &FunctionFacts, path: &str, rules: &Rules) -> Option<Finding> {
     let bare = function.name.trim_matches('_').to_lowercase();
-    if !UNINFORMATIVE_NAMES.contains(&bare.as_str()) {
+    if !rules
+        .pragmatic
+        .uninformative_names
+        .iter()
+        .any(|name| name == &bare)
+    {
         return None;
     }
     Some(Finding::new(
@@ -98,7 +95,12 @@ fn vague_error_findings(facts: &Facts, path: &str, rules: &Rules) -> Vec<Finding
             if trimmed.is_empty() || trimmed.chars().count() >= min_chars {
                 continue;
             }
-            if ACTION_WORDS.iter().any(|word| trimmed.contains(word)) {
+            if rules
+                .pragmatic
+                .action_words
+                .iter()
+                .any(|word| trimmed.contains(word))
+            {
                 continue;
             }
             out.push(Finding::new(
@@ -119,7 +121,7 @@ pub fn check(facts: &Facts, path: &str, rules: &Rules) -> Vec<Finding> {
     let mut out = Vec::new();
     for function in &facts.functions {
         for finding in [
-            name_finding(function, path),
+            name_finding(function, path, rules),
             docstring_echo_finding(function, path),
             missing_why_finding(function, path, rules),
         ]

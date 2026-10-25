@@ -50,7 +50,7 @@ qtfounder code [ROOT] [--layer LAYER]... [--top N] [--json] [--rules PATH]
 
 ## 四、契约字段
 
-`default-contract.toml` 分四段：`lexical`／`syntax`／`structure`／`pragmatic`。数值型字段一律「`0` 表示关闭这项检查」，词表型字段空数组表示不查。
+`default-contract.toml` 分五段：`scope`／`lexical`／`syntax`／`module`／`pragmatic`。`scope.exclude` 定不审的目录，与 `language`、`docs` 两份契约对齐。数值型字段一律「`0` 表示关闭这项检查」，词表型字段空数组表示不查。
 
 改契约立即生效，不需重编译。这一点有测试兜底：`a_changed_contract_changes_the_verdict`。
 

@@ -39,9 +39,18 @@ pub struct Model {
     pub domains: Vec<String>,
     pub controls: Vec<String>,
     pub order: Vec<String>,
+    pub screen: Screen,
     labels: BTreeMap<String, String>,
     questions: BTreeMap<String, String>,
     distortions: Vec<Distortion>,
+}
+
+/// 宽筛规则。`load` 用它选候选，与认知模型同一份文件，改词表不用改代码。
+#[derive(Debug, Clone)]
+pub struct Screen {
+    pub signal_words: Vec<String>,
+    pub bare_ack: Vec<String>,
+    pub min_chars: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -53,6 +62,8 @@ struct Distortion {
 #[derive(Debug, Deserialize, Default)]
 struct Raw {
     #[serde(default)]
+    screen: RawScreen,
+    #[serde(default)]
     role: RawRole,
     #[serde(default)]
     fields: RawFields,
@@ -62,6 +73,16 @@ struct Raw {
     questions: BTreeMap<String, String>,
     #[serde(default)]
     distortions: Vec<RawDistortion>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct RawScreen {
+    #[serde(default)]
+    signal_words: Vec<String>,
+    #[serde(default)]
+    bare_ack: Vec<String>,
+    #[serde(default)]
+    min_chars: Option<usize>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -110,10 +131,22 @@ impl Model {
         if raw.distortions.is_empty() {
             return Err(format!("模型 {origin} 缺 [distortions]"));
         }
+        if raw.screen.signal_words.is_empty() {
+            return Err(format!("模型 {origin} 缺 [screen].signal_words"));
+        }
+        let min_chars = raw
+            .screen
+            .min_chars
+            .ok_or_else(|| format!("模型 {origin} 缺 [screen].min_chars"))?;
         Ok(Model {
             domains: raw.role.domains,
             controls: raw.role.controls,
             order: raw.fields.order,
+            screen: Screen {
+                signal_words: raw.screen.signal_words,
+                bare_ack: raw.screen.bare_ack,
+                min_chars,
+            },
             labels: raw.labels,
             questions: raw.questions,
             distortions: raw
@@ -208,11 +241,19 @@ fn find(path: Option<&Path>) -> Result<Option<PathBuf>, String> {
 #[derive(Serialize)]
 struct ModelView<'a> {
     source: &'a str,
+    screen: ScreenView<'a>,
     role: RoleView<'a>,
     fields: &'a [String],
     labels: Vec<Entry<'a>>,
     questions: Vec<Entry<'a>>,
     distortions: Vec<Entry<'a>>,
+}
+
+#[derive(Serialize)]
+struct ScreenView<'a> {
+    signal_words: &'a [String],
+    bare_ack: &'a [String],
+    min_chars: usize,
 }
 
 #[derive(Serialize)]
@@ -232,6 +273,11 @@ pub fn run(args: &ModelArgs) -> Result<i32, String> {
     if args.json {
         let view = ModelView {
             source: &origin,
+            screen: ScreenView {
+                signal_words: &model.screen.signal_words,
+                bare_ack: &model.screen.bare_ack,
+                min_chars: model.screen.min_chars,
+            },
             role: RoleView {
                 domains: &model.domains,
                 controls: &model.controls,
@@ -256,6 +302,11 @@ pub fn run(args: &ModelArgs) -> Result<i32, String> {
         return Ok(0);
     }
     println!("认知模型：{origin}");
+    println!(
+        "宽筛：{} 个信号词，无信号时短于 {} 字不进候选",
+        model.screen.signal_words.len(),
+        model.screen.min_chars
+    );
     println!("归属：{}", model.domains.join(" / "));
     println!("控制：{}", model.controls.join(" / "));
     println!("栏位顺序：{}", model.order.join(" → "));

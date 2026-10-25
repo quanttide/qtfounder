@@ -4,6 +4,11 @@
 # 改口径只改这里，不碰代码；项目可以 `--rules my-contract.toml` 换成自己的契约。
 # 契约随代码走，放在代码资源里，与运行期数据分开。
 
+[scope]
+# 归档代码与示例代码不审：2026-10-22 实测，全仓四百二十二处里三百一十三处落在这些目录。
+# 与 language、docs 两份契约的 exclude 对齐。
+exclude = ["target", ".git", "node_modules", "build", "dist", "archive", "examples"]
+
 [lexical]
 # 信息量不足的万能名：叫这些名字的，读者必须回头读代码才知道装的是什么
 vague_names = ["data", "temp", "tmp", "flag", "val", "value", "res", "obj", "info", "thing", "stuff", "foo", "bar"]
@@ -35,3 +40,7 @@ max_methods = 15
 [pragmatic]
 error_msg_min_chars = 12
 missing_why_lines = 25
+# 只说了动作没说对象的名字：读者必须回头读代码才知道装的是什么
+uninformative_names = ["handle", "process", "do_it", "run", "exec", "execute", "work", "deal", "manage", "util", "utils", "helper", "helpers", "func", "stuff"]
+# 错误信息里出现这些词，才说明它告诉了读者下一步做什么
+action_words = ["请", "检查", "应该", "必须", "不能", "需要", "配置", "传入", "指定", "重试"]

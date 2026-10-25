@@ -63,7 +63,7 @@ qtfounder think model [--model PATH] [--json]
 
 ## 五、`model`
 
-输出当前生效的模型与来源。`--json` 给 `source`、`role`（`domains` 与 `controls`）、`fields`（栏位顺序）、`labels`、`questions`、`distortions`（键与标签）。
+输出当前生效的模型与来源。`--json` 给 `source`、`screen`（`signal_words`、`bare_ack`、`min_chars`）、`role`（`domains` 与 `controls`）、`fields`（栏位顺序）、`labels`、`questions`、`distortions`（键与标签）。`[screen]` 是 `load` 的宽筛规则，与认知模型同一份文件。
 
 模型查找顺序是 `--model` → `QTFOUNDER_THINK_MODEL` → 从当前目录逐级往上找 `src/think/default-contract.toml` → `~/.config/qtfounder/think/model.toml` → 内置。前两道指向的文件不存在时报错，后面两道找不到就用内置。
 

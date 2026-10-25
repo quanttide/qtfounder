@@ -45,17 +45,7 @@ pub struct CodeArgs {
     pub rules: Option<PathBuf>,
 }
 
-// 归档代码与示例代码不审：2026-10-22 实测，全仓四百二十二处里三百一十三处落在 data/archive 与 examples。
-// 语言层早就跳过这两处，代码层原来不跳，两个子命令对同一批目录的态度不一致。
-const SKIP_DIRS: [&str; 7] = [
-    "target",
-    ".git",
-    "node_modules",
-    "build",
-    "dist",
-    "archive",
-    "examples",
-];
+// 归档代码与示例代码不审：由契约的 [scope].exclude 定，与语言、文档两份契约对齐。
 
 fn wanted_layers(requested: &[String]) -> Vec<Layer> {
     if requested.is_empty() {
@@ -67,7 +57,7 @@ fn wanted_layers(requested: &[String]) -> Vec<Layer> {
         .collect()
 }
 
-fn source_files(root: &PathBuf) -> Vec<PathBuf> {
+fn source_files(root: &PathBuf, excludes: &[String]) -> Vec<PathBuf> {
     if root.is_file() {
         return vec![root.clone()];
     }
@@ -80,7 +70,7 @@ fn source_files(root: &PathBuf) -> Vec<PathBuf> {
             !path.components().any(|part| {
                 part.as_os_str()
                     .to_str()
-                    .map(|text| SKIP_DIRS.contains(&text))
+                    .map(|text| excludes.iter().any(|excluded| excluded == text))
                     .unwrap_or(false)
             })
         })
@@ -110,7 +100,7 @@ fn collect(
     let mut broken = Vec::new();
     let mut function_names: Vec<String> = Vec::new();
 
-    for path in source_files(root) {
+    for path in source_files(root, &rules.scope.exclude) {
         let label = display_path(root, &path);
         let source = match fs::read_to_string(&path) {
             Ok(text) => text,

@@ -48,7 +48,7 @@ qtfounder think reflect --observe ref_3WT3 --result "只错了一个报价点"
 
 ## 三、`model`：改模型不用改代码
 
-栏位顺序、追问用语、认知扭曲词表、归属与控制的取值域，全部在模型文件里。默认读仓库里的 `src/think/default-contract.toml`；装到用户级目录后读 `~/.config/qtfounder/think/model.toml`。
+栏位顺序、追问用语、认知扭曲词表、归属与控制的取值域，以及 `load` 宽筛用的信号词与长度门槛，全部在模型文件里。默认读仓库里的 `src/think/default-contract.toml`；装到用户级目录后读 `~/.config/qtfounder/think/model.toml`。
 
 ```bash
 qtfounder think model            # 人读
@@ -57,6 +57,7 @@ qtfounder think model --json     # 给机器看
 
 ```text
 认知模型：src/think/default-contract.toml
+宽筛：46 个信号词，无信号时短于 15 字不进候选
 归属：company / self
 控制：scarce / grasp
 栏位顺序：emotion → distortions → evidence_against → balanced → experiment
