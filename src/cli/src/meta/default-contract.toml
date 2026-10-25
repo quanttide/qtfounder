@@ -281,7 +281,7 @@ key = "platform"
 name = "Platform 平台"
 path = "apps/"
 family = "程序型"
-cues = ["平台", "服务", "部署", "上线", "系统", "运维", "监控"]
+cues = ["平台", "服务", "部署", "上线", "运维", "监控"]
 boundary = "承载能力的产品本体，不是用法说明。"
 skeleton = '''# 平台名
 
@@ -386,6 +386,14 @@ ask = "这是「我要 X 不要 Y」的原话，还是已经定下的先后？�
 [[question]]
 pair = ["intention", "essay"]
 ask = "这是你要的对齐原话，还是在解释一套道理？原话进愿景，讲道理进论文。"
+
+[[question]]
+pair = ["insight", "intention"]
+ask = "同一句话，是能对错的机制，还是给 AI 的指令？前者进洞察，后者进愿景。"
+
+[[question]]
+pair = ["intention", "profile"]
+ask = "这是「我要什么」，还是「我是什么样的人」？要什么会随事变，是什么样的人不随事变。"
 
 [[question]]
 pair = ["handbook", "gallery"]

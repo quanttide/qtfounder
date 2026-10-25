@@ -90,6 +90,41 @@ fn 阈值没出处退论文() {
 }
 
 #[test]
+fn 相邻格都有分辨句() {
+    let contract = contract();
+    let pairs = [
+        ("report", "journal"),
+        ("journal", "insight"),
+        ("insight", "roadmap"),
+        ("insight", "profile"),
+        ("insight", "intention"),
+        ("intention", "profile"),
+        ("bylaw", "specification"),
+        ("specification", "essay"),
+    ];
+    for (first, second) in pairs {
+        let found = contract.question.iter().any(|question| {
+            question.pair.len() == 2
+                && ((question.pair[0] == first && question.pair[1] == second)
+                    || (question.pair[0] == second && question.pair[1] == first))
+        });
+        assert!(found, "{first}/{second} 缺分辨句");
+    }
+}
+
+#[test]
+fn 难度落差进洞察() {
+    let card = place("约束生成很难，约束验收容易；生成难控，检查好做。");
+    assert_eq!(key_of(&card), "insight");
+}
+
+#[test]
+fn 推不翻的话不收() {
+    let card = judge("整个系统开始观察自己，形成自指闭环。", &contract());
+    assert_eq!(card.verdict, Verdict::Reject);
+}
+
+#[test]
 fn 只对那次成立的进案例() {
     let card = place("那次写入花了三小时，参与人只有我。");
     assert_eq!(key_of(&card), "gallery");
