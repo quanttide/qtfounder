@@ -55,6 +55,14 @@ fn 排了先后的是路线图不是洞察() {
 }
 
 #[test]
+fn 解释为什么必须这样排的是洞察() {
+    let card =
+        place("确定性是全部验收的前提，一旦破了，后面每一段的断言都失去手段，越往后返工越贵。");
+    assert_eq!(key_of(&card), "insight");
+    assert_eq!(card.grade.as_deref(), Some("假说"));
+}
+
+#[test]
 fn 原话进愿景且不分档() {
     let card = place("我要清晰的依据，不要含糊的规则。");
     assert_eq!(key_of(&card), "intention");
@@ -99,8 +107,17 @@ fn 两格打平只问一句() {
     let card = judge("其实先做哪一步还没定。", &contract());
     assert_eq!(card.verdict, Verdict::Undecided);
     let question = card.question.expect("打平时要给出分辨句");
-    assert!(question.contains("先做"), "分辨句应能分开两格：{question}");
+    assert!(
+        question.contains("为什么必须这样排"),
+        "分辨句应能分开两格：{question}"
+    );
     assert!(card.reason.unwrap().contains("不硬猜"));
+}
+
+#[test]
+fn 一个顺带动词不指路() {
+    let card = judge("把过滤与失真做成纯函数，弹药才判得对错。", &contract());
+    assert!(card.domain.is_none(), "一个领域词不该把整篇搬走");
 }
 
 #[test]

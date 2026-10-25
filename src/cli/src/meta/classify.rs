@@ -273,6 +273,7 @@ fn hits(text: &str, cues: &[String]) -> usize {
 }
 
 fn call_domain(text: &str, contract: &Contract) -> Option<(Domain, Vec<String>)> {
+    let threshold = contract.verdict.min_domain_hits.max(1);
     let mut scored: Vec<(usize, &Domain, Vec<String>)> = contract
         .domain
         .iter()
@@ -286,7 +287,7 @@ fn call_domain(text: &str, contract: &Contract) -> Option<(Domain, Vec<String>)>
             let score = hits(text, &domain.cues);
             (score, domain, matched)
         })
-        .filter(|(score, _, _)| *score > 0)
+        .filter(|(score, _, _)| *score >= threshold)
         .collect();
     scored.sort_by_key(|item| std::cmp::Reverse(item.0));
     let (score, domain, matched) = scored.first()?;

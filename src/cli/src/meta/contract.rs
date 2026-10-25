@@ -39,6 +39,8 @@ pub struct Verdict {
     #[serde(default)]
     pub min_hits: usize,
     #[serde(default)]
+    pub min_domain_hits: usize,
+    #[serde(default)]
     pub max_paragraphs: usize,
     #[serde(default)]
     pub stay: String,
@@ -53,6 +55,7 @@ impl Default for Verdict {
         Self {
             min_margin: 1,
             min_hits: 1,
+            min_domain_hits: 1,
             max_paragraphs: 5,
             stay: "留在这里".to_string(),
             archive_cues: Vec::new(),

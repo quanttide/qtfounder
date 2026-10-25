@@ -18,7 +18,7 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 3. 准入：命中的格若有一条 `transition` 同时满足 `require_any` 与不满足 `lack_any`，换成目标格，理由取该条的 `reason`。
 4. 定档：按格的 `grade` 顺序找第一条命中的；都不命中就用 `fallback = true` 那条；没有分档的格（如愿景、日志）给「不分档」。
 
-域独立判断，不影响格。领域按 `cues` 计分，同分不指路。命中的领域同时看 `archive_cues`：出现按归档，否则按移交。
+域独立判断，不影响格。领域按 `cues` 计分，同分不指路；命中数低于 `min_domain_hits` 也不指路——一个顺带出现的领域词不该把整篇搬走。命中的领域同时看 `archive_cues`：出现按归档，否则按移交。
 
 ## 三、输出
 
@@ -78,6 +78,7 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 |----|------|------|
 | `[verdict]` | `min_margin` | 分差低于它判待定；打平就判不了 |
 | | `min_hits` | 最高分低于它判不收 |
+| | `min_domain_hits` | 领域命中数低于它不指路 |
 | | `max_paragraphs` | 超过这个段数判「拆成一条再判」 |
 | | `stay` | 留在这里的说法 |
 | | `archive_cues` | 出现即按归档处理 |
