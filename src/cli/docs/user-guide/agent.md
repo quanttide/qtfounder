@@ -2,7 +2,7 @@
 
 `agent` 这一组：把 Skill 装到该在的位置，再检查它写得对不对。装的时候只搬运，查的时候只读。
 
-随 CLI 发布的 Skill 有四条：`meta-classify`、`language-govern`、`think-reflect`、`product-clarify`。你装了二进制，就同时得到这四份说明书；前三份点名的命令由本 CLI 提供，`product-clarify` 调 lab 版的 `qtfounder-lab`。接口一变文字就得跟着变，所以一起发。
+随 CLI 发布的 Skill 有四条：`meta-classify`、`language-govern`、`think-reflect`、`product-clarify`。你装了二进制，就同时得到这四份说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
 
 ## 一、嵌了哪四条
 

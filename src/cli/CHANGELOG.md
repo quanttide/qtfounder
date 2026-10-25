@@ -4,11 +4,15 @@
 
 ### Added
 
+- `product` 组升进正式 CLI：`requirement` 与 `clarify` 两个入口从实验室搬来，数据落 `$XDG_DATA_HOME/qtfounder`（未设则 `~/.local/share/qtfounder`），环境变量 `QTFOUNDER_DATA` 可换目录；新增 `user-guide/product.md` 与 `api-reference/product.md`
 - `meta classify` 的洞察线索补上工程类机制词：前提、地基、断言、否则、返工。讲「为什么必须这样排」的归洞察，讲「现在做哪一步」的仍归路线图
 - 契约新增 `min_domain_hits`：领域命中数不到下限不指路，一个顺带出现的领域词不再把整篇搬去别的领域
 
 ### Changed
 
+- `product-clarify` Skill 指向 `qtfounder product`，不再依赖 `qtfounder-lab`；前置从「装实验室 CLI」改为「查正式 CLI」
+- 实验室 CLI 整体删除：`health` 早已由 `think reflect` 取代，`product` 升进正式版；`examples/quanttide-founder-lab/src/cli` 不留复制件
+- 归位契约：实验室的边界补上「验证通过就升进正式入口，不留复制件」，新增实验室/平台的分辨句；`meta-classify` Skill 同步这条规则
 - `think` 的宽筛词表进模型：46 个弱信号词、16 个纯操作短句与长度门槛从 `load/screen.rs` 移进 `[screen]`，改词表不用重编译；`think model` 的输出也摊开这一节
 - `code` 的两张词表进契约：无信息函数名与错误信息里的行动词从 `pragmatic.rs` 移进 `[pragmatic]`；跳过目录从 `mod.rs` 移进新增的 `[scope].exclude`，与另外两份契约对齐
 - `meta-classify` Skill 从 389 行收到 200 行左右：十八格表、各格写法、准入、分级、语义界线与正反例移出，格子数据与骨架以契约为准，例子进 CLI 测试；正文只留读卡、定域与迁移、日志分诊、自检与误判

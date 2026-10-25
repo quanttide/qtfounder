@@ -11,6 +11,7 @@ mod code;
 mod docs;
 mod language;
 mod meta;
+mod product;
 mod think;
 
 use clap::{Parser, Subcommand};
@@ -35,6 +36,8 @@ enum CliCommand {
     Think(think::ThinkArgs),
     /// 归位：判一段内容该进哪一格、要不要跨域
     Meta(meta::MetaArgs),
+    /// 产品：需求与澄清，名词读、动词写
+    Product(product::ProductArgs),
     /// Agent：装 Skill、查写法
     Agent(agent::AgentArgs),
     /// 文字体检：合并文字与文档审计，每期只说一处
@@ -78,6 +81,12 @@ fn main() {
                 std::process::exit(2);
             }
         },
+        Some(CliCommand::Product(args)) => {
+            if let Err(error) = product::run(args.command) {
+                product::print_error(&error);
+                std::process::exit(error.exit_code());
+            }
+        }
         Some(CliCommand::Agent(args)) => match agent::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {

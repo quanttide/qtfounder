@@ -322,7 +322,7 @@ name = "Laboratory 实验室"
 path = "examples/"
 family = "程序型"
 cues = ["实验", "验证", "试验", "假设", "样本", "对照组", "跑一遍"]
-boundary = "还没被验证的东西先在这里跑；验证过再升格。"
+boundary = "还没被验证的东西先在这里跑；验证通过就升进正式入口，实验室不留复制件，Skill 与文档只指向正式入口。"
 skeleton = '''# 实验名
 
 假设：一句话。
@@ -394,6 +394,10 @@ ask = "同一句话，是能对错的机制，还是给 AI 的指令？前者进
 [[question]]
 pair = ["intention", "profile"]
 ask = "这是「我要什么」，还是「我是什么样的人」？要什么会随事变，是什么样的人不随事变。"
+
+[[question]]
+pair = ["laboratory", "platform"]
+ask = "这是在验证一个还没定的做法，还是已经能长期交付的能力？前者留实验室跑，后者升进正式入口，实验室不留复制件。"
 
 [[question]]
 pair = ["handbook", "gallery"]

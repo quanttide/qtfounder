@@ -1,6 +1,6 @@
 # qtfounder CLI 文档
 
-命令行工具，七个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知，`meta` 判归位，`agent` 装 Skill 并查写法，`audit` 出体检报告。
+命令行工具，八个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知，`meta` 判归位，`product` 记需求差，`agent` 装 Skill 并查写法，`audit` 出体检报告。
 
 ## 用户指南
 
@@ -9,6 +9,7 @@
 - [`docs`](user-guide/docs.md)：文档审计，表格、列表、密度、加粗与分割线五层；阈值未标定前密度只观测。
 - [`think`](user-guide/think.md)：认知侧，`load` 看消耗落点、`reflect` 记一条反思、`model` 看模型。
 - [`meta`](user-guide/meta.md)：归位，`classify` 给一段内容一张落位卡：域、格、档、写法。
+- [`product`](user-guide/product.md)：需求与澄清，`clarify` 记一次「不对劲」，`requirement` 看攒出了什么。
 - [`agent`](user-guide/agent.md)：装 Skill（`list`、`install`、`check`）并查写法（`lint`）。
 - [`audit`](user-guide/audit.md)：文字体检，合并两套审计，每期只说一处。
 
@@ -27,6 +28,7 @@
 - [`docs` 接口](api-reference/docs.md)：三层参数、契约字段与 `docs check` 的退出码。
 - [`think` 接口](api-reference/think.md)：三个子命令的参数、输入字段、JSON 与错误表。
 - [`meta` 接口](api-reference/meta.md)：怎么判、落位卡字段、退出码与契约结构。
+- [`product` 接口](api-reference/product.md)：两个入口、输入字段、JSON 与错误表。
 - [`agent` 接口](api-reference/agent.md)：嵌入清单、安装位置、七道检查、JSON 与退出码。
 - [`audit` 接口](api-reference/audit.md)：参数、退出码与报告 JSON。
 

@@ -101,6 +101,7 @@ fn 相邻格都有分辨句() {
         ("intention", "profile"),
         ("bylaw", "specification"),
         ("specification", "essay"),
+        ("laboratory", "platform"),
     ];
     for (first, second) in pairs {
         let found = contract.question.iter().any(|question| {

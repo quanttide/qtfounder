@@ -5,7 +5,7 @@ description: 记录与 AI 协作中出现过的需求差（同一要求说第二
 
 # 产品需求澄清
 
-把一句「不对劲」变成一条记录和一段能粘回对话的话，同类差重复时立成规则，攒到一定量再按主题汇进档案。命令是 `qtfounder-lab product ...`（与正式版 `qtfounder` 区分），契约见 lab 仓 `src/cli/docs/api-references/`。
+把一句「不对劲」变成一条记录和一段能粘回对话的话，同类差重复时立成规则，攒到一定量再按主题汇进档案。命令是 `qtfounder product ...`，接口见 CLI 文档的 `product` 段。
 
 三件事：记一条（`product clarify`）、立一条规则（`product clarify --rule`）、攒批归档（走 `product-requirement`）。前两件在协作现场做，第三件不在本 Skill 展开。
 
@@ -39,14 +39,13 @@ description: 记录与 AI 协作中出现过的需求差（同一要求说第二
 - 写库三条路：A 级命中明确信号不必先问，直接记，回执一行并附「不想要就说删」；用户点头回应提示；用户已在消息里把「原以为 / 实际做了什么」说清楚，直接记并回执一行。两头都不清时才问一句。过门槛的成本必须低到「你什么都不用做」——问一次就多一次判断成本，嫌烦就永远不记。
 - 记歪了用 `--revise <clr_id>` 原地改，重拼提示词、不新增记录；不要手改账本文件（手改最容易漏掉提示词那一份，账本就不自洽了）。删整条才手改文件。
 - 规则文本永远是用户的话。工具与 agent 都不代写规则，只把候选顶到用户面前，点头后才落库。
-- 数据放哪由 CLI 自己选，不用 export。开发版落代码包内 `src/cli/data/`，正式版落 `$XDG_DATA_HOME/qtfounder-lab`（未设则 `~/.local/share/qtfounder-lab`）；只有跑实验、造夹具时才用 `QTFOUNDER_LAB_DATA` 指到临时目录。
+- 数据放哪由 CLI 自己选，不用 export。开发构建落代码包内 `src/cli/data/`，发布构建落 `$XDG_DATA_HOME/qtfounder`（未设则 `~/.local/share/qtfounder`）；只有跑实验、造夹具时才用 `QTFOUNDER_DATA` 指到临时目录。
 - 输出给用户的是提示词原文（`prompt` 字段），不让用户自己组织语言。
 
 ## 前置
 
 ```bash
-command -v qtfounder-lab || cargo install --offline --path \
-  "$HOME/repos/quanttide/defaults/quanttide-founder/examples/quanttide-founder-lab/src/cli"
+command -v qtfounder || echo "先装 qtfounder"
 ```
 
 ## 记录工作流
@@ -71,7 +70,7 @@ command -v qtfounder-lab || cargo install --offline --path \
 任务交付时跑一次：
 
 ```bash
-qtfounder-lab product requirement --json
+qtfounder product requirement --json
 ```
 
 当前需求的 `candidates` 里有 `count ≥ 2` 的项，就问一句「这类差第 N 次了，要不要立规则？你给一句话」。等用户给文本，不替它写；同时把 `rules.md` 提醒一句：下次开工前给 AI 看。
@@ -89,7 +88,7 @@ qtfounder-lab product requirement --json
 一次把整条记录走 stdin，`--json` 拿结构化结果：
 
 ```bash
-qtfounder-lab product clarify --stdin --json <<'JSON'
+qtfounder product clarify --stdin --json <<'JSON'
 {"before":"我以为它知道我要能直接跑的代码","actual":"给了五段解释加伪代码"}
 JSON
 ```
@@ -99,7 +98,7 @@ JSON
 ### 用户点头才落规则
 
 ```bash
-qtfounder-lab product clarify --rule "<用户原话>"
+qtfounder product clarify --rule "<用户原话>"
 ```
 
 落库后回一句：写进了哪个文件、这一批重复差已标为处理过。`rules.md` 由用户自己保管。
