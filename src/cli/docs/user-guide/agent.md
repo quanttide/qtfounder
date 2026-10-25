@@ -2,9 +2,9 @@
 
 `agent` 这一组：把 Skill 装到该在的位置，再检查它写得对不对。装的时候只搬运，查的时候只读。
 
-随 CLI 发布的 Skill 有五条：`meta-classify`、`language-govern`、`think-reflect`、`product-collect`、`product-organize`。你装了二进制，就同时得到这五份说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
+随 CLI 发布的 Skill 有六条：`meta-classify`、`language-govern`、`think-reflect`、`product-collect`、`product-organize`、`write-express`。你装了二进制，就同时得到这六份说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
 
-## 一、嵌了哪五条
+## 一、嵌了哪六条
 
 来源是本包的 `skills/` 目录，改来源用环境变量 `QTFOUNDER_SKILLS_DIR`。目录下有 `SKILL.md` 的子目录算一条，其余文本文件当附属文件一起带走。
 

@@ -13,6 +13,7 @@ mod language;
 mod meta;
 mod product;
 mod think;
+mod write;
 
 use clap::{Parser, Subcommand};
 
@@ -32,6 +33,8 @@ enum CliCommand {
     Language(language::LanguageArgs),
     /// 文档审计：表格、列表与密度三层
     Docs(docs::DocsArgs),
+    /// 表达审计：空话、口号、指路与结构四层
+    Write(write::WriteArgs),
     /// 认知：负载看消耗落点、reflect 记一条、model 看模型
     Think(think::ThinkArgs),
     /// 归位：判一段内容该进哪一格、要不要跨域
@@ -61,6 +64,13 @@ fn main() {
             }
         },
         Some(CliCommand::Docs(args)) => match docs::run_docs(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Write(args)) => match write::run_write(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

@@ -4,6 +4,8 @@
 
 ### Added
 
+- `qtfounder write`：表达审计四层——空话、口号、指路、结构；契约落 `src/write/default-contract.toml`，四段与四层一一对应
+- `write-express` Skill：把口号、类比与结论堆叠改写成可读文档；先跑 `qtfounder write`，再按体裁、定义、步骤、边界与验收重排
 - `qtfounder product organize`：按 `actual` 归一化键把全部记录聚成主题，并给出 `rules.md` 的规则原文，供归档使用
 - `qtfounder product clear --id <clr_id>`：删除已归档的澄清记录，清空的需求一并移除，`rules.md` 不动
 - `product` 组升进正式 CLI：`requirement` 与 `clarify` 两个入口从实验室搬来，数据落 `$XDG_DATA_HOME/qtfounder`（未设则 `~/.local/share/qtfounder`），环境变量 `QTFOUNDER_DATA` 可换目录；新增 `user-guide/product.md` 与 `api-reference/product.md`
@@ -12,7 +14,8 @@
 
 ### Changed
 
-- `product-clarify` 改名 `product-collect`，`product-requirement` 改名 `product-organize` 并随 CLI 发布；现在嵌五条 Skill，`product-organize` 用 `product organize` 与 `product clear` 完成归档与清缓存
+- `agent` 契约登记 `write` 范围：新增 Skill `write-express`，写法检查要求正文出现 `qtfounder write`
+- `product-clarify` 改名 `product-collect`，`product-requirement` 改名 `product-organize` 并随 CLI 发布；现在嵌六条 Skill，`product-organize` 用 `product organize` 与 `product clear` 完成归档与清缓存
 - `product-clarify` Skill 指向 `qtfounder product`，不再依赖 `qtfounder-lab`；前置从「装实验室 CLI」改为「查正式 CLI」
 - 实验室 CLI 整体删除：`health` 早已由 `think reflect` 取代，`product` 升进正式版；`examples/quanttide-founder-lab/src/cli` 不留复制件
 - 归位契约：实验室的边界补上「验证通过就升进正式入口，不留复制件」，新增实验室/平台的分辨句；`meta-classify` Skill 同步这条规则

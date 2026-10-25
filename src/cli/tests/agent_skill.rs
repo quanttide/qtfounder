@@ -12,13 +12,14 @@ const CONTRACT: &str = concat!(
     "/src/agent/default-contract.toml"
 );
 
-/// 随二进制发布的五条，与 `registry` 的单元测试同一份名单。
-const PUBLISHED: [&str; 5] = [
+/// 随二进制发布的六条，与 `registry` 的单元测试同一份名单。
+const PUBLISHED: [&str; 6] = [
     "language-govern",
     "meta-classify",
     "product-collect",
     "product-organize",
     "think-reflect",
+    "write-express",
 ];
 
 const GOOD_SKILL: &str = "---\nname: git-commit\ndescription: 规范提交。当用户要提交时使用。\n---\n\n# git-commit\n\n按约定提交。\n";
@@ -109,12 +110,12 @@ fn status_of<'a>(value: &'a serde_json::Value, id: &str) -> &'a str {
 // ---------- 命令面 ----------
 
 #[test]
-fn 顶层有七个命令组且装skill并入agent() {
+fn 顶层有九个命令且装skill并入agent() {
     let temp = TempRoot::new("top-level");
     let output = run(temp.path(), &["--help"]);
     assert_eq!(output.code, 0, "{}", output.stderr);
     for name in [
-        "code", "language", "docs", "think", "meta", "agent", "audit",
+        "code", "language", "docs", "write", "think", "meta", "product", "agent", "audit",
     ] {
         assert!(
             output.stdout.contains(name),
@@ -161,7 +162,7 @@ fn 版本号与包一致() {
 // ---------- list / check ----------
 
 #[test]
-fn 列出的四条都未装且不建目录() {
+fn 列出的六条都未装且不建目录() {
     let temp = TempRoot::new("list-missing");
     let root = temp.path().join("repo");
     let output = run(
@@ -222,7 +223,7 @@ fn 装完之后检查通过() {
         &["agent", "skill", "install", "--root", root_arg],
     );
     assert_eq!(install.code, 0, "{}", install.stderr);
-    assert!(install.stdout.contains("装了 5 个"), "{}", install.stdout);
+    assert!(install.stdout.contains("装了 6 个"), "{}", install.stdout);
     for id in PUBLISHED {
         assert!(
             root.join(".agents/skills")

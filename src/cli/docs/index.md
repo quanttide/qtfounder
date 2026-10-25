@@ -1,12 +1,13 @@
 # qtfounder CLI 文档
 
-命令行工具，八个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`think` 管认知，`meta` 判归位，`product` 记需求差，`agent` 装 Skill 并查写法，`audit` 出体检报告。
+命令行工具，九个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知，`meta` 判归位，`product` 记需求差，`agent` 装 Skill 并查写法，`audit` 出体检报告。
 
 ## 用户指南
 
 - [`code`](user-guide/code.md)：代码语用检查，四层。先看它怎么查它自己（八十五处命中分四层）。
 - [`language`](user-guide/language.md)：语言检查，六层加语义层，出结果再过一层复核。
 - [`docs`](user-guide/docs.md)：文档审计，表格、列表、密度、加粗与分割线五层；阈值未标定前密度只观测。
+- [`write`](user-guide/write.md)：表达审计，空话、口号、指路与结构四层。
 - [`think`](user-guide/think.md)：认知侧，`load` 看消耗落点、`reflect` 记一条反思、`model` 看模型。
 - [`meta`](user-guide/meta.md)：归位，`classify` 给一段内容一张落位卡：域、格、档、写法。
 - [`product`](user-guide/product.md)：需求与澄清，`clarify` 记一次「不对劲」，`requirement` 看攒出了什么。
@@ -26,6 +27,7 @@
 - [`code` 接口](api-reference/code.md)：参数、退出码、JSON 字段、稳定性承诺。
 - [`language` 接口](api-reference/language.md)：同上，加语义层的环境变量与降级办法。
 - [`docs` 接口](api-reference/docs.md)：三层参数、契约字段与 `docs check` 的退出码。
+- [`write` 接口](api-reference/write.md)：参数、JSON 字段、退出码与契约四段。
 - [`think` 接口](api-reference/think.md)：三个子命令的参数、输入字段、JSON 与错误表。
 - [`meta` 接口](api-reference/meta.md)：怎么判、落位卡字段、退出码与契约结构。
 - [`product` 接口](api-reference/product.md)：两个入口、输入字段、JSON 与错误表。
@@ -39,10 +41,11 @@
 ```bash
 cargo run -- language docs
 cargo run -- docs docs
+cargo run -- write docs
 cargo run -- code src
 ```
 
-三条都还没清零：`language docs` 审十六个文件、报四十处（真问题二十八处，另十二处被复核层标成误报），`docs docs` 已清零，`code src` 五十二处。
+四条都还没清零：`language docs` 审十六个文件、报四十处（真问题二十八处，另十二处被复核层标成误报），`docs docs` 已清零，`code src` 五十二处；`write docs` 刚接入，先看分布。
 
 代码侧剩的欠账，你自己跑一遍 `code src` 就能看到：文件里顶层定义太多，`check_table` 与 `internal_ids` 两个函数过长，命令行入口又长又深。这几条是结构问题，不是措辞问题，要拆就另开一轮。文档侧的表格嫌疑集中在接口参考的字段表，那是真在对照，不改。
 
