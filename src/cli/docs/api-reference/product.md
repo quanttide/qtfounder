@@ -7,6 +7,8 @@
 ```text
 qtfounder product requirement [--id <id>] [--json]
 qtfounder product clarify [--task <一句话>] [--stdin] [--revise <clr_id>] [--rule <文本>] [--json]
+qtfounder product organize [--json]
+qtfounder product clear --id <clr_id> [--id <clr_id>] [--json]
 ```
 
 ## 二、`requirement`
@@ -68,7 +70,48 @@ qtfounder product clarify [--task <一句话>] [--stdin] [--revise <clr_id>] [--
 {"id": "clr_01J9", "requirement_id": "req_01J9", "at": "2026-10-18T09:12:03Z", "deduplicated": false, "prompt": "…"}
 ```
 
-## 四、错误
+## 四、`organize`
+
+把全部记录按 `actual` 归一化键聚成主题，并给出 `rules.md` 里的规则原文。只读，供归档使用。
+
+`--json` 的形状：
+
+```json
+{
+  "clusters": [
+    {
+      "key": "铺开写了十段解释",
+      "count": 2,
+      "records": [
+        {
+          "id": "clr_01J9",
+          "requirement_id": "req_01J9",
+          "task": "给这段代码写单元测试",
+          "at": "2026-10-18T09:12:03Z",
+          "before": "它知道我只要三行结论",
+          "actual": "铺开写了十段解释",
+          "prompt": "先给三行以内的结论"
+        }
+      ]
+    }
+  ],
+  "rules": ["先给三行结论"]
+}
+```
+
+## 五、`clear`
+
+删除已归档的澄清记录。`--id` 可重复；不给 id 是用法错。清空的需求一并移除，`rules.md` 不动。
+
+`--json` 的形状：
+
+```json
+{"removed": ["clr_01J9"], "missing": [], "left": 2}
+```
+
+`missing` 是记录库里已经找不到的 id；`left` 是清完后剩余的记录数。
+
+## 六、错误
 
 业务错误给 JSON 信封，`code` 为 `USAGE` 或 `NOT_FOUND`：
 
@@ -88,6 +131,6 @@ qtfounder product clarify [--task <一句话>] [--stdin] [--revise <clr_id>] [--
 
 参数解析错（未知参数、缺值、缺子命令）由 clap 直接输出，退出码 2，不带 JSON 信封。
 
-## 五、数据放哪
+## 七、数据放哪
 
 两个文件：`clarify.json` 存记录，`rules.md` 存规则。开发构建（`cargo run` / `cargo test`）落代码包内的 `data/`；发布构建遵循 XDG，落 `$XDG_DATA_HOME/qtfounder`，未设则 `~/.local/share/qtfounder`。`QTFOUNDER_DATA` 优先级最高，供测试与临时切换用。

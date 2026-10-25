@@ -28,8 +28,8 @@ fn 合口径的没有命中() {
 
 #[test]
 fn 名词化后缀报错() {
-    let text = GOOD.replace("git-commit", "product-requirement");
-    let findings = run("product-requirement", &text);
+    let text = GOOD.replace("git-commit", "product-management");
+    let findings = run("product-management", &text);
     assert_eq!(kinds(&findings), vec!["verb"]);
     assert!(findings[0].message.contains("ment"));
 }

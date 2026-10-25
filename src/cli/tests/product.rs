@@ -956,3 +956,118 @@ fn help_exits_zero() {
     assert!(text.contains("requirement"), "帮助应列 requirement：{text}");
     assert!(text.contains("clarify"), "帮助应列 clarify：{text}");
 }
+
+// ---------- organize / clear ----------
+
+#[test]
+fn organize_clusters_by_actual() {
+    let dir = lab();
+    let first = seed_requirement(&dir, "给这段代码写单元测试");
+    let out = cmd(&dir)
+        .args([
+            "product",
+            "clarify",
+            "--task",
+            "写接口文档",
+            "--stdin",
+            "--json",
+        ])
+        .write_stdin(stdin_json(
+            None,
+            "它知道我要三行结论",
+            "铺开写了十段解释",
+            "先给三行以内的结论",
+        ))
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "{}", stderr_of(&out));
+
+    let out = cmd(&dir)
+        .args(["product", "organize", "--json"])
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "{}", stderr_of(&out));
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let clusters = value["clusters"].as_array().expect("clusters");
+    assert_eq!(clusters.len(), 1, "同一种差应聚成一簇");
+    assert_eq!(clusters[0]["count"], 2);
+    assert_eq!(clusters[0]["records"].as_array().unwrap().len(), 2);
+    assert_eq!(clusters[0]["records"][0]["requirement_id"], first);
+}
+
+#[test]
+fn organize_lists_rules() {
+    let dir = lab();
+    let out = cmd(&dir)
+        .args(["product", "clarify", "--rule", "先给三行结论"])
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "{}", stderr_of(&out));
+
+    let out = cmd(&dir)
+        .args(["product", "organize", "--json"])
+        .output()
+        .unwrap();
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(value["rules"][0], "先给三行结论");
+}
+
+#[test]
+fn clear_removes_archived_and_reports_left() {
+    let dir = lab();
+    seed_requirement(&dir, "第一件事");
+    let out = cmd(&dir)
+        .args([
+            "product",
+            "clarify",
+            "--task",
+            "第二件事",
+            "--stdin",
+            "--json",
+        ])
+        .write_stdin(stdin_json(
+            None,
+            "它知道我要结论",
+            "写了三页铺陈",
+            "先给结论",
+        ))
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "{}", stderr_of(&out));
+
+    let organized = cmd(&dir)
+        .args(["product", "organize", "--json"])
+        .output()
+        .unwrap();
+    let value: serde_json::Value = serde_json::from_slice(&organized.stdout).unwrap();
+    let id = value["clusters"][0]["records"][0]["id"]
+        .as_str()
+        .expect("record id")
+        .to_string();
+
+    let out = cmd(&dir)
+        .args(["product", "clear", "--id", &id, "--json"])
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "{}", stderr_of(&out));
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(value["removed"], serde_json::json!([id]));
+    assert_eq!(value["left"], 1);
+
+    let out = cmd(&dir)
+        .args(["product", "clear", "--id", &id, "--json"])
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "{}", stderr_of(&out));
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(value["missing"], serde_json::json!([id]));
+}
+
+#[test]
+fn clear_without_id_exits_2() {
+    let dir = lab();
+    let out = cmd(&dir).args(["product", "clear"]).output().unwrap();
+    assert_eq!(out.status.code(), Some(2));
+    let err: serde_json::Value = serde_json::from_slice(&out.stderr).expect("错误应是 JSON");
+    assert_eq!(err["error"]["code"], "USAGE");
+}

@@ -12,11 +12,12 @@ const CONTRACT: &str = concat!(
     "/src/agent/default-contract.toml"
 );
 
-/// 随二进制发布的四条，与 `registry` 的单元测试同一份名单。
-const PUBLISHED: [&str; 4] = [
+/// 随二进制发布的五条，与 `registry` 的单元测试同一份名单。
+const PUBLISHED: [&str; 5] = [
     "language-govern",
     "meta-classify",
-    "product-clarify",
+    "product-collect",
+    "product-organize",
     "think-reflect",
 ];
 
@@ -221,7 +222,7 @@ fn 装完之后检查通过() {
         &["agent", "skill", "install", "--root", root_arg],
     );
     assert_eq!(install.code, 0, "{}", install.stderr);
-    assert!(install.stdout.contains("装了 4 个"), "{}", install.stdout);
+    assert!(install.stdout.contains("装了 5 个"), "{}", install.stdout);
     for id in PUBLISHED {
         assert!(
             root.join(".agents/skills")
@@ -279,7 +280,12 @@ fn 只装一条时其余仍未装() {
     );
     let value = json(&list);
     assert_eq!(status_of(&value, "language-govern"), "current");
-    for id in ["meta-classify", "product-clarify", "think-reflect"] {
+    for id in [
+        "meta-classify",
+        "product-collect",
+        "product-organize",
+        "think-reflect",
+    ] {
         assert_eq!(status_of(&value, id), "missing", "{id} 不该被顺手装上");
     }
 }
@@ -434,8 +440,8 @@ fn 命中时退一并给出替代动作() {
     let temp = TempRoot::new("lint-bad");
     write_skill(
         temp.path(),
-        "skills/product-requirement",
-        "---\nname: product-requirement\ndescription: 整理需求。\n---\n\n# 整理需求\n",
+        "skills/product-management",
+        "---\nname: product-management\ndescription: 整理需求。\n---\n\n# 整理需求\n",
     );
 
     let output = run(
@@ -457,8 +463,8 @@ fn 审查结果能解析成json() {
     let temp = TempRoot::new("lint-json");
     write_skill(
         temp.path(),
-        "skills/product-requirement",
-        "---\nname: product-requirement\ndescription: 整理需求。\n---\n\n# 整理需求\n",
+        "skills/product-management",
+        "---\nname: product-management\ndescription: 整理需求。\n---\n\n# 整理需求\n",
     );
 
     let output = run(

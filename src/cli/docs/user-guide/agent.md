@@ -2,9 +2,9 @@
 
 `agent` 这一组：把 Skill 装到该在的位置，再检查它写得对不对。装的时候只搬运，查的时候只读。
 
-随 CLI 发布的 Skill 有四条：`meta-classify`、`language-govern`、`think-reflect`、`product-clarify`。你装了二进制，就同时得到这四份说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
+随 CLI 发布的 Skill 有五条：`meta-classify`、`language-govern`、`think-reflect`、`product-collect`、`product-organize`。你装了二进制，就同时得到这五份说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
 
-## 一、嵌了哪四条
+## 一、嵌了哪五条
 
 来源是本包的 `skills/` 目录，改来源用环境变量 `QTFOUNDER_SKILLS_DIR`。目录下有 `SKILL.md` 的子目录算一条，其余文本文件当附属文件一起带走。
 
@@ -45,7 +45,7 @@ qtfounder agent skill install --force          # 先清掉同名目录再装
 
 Agent 靠两样东西找对 Skill：名字说做什么，说明说什么时候用。这两样写歪了，Skill 再有内容也调不出来。
 
-名字按「范围-动词」查：两段、小写连字符、第二段是动词原形、第一段在登记表里、目录名与 frontmatter 的 `name` 一致。`product-requirement` 这类就是反例：`-ment` 收尾，读起来是东西，不是动作。
+名字按「范围-动词」查：两段、小写连字符、第二段是动词原形、第一段在登记表里、目录名与 frontmatter 的 `name` 一致。`product-management` 这类就是反例：`-ment` 收尾，读起来是东西，不是动作。
 
 说明查两样：写没写触发时机，长度有没有超。正文查一级标题；名字指向命令组的，正文里还要点名那条命令。
 
@@ -58,7 +58,7 @@ qtfounder agent skill lint --json
 拿本仓 `.agents/skills` 跑一遍，命中的是这一条：
 
 ```text
-.agents/skills/product-requirement/SKILL.md  L2  [错误] verb  第二段以名词后缀「-ment」收尾：「requirement」
+.agents/skills/product-management/SKILL.md  L2  [错误] verb  第二段以名词后缀「-ment」收尾：「management」
           → 换成动词原形，读名字就知道做什么
 ```
 

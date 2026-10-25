@@ -4,6 +4,7 @@
 //! 业务错误按原约定给 JSON 信封，退出码 2（用法）与 3（未找到）；
 //! 参数解析错由 clap 处理，走它的标准输出与退出码 2。
 
+use std::fs;
 use std::io::{self, Read as _, Write as _};
 
 use clap::Subcommand;
@@ -11,7 +12,8 @@ use serde::Serialize;
 use serde_json::Value;
 
 use self::store::{
-    Clarification, Requirement, Store, append_rule_line, dedup_key, new_id, now_iso8601,
+    Clarification, Requirement, Store, actual_key, append_rule_line, dedup_key, new_id,
+    now_iso8601, rules_file,
 };
 
 pub mod store;
@@ -48,6 +50,21 @@ pub enum ProductCommand {
         /// 把候选固化成一条规则，追加进 rules.md
         #[arg(long)]
         rule: Option<String>,
+        /// 输出机器可读 JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// 按 `actual` 归一化键把记录聚成主题，供归档
+    Organize {
+        /// 输出机器可读 JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// 删除已归档的澄清记录；不给 id 不删任何东西
+    Clear {
+        /// 要删除的澄清 id，可重复
+        #[arg(long = "id")]
+        ids: Vec<String>,
         /// 输出机器可读 JSON
         #[arg(long)]
         json: bool,
@@ -120,6 +137,8 @@ pub fn run(command: ProductCommand) -> Result<(), AppError> {
             rule,
             json,
         } => clarify(task, stdin, revise, rule, json),
+        ProductCommand::Organize { json } => organize(json),
+        ProductCommand::Clear { ids, json } => clear(&ids, json),
     }
 }
 
@@ -583,6 +602,161 @@ fn append_rule(rule: &str, json: bool) -> Result<(), AppError> {
         } else {
             println!("已处理 {} 条重复差：{}", source.len(), source.join(", "));
         }
+    }
+    Ok(())
+}
+
+// ---------- organize（只读，供归档） ----------
+
+#[derive(Serialize)]
+struct OrganizedRecord<'a> {
+    id: &'a str,
+    requirement_id: &'a str,
+    task: &'a str,
+    at: &'a str,
+    before: &'a str,
+    actual: &'a str,
+    prompt: &'a str,
+}
+
+#[derive(Serialize)]
+struct OrganizedCluster<'a> {
+    key: String,
+    count: usize,
+    records: Vec<OrganizedRecord<'a>>,
+}
+
+#[derive(Serialize)]
+struct OrganizeOutcome<'a> {
+    clusters: Vec<OrganizedCluster<'a>>,
+    rules: Vec<&'a str>,
+}
+
+/// 按 `actual` 归一化键把全部记录聚成主题；规则原文一并给出。
+fn organize(json: bool) -> Result<(), AppError> {
+    let store = Store::load()?;
+    let mut clusters: Vec<OrganizedCluster> = Vec::new();
+    for requirement in &store.requirements {
+        for cl in &requirement.clarifications {
+            let key = actual_key(&cl.actual);
+            let record = OrganizedRecord {
+                id: &cl.id,
+                requirement_id: &requirement.id,
+                task: &requirement.task,
+                at: &cl.at,
+                before: &cl.before,
+                actual: &cl.actual,
+                prompt: &cl.prompt,
+            };
+            match clusters.iter_mut().find(|cluster| cluster.key == key) {
+                Some(cluster) => {
+                    cluster.count += 1;
+                    cluster.records.push(record);
+                }
+                None => clusters.push(OrganizedCluster {
+                    key,
+                    count: 1,
+                    records: vec![record],
+                }),
+            }
+        }
+    }
+
+    let rules_text = fs::read_to_string(rules_file()).unwrap_or_default();
+    let rules: Vec<&str> = rules_text
+        .lines()
+        .filter_map(|line| line.strip_prefix("- "))
+        .collect();
+
+    if json {
+        let outcome = OrganizeOutcome { clusters, rules };
+        println!("{}", to_pretty(&outcome)?);
+        return Ok(());
+    }
+
+    let total: usize = clusters.iter().map(|cluster| cluster.count).sum();
+    if clusters.is_empty() {
+        println!("账本是空的。");
+    } else {
+        println!("{} 簇，{} 条记录", clusters.len(), total);
+        for cluster in &clusters {
+            let ids: Vec<&str> = cluster.records.iter().map(|record| record.id).collect();
+            println!(
+                "  {}  ×{}  [{}]",
+                cluster.key,
+                cluster.count,
+                ids.join(", ")
+            );
+        }
+    }
+    if !rules.is_empty() {
+        println!();
+        println!("规则：");
+        for rule in &rules {
+            println!("- {rule}");
+        }
+    }
+    Ok(())
+}
+
+// ---------- clear（归档后清缓存） ----------
+
+#[derive(Serialize)]
+struct ClearOutcome {
+    removed: Vec<String>,
+    missing: Vec<String>,
+    left: usize,
+}
+
+fn clear(ids: &[String], json: bool) -> Result<(), AppError> {
+    if ids.is_empty() {
+        return Err(AppError::usage("--id 至少给一个"));
+    }
+    let mut store = Store::load()?;
+    let mut removed: Vec<String> = Vec::new();
+    for requirement in store.requirements.iter_mut() {
+        requirement.clarifications.retain(|cl| {
+            if ids.iter().any(|id| id == &cl.id) {
+                removed.push(cl.id.clone());
+                false
+            } else {
+                true
+            }
+        });
+    }
+    store
+        .requirements
+        .retain(|requirement| !requirement.clarifications.is_empty());
+    store
+        .processed_clarifications
+        .retain(|id| !removed.contains(id));
+    let missing: Vec<String> = ids
+        .iter()
+        .filter(|id| !removed.contains(id))
+        .cloned()
+        .collect();
+    let left: usize = store
+        .requirements
+        .iter()
+        .map(|requirement| requirement.clarifications.len())
+        .sum();
+    if !removed.is_empty() {
+        store.save()?;
+    }
+
+    if json {
+        let outcome = ClearOutcome {
+            removed,
+            missing,
+            left,
+        };
+        println!("{}", to_pretty(&outcome)?);
+        return Ok(());
+    }
+
+    println!("删除 {} 条，剩余 {left} 条", removed.len());
+    if !missing.is_empty() {
+        println!("账本里已不存在：{}", missing.join(", "));
     }
     Ok(())
 }
