@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.0.13] - 2026-10-25
+
+### Added
+
+- `product-clarify` 随 CLI 发布：现在嵌四条 Skill，`list`／`install`／`check`／`lint` 的用法不变
+
+### Changed
+
+- 该 Skill 里的 `code clarify` 改为 `product clarify`，与 `qtfounder-lab product` 的实际命令对齐
+
 ## [0.0.12] - 2026-10-25
 
 `agent` 组：装 Skill，查写法。

@@ -46,15 +46,20 @@ mod tests {
     }
 
     #[test]
-    fn 嵌入清单只有三条() {
+    fn 嵌入清单只有四条() {
         let ids: Vec<&str> = super::all().iter().map(|entry| entry.id).collect();
         if ids.is_empty() {
             return;
         }
         assert_eq!(
             ids,
-            vec!["language-govern", "meta-classify", "think-reflect"],
-            "随 CLI 发布的 Skill 应当只有这三条"
+            vec![
+                "language-govern",
+                "meta-classify",
+                "product-clarify",
+                "think-reflect",
+            ],
+            "随 CLI 发布的 Skill 应当只有这四条"
         );
     }
 }
