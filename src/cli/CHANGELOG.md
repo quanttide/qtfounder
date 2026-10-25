@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.0.16] - 2026-10-25
+
+自 0.0.13 起累积的变更；0.0.14 与 0.0.15 未单独发版。
+
 ### Added
 
 - `qtfounder write`：表达审计——体裁、读者、主题三轴，加空话、口号、指路、结构四层；契约落 `src/write/default-contract.toml`，`--profiles` 列出可用画像
