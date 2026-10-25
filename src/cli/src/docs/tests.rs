@@ -26,6 +26,40 @@ fn kinds(text: &str) -> Vec<&'static str> {
 }
 
 #[test]
+fn frontmatter_profiles_match_write_contract() {
+    let docs = contract();
+    let write = crate::write::contract::Contract::load(None)
+        .expect("仓里应能找到 write 契约：确认 src/write/default-contract.toml 在");
+
+    let mut docs_genre = docs.frontmatter.genre.clone();
+    docs_genre.sort();
+    let mut write_genre: Vec<String> = write.genre.keys().cloned().collect();
+    write_genre.sort();
+    assert_eq!(
+        docs_genre, write_genre,
+        "docs 的 genre 取值表与 write 的体裁画像不一致"
+    );
+
+    let mut docs_audience = docs.frontmatter.audience.clone();
+    docs_audience.sort();
+    let mut write_audience: Vec<String> = write.audience.keys().cloned().collect();
+    write_audience.sort();
+    assert_eq!(
+        docs_audience, write_audience,
+        "docs 的 audience 取值表与 write 的读者画像不一致"
+    );
+
+    let mut docs_topic = docs.frontmatter.topic.clone();
+    docs_topic.sort();
+    let mut write_topic: Vec<String> = write.topic.keys().cloned().collect();
+    write_topic.sort();
+    assert_eq!(
+        docs_topic, write_topic,
+        "docs 的 topic 取值表与 write 的主题画像不一致"
+    );
+}
+
+#[test]
 fn two_column_table_is_reported() {
     let text = "| 名称 | 说明 |\n| :-- | :-- |\n| 甲 | 乙 |\n";
     assert!(kinds(text).contains(&"table"));
