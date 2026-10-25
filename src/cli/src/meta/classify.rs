@@ -14,7 +14,7 @@ use super::contract::{Cell, Contract, Domain};
 
 #[derive(Args, Debug)]
 pub struct ClassifyArgs {
-    /// 要判的文件；不给就读标准输入
+    /// 要判的文件；不给就用 --stdin
     #[arg(value_name = "PATH")]
     pub path: Option<PathBuf>,
     /// 从标准输入读
