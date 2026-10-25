@@ -33,7 +33,7 @@ fn 嵌入清单只有三条() {
     }
     assert_eq!(
         ids,
-        vec!["founder-reflect", "language-governance", "meta-classify"],
+        vec!["language-govern", "meta-classify", "think-reflect"],
         "随 CLI 发布的 Skill 应当只有这三条"
     );
 }

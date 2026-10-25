@@ -1,5 +1,5 @@
 ---
-name: language-governance
+name: language-govern
 description: 清理一批禁用词、判断某个词还能不能用、或跑文字体检时使用。每轮只清一个词：取真实命中、分语境定替换、脚本批量改并逐条断言、两套审计复查、分仓提交，最后把下一期写回路线图。
 ---
 

@@ -1,6 +1,6 @@
 # `qtfounder skill` 用户指南
 
-随 CLI 发布的 Skill 只有三条：`meta-classify`、`language-governance`、`founder-reflect`。你装了二进制，就同时得到这三份说明书；它们点名的命令都由这个工具提供，接口一变文字就得跟着变，所以一起发。
+随 CLI 发布的 Skill 只有三条：`meta-classify`、`language-govern`、`think-reflect`。你装了二进制，就同时得到这三份说明书；它们点名的命令都由这个工具提供，接口一变文字就得跟着变，所以一起发。
 
 正文在构建时嵌进二进制，装的时候不读源码树，也不联网。装到系统位置以后，这台机器上的所有项目都能用。
 

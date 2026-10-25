@@ -16,7 +16,7 @@ qtfounder skill check [--root PATH] [--json]
 
 来源取 `QTFOUNDER_SKILLS_DIR`，没有就是包内的 `skills/`。目录不存在时清单为空，CLI 仍能构建与运行：`list` 打印一句说明后退 `0`，`check` 退 `2`，`install` 报错退 `2`。
 
-你装好后会得到三条：`founder-reflect`、`language-governance`、`meta-classify`。它们调用本 CLI 的命令，接口与文字必须同版本。
+你装好后会得到三条：`language-govern`、`meta-classify`、`think-reflect`。它们调用本 CLI 的命令，接口与文字必须同版本。
 
 ## 三、状态
 
@@ -84,7 +84,7 @@ canonical 是 `<安装位置>/.agents/skills/<id>`，`--root` 决定安装位置
 ## 七、错误
 
 - 清单为空——`这个二进制没嵌 Skill：构建时 skills/ 是空的，或 QTFOUNDER_SKILLS_DIR 指错了目录`
-- id 不认识——`没有嵌入「deploy」，可用：founder-reflect／language-governance／meta-classify`
+- id 不认识——`没有嵌入「deploy」，可用：language-govern／meta-classify／think-reflect`
 - 读不到 `HOME`——`装到系统位置要读 HOME，但没读到；用 --root 指定目标仓`
 - 目录清不掉——`清不掉旧目录 <路径>：…`
 - 锁文件写不了——`锁文件写不了：…`
