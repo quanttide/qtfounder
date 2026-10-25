@@ -190,9 +190,38 @@ pub(super) fn check_frontmatter(path: &str, text: &str, contract: &Frontmatter) 
                     contract.contexts.join("、")
                 ),
             ));
+            continue;
+        }
+
+        for (key, allowed) in [
+            ("genre", &contract.genre),
+            ("audience", &contract.audience),
+            ("topic", &contract.topic),
+        ] {
+            if field.key == key {
+                check_profile(path, &field, key, allowed, &mut out);
+                break;
+            }
         }
     }
     out
+}
+
+fn check_profile(path: &str, field: &Field, key: &str, allowed: &[String], out: &mut Vec<Finding>) {
+    if allowed.is_empty() || allowed.iter().any(|item| item == &field.value) {
+        return;
+    }
+    out.push(Finding::new(
+        Kind::Frontmatter,
+        Severity::Error,
+        path,
+        field.line,
+        excerpt_of(&format!("{key}: {}", field.value)),
+        format!(
+            "`{key}` 的取值不在表里：只有 {}；写错了，write 会报找不到该画像",
+            allowed.join("、")
+        ),
+    ));
 }
 
 fn check_authors(path: &str, field: &Field, contract: &Frontmatter) -> Vec<Finding> {
@@ -303,6 +332,9 @@ mod tests {
                 "authors",
                 "exports",
                 "context",
+                "genre",
+                "audience",
+                "topic",
             ]
             .iter()
             .map(|item| item.to_string())
@@ -320,6 +352,20 @@ mod tests {
                 .map(|item| item.to_string())
                 .collect(),
             contexts: ["finance", "technology", "law"]
+                .iter()
+                .map(|item| item.to_string())
+                .collect(),
+            genre: [
+                "default", "design", "readme", "insight", "review", "roadmap",
+            ]
+            .iter()
+            .map(|item| item.to_string())
+            .collect(),
+            audience: ["default", "human", "agent", "maintainer"]
+                .iter()
+                .map(|item| item.to_string())
+                .collect(),
+            topic: ["default", "game", "cli", "writing"]
                 .iter()
                 .map(|item| item.to_string())
                 .collect(),
@@ -406,5 +452,19 @@ mod tests {
         let findings = check_frontmatter("a.md", text, &contract());
         assert_eq!(findings.len(), 1);
         assert!(findings[0].advice.contains("finance"));
+    }
+
+    #[test]
+    fn declared_genre_is_allowed() {
+        let text = "---\ngenre: roadmap\naudience: maintainer\ntopic: game\n---\n\n# 标题\n";
+        assert!(check_frontmatter("a.md", text, &contract()).is_empty());
+    }
+
+    #[test]
+    fn unknown_genre_is_reported() {
+        let text = "---\ngenre: plan\n---\n\n# 标题\n";
+        let findings = check_frontmatter("a.md", text, &contract());
+        assert_eq!(findings.len(), 1);
+        assert!(findings[0].advice.contains("roadmap"));
     }
 }

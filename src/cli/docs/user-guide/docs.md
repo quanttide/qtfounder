@@ -14,7 +14,7 @@
 
 **分割线**：全文超过三处即报；紧挨标题的横线单独报，因为那是装饰，分章该靠标题层级。首尾的 frontmatter 与代码块里的横线不算。
 
-**Front matter**：有才算，没有不管。字段名不在 `[frontmatter] keys` 里报嫌疑；`status` 与署名 `type` 的取值不在表里报错。
+**Front matter**：有才算，没有不管。字段名不在 `[frontmatter] keys` 里报嫌疑；`status` 与署名 `type` 的取值不在表里报错。`genre`、`audience`、`topic` 是表达审计的画像，取值与 `write` 契约一致；写错报错，不写则用 default。
 
 `status` 三档，同一条线上下走：`draft` 草稿、`pending` 待验证、`final` 定稿。AI 起草且说法未核的，落 `pending`。
 

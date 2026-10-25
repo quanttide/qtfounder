@@ -14,6 +14,7 @@
 
 ### Changed
 
+- `docs` 的 frontmatter 契约接上 `genre`／`audience`／`topic`：三张取值表与 `write` 契约的画像对齐，写错报错
 - `write` 契约改为先看体裁、读者、主题：新增 `[genre.*]`、`[audience.*]`、`[topic.*]` 与 `--genre`／`--audience`／`--topic`／`--profiles`；句子形态四层保留为通用检查
 - `agent` 契约登记 `write` 范围：新增 Skill `write-express`，写法检查要求正文出现 `qtfounder write`
 - `product-clarify` 改名 `product-collect`，`product-requirement` 改名 `product-organize` 并随 CLI 发布；现在嵌六条 Skill，`product-organize` 用 `product organize` 与 `product clear` 完成归档与清缓存

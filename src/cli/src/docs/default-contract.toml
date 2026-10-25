@@ -77,6 +77,11 @@ keys = [
 # 允许的语境声明。文件在 front matter 写 `context: finance`，就表示它的主题就是财务；
 # 语言检查据此放行该语境里的词（字面（记账类）在财务语境里不算错配）。
 contexts = ["finance", "technology", "law"]
+# 表达审计的画像。取值与 write 契约的 [genre.*]、[audience.*]、[topic.*] 对齐；
+# 改画像时两处一起改，docs 只负责拦住写错的名字。
+genre = ["default", "design", "readme", "insight", "review", "roadmap"]
+audience = ["default", "human", "agent", "maintainer"]
+topic = ["default", "game", "cli", "writing"]
 # 署名里的 type：每条 `authors` 都要标，写清是谁写的。
 # 写模型的，`name` 就是模型名（如 DeepSeek V4.1 Flash），像人署名一样。
 author_types = ["human", "agent", "org"]

@@ -133,6 +133,15 @@ pub struct Frontmatter {
     /// context 的取值表；不在表里报错，否则声明了也不生效
     #[serde(default)]
     pub contexts: Vec<String>,
+    /// genre 的取值表；与 write 契约的体裁画像保持一致
+    #[serde(default)]
+    pub genre: Vec<String>,
+    /// audience 的取值表；与 write 契约的读者画像保持一致
+    #[serde(default)]
+    pub audience: Vec<String>,
+    /// topic 的取值表；与 write 契约的主题画像保持一致
+    #[serde(default)]
+    pub topic: Vec<String>,
 }
 
 /// 找契约：环境变量 → 当前目录往上找 → 用户级目录 → 都没有就报错。刻意不内置兜底。
