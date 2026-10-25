@@ -7,7 +7,7 @@
 - [`code`](user-guide/code.md)：代码语用检查，四层。先看它怎么查它自己（八十五处命中分四层）。
 - [`language`](user-guide/language.md)：语言检查，六层加语义层，出结果再过一层复核。
 - [`docs`](user-guide/docs.md)：文档审计，表格、列表、密度、加粗与分割线五层；阈值未标定前密度只观测。
-- [`write`](user-guide/write.md)：表达审计，空话、口号、指路与结构四层。
+- [`write`](user-guide/write.md)：表达审计，体裁、读者、主题三轴，加空话、口号、指路与结构四层。
 - [`think`](user-guide/think.md)：认知侧，`load` 看消耗落点、`reflect` 记一条反思、`model` 看模型。
 - [`meta`](user-guide/meta.md)：归位，`classify` 给一段内容一张落位卡：域、格、档、写法。
 - [`product`](user-guide/product.md)：需求与澄清，`clarify` 记一次「不对劲」，`requirement` 看攒出了什么。

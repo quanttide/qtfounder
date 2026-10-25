@@ -2,13 +2,32 @@
 //!
 //! 空话看整篇密度，逐句报会淹没有用信息；口号与指路逐行定位；结构看标题层级与长文分节。
 
+use std::collections::HashSet;
+
 use regex::Regex;
 
 use super::contract::Contract;
 use super::model::{Finding, Kind, Severity};
 
-pub fn check_text(path: &str, text: &str, contract: &Contract) -> Vec<Finding> {
+/// 命令行给的画像；没给的按 front matter 与路径推断。
+#[derive(Debug, Clone, Default)]
+pub struct Selection {
+    pub genre: Option<String>,
+    pub audience: Option<String>,
+    pub topic: Option<String>,
+}
+
+pub fn check_text(
+    path: &str,
+    text: &str,
+    contract: &Contract,
+    selection: &Selection,
+) -> Vec<Finding> {
+    let (genre, audience, topic) = resolve_profiles(path, text, contract, selection);
     let mut findings = Vec::new();
+    findings.extend(check_genre(path, text, contract, &genre));
+    findings.extend(check_audience(path, text, contract, &audience));
+    findings.extend(check_topic(path, text, contract, &topic));
     findings.extend(check_empty(path, text, contract));
     findings.extend(check_slogan(path, text, contract));
     findings.extend(check_reference(path, text, contract));
@@ -193,6 +212,300 @@ fn check_structure(path: &str, text: &str, contract: &Contract) -> Vec<Finding> 
     }
 
     findings
+}
+
+fn check_genre(path: &str, text: &str, contract: &Contract, name: &str) -> Vec<Finding> {
+    let Some(profile) = contract.genre.get(name) else {
+        let names: Vec<&str> = contract.genre.keys().map(String::as_str).collect();
+        return vec![unknown_profile(Kind::Genre, path, "体裁", name, &names)];
+    };
+
+    let mut findings = Vec::new();
+    let headings = headings(text);
+    for requirement in &profile.required {
+        let found = headings.iter().any(|(_, _, title)| {
+            requirement
+                .any_of
+                .iter()
+                .any(|keyword| title.contains(keyword))
+        }) || prose_lines(text).any(|(_, line)| {
+            requirement
+                .any_of
+                .iter()
+                .any(|keyword| line.contains(keyword))
+        });
+        if !found {
+            findings.push(Finding::new(
+                Kind::Genre,
+                Severity::Suspect,
+                path,
+                None,
+                format!("体裁「{name}」缺「{}」一节", requirement.name),
+                format!("补一节标题含「{}」的内容", requirement.any_of.join("、")),
+            ));
+        }
+    }
+
+    let h2 = headings.iter().filter(|(_, level, _)| *level == 2).count();
+    if profile.min_h2 > 0 && h2 < profile.min_h2 {
+        findings.push(Finding::new(
+            Kind::Genre,
+            Severity::Suspect,
+            path,
+            None,
+            format!(
+                "体裁「{name}」只有 {h2} 个二级标题，下限 {}",
+                profile.min_h2
+            ),
+            "按节分开，每节只讲一个意思".to_string(),
+        ));
+    }
+    if profile.max_h2 > 0 && h2 > profile.max_h2 {
+        findings.push(Finding::new(
+            Kind::Genre,
+            Severity::Suspect,
+            path,
+            None,
+            format!("体裁「{name}」有 {h2} 个二级标题，上限 {}", profile.max_h2),
+            "合并同类节，或拆成多篇".to_string(),
+        ));
+    }
+
+    for word in &profile.forbid {
+        for (line_no, line) in prose_lines(text) {
+            if strip_mentions(line).contains(word) {
+                findings.push(Finding::new(
+                    Kind::Genre,
+                    Severity::Suspect,
+                    path,
+                    Some(line_no),
+                    excerpt(line),
+                    format!("体裁「{name}」不写「{word}」"),
+                ));
+            }
+        }
+    }
+    findings
+}
+
+fn check_audience(path: &str, text: &str, contract: &Contract, name: &str) -> Vec<Finding> {
+    let Some(profile) = contract.audience.get(name) else {
+        let names: Vec<&str> = contract.audience.keys().map(String::as_str).collect();
+        return vec![unknown_profile(Kind::Audience, path, "读者", name, &names)];
+    };
+
+    let mut findings = Vec::new();
+    let prose = prose_text(text);
+    if profile.require_reader_words && !profile.reader_words.iter().any(|word| prose.contains(word))
+    {
+        findings.push(Finding::new(
+            Kind::Audience,
+            Severity::Suspect,
+            path,
+            None,
+            format!("读者是「{name}」，正文没有对读者说话"),
+            format!(
+                "补一句「{}」；读者找不到自己，只能旁观",
+                profile.reader_words.join("、")
+            ),
+        ));
+    }
+
+    if profile.max_internal_ids > 0 {
+        for paragraph in paragraphs(text) {
+            let count = distinct_ids(&paragraph.text);
+            if count <= profile.max_internal_ids {
+                continue;
+            }
+            let has_reader = profile
+                .reader_words
+                .iter()
+                .any(|word| paragraph.text.contains(word));
+            if has_reader {
+                continue;
+            }
+            findings.push(Finding::new(
+                Kind::Audience,
+                Severity::Suspect,
+                path,
+                Some(paragraph.line),
+                format!("一段里 {count} 个内部标识，读者是「{name}」"),
+                format!(
+                    "上限 {} 个；拆成表格，或换成读者能懂的说法",
+                    profile.max_internal_ids
+                ),
+            ));
+        }
+    }
+    findings
+}
+
+fn check_topic(path: &str, text: &str, contract: &Contract, name: &str) -> Vec<Finding> {
+    let Some(profile) = contract.topic.get(name) else {
+        let names: Vec<&str> = contract.topic.keys().map(String::as_str).collect();
+        return vec![unknown_profile(Kind::Topic, path, "主题", name, &names)];
+    };
+
+    let mut findings = Vec::new();
+    let prose = prose_text(text);
+    let used: Vec<&str> = profile
+        .terms
+        .iter()
+        .filter(|term| prose.contains(term.as_str()))
+        .map(|term| term.as_str())
+        .collect();
+
+    if profile.require_definition && !used.is_empty() {
+        let defined = headings(text).iter().any(|(_, _, title)| {
+            ["定义", "术语", "概念"]
+                .iter()
+                .any(|keyword| title.contains(keyword))
+        });
+        if !defined {
+            findings.push(Finding::new(
+                Kind::Topic,
+                Severity::Suspect,
+                path,
+                None,
+                format!("主题「{name}」用到「{}」，但没有定义一节", used.join("、")),
+                "补一节标题含「定义」或「术语」的内容；主题词第一次出现前先交代".to_string(),
+            ));
+        }
+    }
+    findings
+}
+
+fn unknown_profile(kind: Kind, path: &str, axis: &str, name: &str, available: &[&str]) -> Finding {
+    Finding::new(
+        kind,
+        Severity::Error,
+        path,
+        None,
+        format!("契约里没有{axis}「{name}」"),
+        format!("可选：{}；或在契约里补一段", available.join("、")),
+    )
+}
+
+fn resolve_profiles(
+    path: &str,
+    text: &str,
+    contract: &Contract,
+    selection: &Selection,
+) -> (String, String, String) {
+    let genre = selection
+        .genre
+        .clone()
+        .or_else(|| front_matter_value(text, "genre"))
+        .or_else(|| contract.genre_for_path(path))
+        .unwrap_or_else(|| "default".to_string());
+    let audience = selection
+        .audience
+        .clone()
+        .or_else(|| front_matter_value(text, "audience"))
+        .unwrap_or_else(|| "default".to_string());
+    let topic = selection
+        .topic
+        .clone()
+        .or_else(|| front_matter_value(text, "topic"))
+        .unwrap_or_else(|| "default".to_string());
+    (genre, audience, topic)
+}
+
+fn front_matter_value(text: &str, key: &str) -> Option<String> {
+    let mut lines = text.lines();
+    if lines.next()?.trim() != "---" {
+        return None;
+    }
+    let prefix = format!("{key}:");
+    for line in lines {
+        let trimmed = line.trim();
+        if trimmed == "---" {
+            break;
+        }
+        if let Some(value) = trimmed.strip_prefix(&prefix) {
+            let value = value.trim().trim_matches('"').trim_matches('\'');
+            if !value.is_empty() {
+                return Some(value.to_string());
+            }
+        }
+    }
+    None
+}
+
+fn headings(text: &str) -> Vec<(usize, usize, String)> {
+    let mut out = Vec::new();
+    let mut in_code = false;
+    for (index, line) in text.lines().enumerate() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            in_code = !in_code;
+            continue;
+        }
+        if in_code {
+            continue;
+        }
+        let Some(level) = heading_level(trimmed) else {
+            continue;
+        };
+        out.push((index + 1, level, trimmed[level..].trim().to_string()));
+    }
+    out
+}
+
+struct Paragraph {
+    line: usize,
+    text: String,
+}
+
+fn paragraphs(text: &str) -> Vec<Paragraph> {
+    let mut out = Vec::new();
+    let mut current: Option<(usize, String)> = None;
+    for (line_no, line) in prose_lines(text) {
+        let trimmed = line.trim();
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            if let Some((start, body)) = current.take() {
+                out.push(Paragraph {
+                    line: start,
+                    text: body,
+                });
+            }
+            continue;
+        }
+        match &mut current {
+            Some((_, body)) => {
+                body.push('\n');
+                body.push_str(trimmed);
+            }
+            None => current = Some((line_no, trimmed.to_string())),
+        }
+    }
+    if let Some((start, body)) = current {
+        out.push(Paragraph {
+            line: start,
+            text: body,
+        });
+    }
+    out
+}
+
+fn distinct_ids(text: &str) -> usize {
+    let mut ids = HashSet::new();
+    let mut current = String::new();
+    let mut inside = false;
+    for ch in text.chars() {
+        if ch == '`' {
+            if inside && !current.is_empty() {
+                ids.insert(current.clone());
+                current.clear();
+            }
+            inside = !inside;
+            continue;
+        }
+        if inside {
+            current.push(ch);
+        }
+    }
+    ids.len()
 }
 
 fn heading_level(trimmed: &str) -> Option<usize> {

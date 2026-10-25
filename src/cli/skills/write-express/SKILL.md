@@ -1,6 +1,6 @@
 ---
 name: write-express
-description: 把口号、类比和结论堆叠改写成可读的技术文档时使用。先跑 `qtfounder write` 找空话、口号、指路与结构问题，再按体裁、定义、步骤、边界与验收重排；适用于设计文档、路线图、README 与评审稿。
+description: 把口号、类比和结论堆叠改写成可读的技术文档时使用。先按体裁、读者、主题跑 `qtfounder write` 找问题，再按定义、步骤、边界与验收重排；适用于设计文档、路线图、README 与评审稿。
 ---
 
 # 表达改写
@@ -16,20 +16,33 @@ description: 把口号、类比和结论堆叠改写成可读的技术文档时�
 - 设计文档、路线图、README 或评审稿写完自查
 - 同一段话改了三遍还是不顺
 
+## 先定三个画像
+
+同一段话写进设计文档和路线图，要求不同；给普通读者看和给 Agent 看，交代的密度也不同。动笔前先定：
+
+- 体裁：design、roadmap、readme、insight、review。决定该有哪些节，不该写什么。
+- 读者：human、agent、maintainer。决定内部标识能多密，要不要对读者说话。
+- 主题：game、cli、writing。决定哪些词必须先定义。
+
+在 front matter 写 `genre:`、`audience:`、`topic:`，或跑命令时用 `--genre`、`--audience`、`--topic`。没定就按文件名推断体裁，读者与主题用 default。`qtfounder write --profiles` 可以先看有哪些画像。
+
 ## 先跑一遍
 
 ```bash
 qtfounder write . --rules apps/qtfounder/src/cli/src/write/default-contract.toml
 ```
 
-四层各管什么：
+七层各管什么：
 
 | 层 | 查什么 | 典型改法 |
 |---|---|---|
+| genre | 该有的节与禁区 | 补节，或换体裁 |
+| audience | 内部标识密度与读者称呼 | 拆表，或换成人话 |
+| topic | 主题词的定义 | 补「定义」或「术语」一节 |
 | empty | 空话密度 | 删掉，或说清具体指什么 |
 | slogan | 口号句式 | 拆成条件、理由与反例 |
 | reference | 正文指路 | 把结论写进正文 |
-| structure | 标题与分节 | 补一级标题，按一节一件事分开 |
+| structure | 标题与分节 | 补一级标题，按节分开 |
 
 词与句交给 `language`，表格与列表交给 `docs`。三层都跑，问题按「一处只改一次」归堆。
 
@@ -85,7 +98,7 @@ qtfounder write . --rules apps/qtfounder/src/cli/src/write/default-contract.toml
 
 ## 改写顺序
 
-1. 定体裁：这是判断、计划、设计还是导航？选错体裁，后面怎么改都别扭。
+1. 定体裁、读者与主题：这是判断、计划、设计还是导航？写给谁看？讲哪一行？选错画像，后面怎么改都别扭。
 2. 定范围：开头写清本文管什么、不管什么。范围不清，内容一定发散。
 3. 定术语：每个新词第一次出现就定义，后面不改叫法。
 4. 一段一意：一段只推进一步；推进不了就另起一段。

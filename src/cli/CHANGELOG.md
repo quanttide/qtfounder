@@ -4,7 +4,7 @@
 
 ### Added
 
-- `qtfounder write`：表达审计四层——空话、口号、指路、结构；契约落 `src/write/default-contract.toml`，四段与四层一一对应
+- `qtfounder write`：表达审计——体裁、读者、主题三轴，加空话、口号、指路、结构四层；契约落 `src/write/default-contract.toml`，`--profiles` 列出可用画像
 - `write-express` Skill：把口号、类比与结论堆叠改写成可读文档；先跑 `qtfounder write`，再按体裁、定义、步骤、边界与验收重排
 - `qtfounder product organize`：按 `actual` 归一化键把全部记录聚成主题，并给出 `rules.md` 的规则原文，供归档使用
 - `qtfounder product clear --id <clr_id>`：删除已归档的澄清记录，清空的需求一并移除，`rules.md` 不动
@@ -14,6 +14,7 @@
 
 ### Changed
 
+- `write` 契约改为先看体裁、读者、主题：新增 `[genre.*]`、`[audience.*]`、`[topic.*]` 与 `--genre`／`--audience`／`--topic`／`--profiles`；句子形态四层保留为通用检查
 - `agent` 契约登记 `write` 范围：新增 Skill `write-express`，写法检查要求正文出现 `qtfounder write`
 - `product-clarify` 改名 `product-collect`，`product-requirement` 改名 `product-organize` 并随 CLI 发布；现在嵌六条 Skill，`product-organize` 用 `product organize` 与 `product clear` 完成归档与清缓存
 - `product-clarify` Skill 指向 `qtfounder product`，不再依赖 `qtfounder-lab`；前置从「装实验室 CLI」改为「查正式 CLI」

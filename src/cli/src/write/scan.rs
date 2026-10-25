@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
-use super::checks;
+use super::checks::{self, Selection};
 use super::contract::Contract;
 use super::model::Finding;
 
@@ -50,7 +50,11 @@ fn markdown_files(root: &Path, contract: &Contract) -> Vec<PathBuf> {
 }
 
 /// 全量扫描：返回（命中，读不了的文件，审了几个文件）。
-pub fn scan(root: &Path, contract: &Contract) -> (Vec<Finding>, Vec<String>, usize) {
+pub fn scan(
+    root: &Path,
+    contract: &Contract,
+    selection: &Selection,
+) -> (Vec<Finding>, Vec<String>, usize) {
     let base = if root.is_dir() { Some(root) } else { None };
     let files = markdown_files(root, contract);
     let scanned = files.len();
@@ -62,7 +66,7 @@ pub fn scan(root: &Path, contract: &Contract) -> (Vec<Finding>, Vec<String>, usi
             continue;
         };
         let rel = rel_of(&path, base);
-        findings.extend(checks::check_text(&rel, &text, contract));
+        findings.extend(checks::check_text(&rel, &text, contract, selection));
     }
     (findings, broken, scanned)
 }

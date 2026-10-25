@@ -6,6 +6,9 @@ pub enum Kind {
     Slogan,
     Reference,
     Structure,
+    Genre,
+    Audience,
+    Topic,
 }
 
 impl Kind {
@@ -15,13 +18,24 @@ impl Kind {
             Kind::Slogan => "slogan",
             Kind::Reference => "reference",
             Kind::Structure => "structure",
+            Kind::Genre => "genre",
+            Kind::Audience => "audience",
+            Kind::Topic => "topic",
         }
     }
 
     pub fn parse(text: &str) -> Option<Kind> {
-        [Kind::Empty, Kind::Slogan, Kind::Reference, Kind::Structure]
-            .into_iter()
-            .find(|kind| kind.key() == text)
+        [
+            Kind::Empty,
+            Kind::Slogan,
+            Kind::Reference,
+            Kind::Structure,
+            Kind::Genre,
+            Kind::Audience,
+            Kind::Topic,
+        ]
+        .into_iter()
+        .find(|kind| kind.key() == text)
     }
 }
 

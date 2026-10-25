@@ -17,6 +17,7 @@ use std::path::PathBuf;
 
 use clap::Args;
 
+use checks::Selection;
 use contract::Contract;
 use model::{Finding, Kind, Severity};
 
@@ -26,9 +27,18 @@ pub struct WriteArgs {
     /// 要扫的目录或文件
     #[arg(default_value = ".")]
     pub root: PathBuf,
-    /// 只看一层：empty／slogan／reference／structure
+    /// 只看一层：empty／slogan／reference／structure／genre／audience／topic
     #[arg(long)]
     pub kind: Option<String>,
+    /// 体裁画像；缺省按 front matter 或路径推断
+    #[arg(long)]
+    pub genre: Option<String>,
+    /// 读者画像；缺省 default
+    #[arg(long)]
+    pub audience: Option<String>,
+    /// 主题画像；缺省按 front matter 或路径推断
+    #[arg(long)]
+    pub topic: Option<String>,
     /// 契约路径（缺省按 src/write/default-contract.toml 逐级往上找）
     #[arg(long)]
     pub rules: Option<PathBuf>,
@@ -38,6 +48,9 @@ pub struct WriteArgs {
     /// 输出 JSON
     #[arg(long)]
     pub json: bool,
+    /// 列出契约里的体裁、读者与主题，不审文件
+    #[arg(long)]
+    pub profiles: bool,
 }
 
 fn line_label(line: Option<usize>) -> String {
@@ -49,7 +62,7 @@ fn line_label(line: Option<usize>) -> String {
 
 fn print_report(findings: &[Finding], scanned: usize, top: usize) {
     if findings.is_empty() {
-        println!("审了 {scanned} 个文件，没有命中：空话、口号、指路与结构都没有越界");
+        println!("审了 {scanned} 个文件，没有命中：体裁、读者、主题与句子形态都没有越界");
         return;
     }
     let mut by_file: HashMap<&str, Vec<&Finding>> = HashMap::new();
@@ -106,17 +119,44 @@ fn render_json(findings: &[Finding], scanned: usize) {
     );
 }
 
+fn print_profiles(contract: &Contract) {
+    println!("体裁：");
+    for (name, profile) in &contract.genre {
+        println!("  {name}  {}", profile.description);
+    }
+    println!("\n读者：");
+    for (name, profile) in &contract.audience {
+        println!("  {name}  {}", profile.description);
+    }
+    println!("\n主题：");
+    for (name, profile) in &contract.topic {
+        println!("  {name}  {}", profile.description);
+    }
+}
+
 /// 入口：返回退出码（0 无命中 / 1 有命中 / 2 契约或文件读不了）。
 pub fn run_write(args: &WriteArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;
+    if args.profiles {
+        print_profiles(&contract);
+        return Ok(0);
+    }
     if !args.root.exists() {
         return Err(format!("目录或文件不存在：{}", args.root.display()));
     }
-    let (mut findings, broken, scanned) = scan::scan(&args.root, &contract);
+    let (mut findings, broken, scanned) = scan::scan(
+        &args.root,
+        &contract,
+        &Selection {
+            genre: args.genre.clone(),
+            audience: args.audience.clone(),
+            topic: args.topic.clone(),
+        },
+    );
     if let Some(kind_name) = &args.kind {
         let Some(kind) = Kind::parse(kind_name) else {
             return Err(format!(
-                "不认识的层：{kind_name}（只有 empty、slogan、reference、structure）"
+                "不认识的层：{kind_name}（只有 empty、slogan、reference、structure、genre、audience、topic）"
             ));
         };
         findings.retain(|finding| finding.kind == kind);

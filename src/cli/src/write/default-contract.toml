@@ -1,7 +1,8 @@
-# 表达审计的验收标准。一份契约 = 一类介质；0 表示关闭。
+# 表达审计的验收标准。先看体裁、读者、主题，再看句子形态。
 #
-# 与 language、docs 分工：language 管词与句，docs 管表格列表，write 管表达方式。
-# 这里只收「说出来但没讲清楚」的形态：空话、口号、指路、结构。
+# 体裁决定骨架与禁区，读者决定要交代多少背景，主题决定哪些词必须先定义。
+# 三层都可以在 front matter 写 `genre:`、`audience:`、`topic:`，
+# 也可以用 `--genre`、`--audience`、`--topic` 临时覆盖。没声明时按路径推断，推断不出就用 default。
 
 [scope]
 # 带 / 的按路径前缀算，不带的按同名文件或目录算（任意层级）
@@ -16,6 +17,137 @@ exclude = [
     "assets",
     "examples",
 ]
+
+# ---------- 体裁 ----------
+
+[genre.default]
+description = "未声明体裁时的兜底：只查标题与分节"
+
+[genre.design]
+description = "设计文档：先定义，再给流程、边界与验收"
+path_hints = ["design", "architecture", "架构", "设计"]
+min_h2 = 4
+forbid = ["工期", "排期", "任务拆分"]
+
+[[genre.design.required]]
+name = "问题"
+any_of = ["问题", "背景", "范围"]
+
+[[genre.design.required]]
+name = "定义"
+any_of = ["定义", "构成"]
+
+[[genre.design.required]]
+name = "验证"
+any_of = ["验证", "验收", "测试", "判断标准"]
+
+[[genre.design.required]]
+name = "原则"
+any_of = ["原则", "约束", "边界"]
+
+[[genre.design.required]]
+name = "结论"
+any_of = ["结论", "判断标准"]
+
+[genre.roadmap]
+description = "路线图：先做什么、每段什么算完、晚做要付什么"
+path_hints = ["roadmap", "开发顺序"]
+min_h2 = 2
+forbid = ["假说", "已确认"]
+
+[[genre.roadmap.required]]
+name = "顺序"
+any_of = ["顺序", "阶段"]
+
+[[genre.roadmap.required]]
+name = "达成标志"
+any_of = ["达成标志", "验收", "门槛"]
+
+[[genre.roadmap.required]]
+name = "后置代价"
+any_of = ["后置代价", "代价"]
+
+[genre.readme]
+description = "README：说清是什么、怎么用"
+path_hints = ["readme"]
+min_h2 = 1
+forbid = ["假说"]
+
+[[genre.readme.required]]
+name = "用途"
+any_of = ["用途", "概述", "简介", "是什么"]
+
+[[genre.readme.required]]
+name = "用法"
+any_of = ["用法", "安装", "使用", "快速开始"]
+
+[genre.insight]
+description = "洞察：写能被推翻的判断"
+path_hints = ["insight"]
+min_h2 = 1
+forbid = ["工期", "排期", "里程碑"]
+
+[[genre.insight.required]]
+name = "判断"
+any_of = ["假说", "已确认"]
+
+[genre.review]
+description = "评审：先给理解，再给问题与结论"
+path_hints = ["review", "评审"]
+min_h2 = 2
+
+[[genre.review.required]]
+name = "结论"
+any_of = ["结论", "评价", "判断"]
+
+# ---------- 读者 ----------
+
+[audience.default]
+description = "未声明读者时的兜底"
+max_internal_ids = 3
+reader_words = ["你", "读者", "用得上", "接手"]
+require_reader_words = false
+
+[audience.human]
+description = "普通读者：少用内部标识，多交代背景"
+max_internal_ids = 2
+reader_words = ["你", "读者", "用得上", "接手"]
+require_reader_words = true
+
+[audience.agent]
+description = "Agent 读者：可以密一些，但术语要一致"
+max_internal_ids = 8
+reader_words = ["你", "读者"]
+require_reader_words = false
+
+[audience.maintainer]
+description = "维护者：读得懂代码标识，但要知道改动边界"
+max_internal_ids = 4
+reader_words = ["你", "维护者", "改动"]
+require_reader_words = false
+
+# ---------- 主题 ----------
+
+[topic.default]
+description = "未声明主题时的兜底"
+
+[topic.game]
+description = "《迷雾中的司令部》"
+terms = ["事件", "报告", "关卡", "信念", "相位"]
+require_definition = true
+
+[topic.cli]
+description = "qtfounder 命令行"
+terms = ["子命令", "契约", "Skill"]
+require_definition = true
+
+[topic.writing]
+description = "表达与写作"
+terms = ["体裁", "读者", "主题"]
+require_definition = true
+
+# ---------- 句子形态 ----------
+# 下面四段是体裁、读者、主题之外的通用检查。规则与上面三层无关，所有文档都跑。
 
 [empty]
 # 空话：删掉不影响意思，或需要说清具体指什么。
@@ -96,7 +228,7 @@ patterns = [
 advice = '把结论写进正文；路径只留一句去处，不代替论证'
 
 [structure]
-# 结构：一级标题、标题层级、长文分节。
+# 结构：一级标题、标题层级、长文分节。所有体裁共用。
 require_heading = true
 # 一篇允许的一级标题数
 max_h1 = 1

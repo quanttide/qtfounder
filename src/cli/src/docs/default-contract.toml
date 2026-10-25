@@ -72,7 +72,7 @@ keys = [
     "kernel", "number", "parts", "options", "abbreviations", "funding",
     "affiliations", "reviewers", "editors",
     # 本仓自用
-    "name", "status", "context",
+    "name", "status", "context", "genre", "audience", "topic",
 ]
 # 允许的语境声明。文件在 front matter 写 `context: finance`，就表示它的主题就是财务；
 # 语言检查据此放行该语境里的词（字面（记账类）在财务语境里不算错配）。
