@@ -10,7 +10,7 @@
 
 ### Changed
 
-- 依赖工具箱的 `agent::skills` 模块：GitHub 依赖钉在 `rust/v0.1.0-alpha.3` 标签上；嵌装逻辑在库里，CLI 只登记清单与命令行
+- 依赖工具箱的 `agent::skills` 模块：从 crates.io 取 `quanttide-founder` 0.1.0-alpha.3；嵌装逻辑在库里，CLI 只登记清单与命令行
 - 跨域提示与用户指南里的 Skill 名改为 `meta-classify`：原来的 `meta-domain` 与 `meta-category` 已合并
 
 ## [0.0.11] - 2026-10-25
