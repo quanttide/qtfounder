@@ -1,9 +1,12 @@
 //! `qtfounder agent`：给 Agent 用的资产。
 //!
-//! 现在只查 Skill 的命名与写法。这套口径还在试，判断层只读
-//! `default-contract.toml`；规则定下来之前不进工具箱。
+//! 两层：`install` 把嵌入的 Skill 装到目标仓（命令名是 `qtfounder skill`），
+//! `skill` 查 Skill 的命名与写法（命令名是 `qtfounder agent skill`）。
+//! 后者标准还在试，规则在 `default-contract.toml`。
 
 pub mod contract;
+pub mod install;
+mod registry;
 mod skill;
 
 #[cfg(test)]

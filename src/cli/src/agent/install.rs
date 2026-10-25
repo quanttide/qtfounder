@@ -2,19 +2,16 @@
 //!
 //! 与另外几个子命令不同，它不改任何内容，只搬运：canonical 落点是
 //! `<root>/.agents/skills/<id>`，同时维护 `.agents/.skill-lock.json`。
-//! 嵌入清单由 `build.rs` 生成，来源是主仓的 `.agents/skills`。
-
-pub mod registry;
-
-#[cfg(test)]
-mod tests;
+//! 嵌入清单由 `build.rs` 生成，来源是包内的 `skills/`。
 
 use std::path::{Path, PathBuf};
 
 use clap::{Args, Subcommand};
-use quanttide_founder::agent::skills::{
+use quanttide_founder::agent::skill::{
     self, EmbeddedSkill, InstallOptions, Mode, Status, install_report,
 };
+
+use super::registry;
 
 /// `skill` 下的子命令。
 #[derive(Subcommand, Debug)]
@@ -99,13 +96,13 @@ fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
 
     let mut rows = Vec::new();
     for entry in entries {
-        let description = skills::describe(entry)
+        let description = skill::describe(entry)
             .map(|summary| summary.description)
             .unwrap_or_default();
         rows.push((
             entry.id.to_string(),
             description,
-            skills::status(entry, &root),
+            skill::status(entry, &root),
         ));
     }
 
@@ -117,7 +114,7 @@ fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
                     "id": id,
                     "description": description,
                     "status": status.key(),
-                    "path": skills::skill_path(&root, id),
+                    "path": skill::skill_path(&root, id),
                 })
             })
             .collect();

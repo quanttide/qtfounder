@@ -11,7 +11,6 @@ mod code;
 mod docs;
 mod language;
 mod meta;
-mod skill;
 mod think;
 
 use clap::{Parser, Subcommand};
@@ -37,7 +36,7 @@ enum CliCommand {
     /// 归位：判一段内容该进哪一格、要不要跨域
     Meta(meta::MetaArgs),
     /// Skill：把嵌入的 Skill 装进目标仓
-    Skill(skill::SkillArgs),
+    Skill(agent::install::SkillArgs),
     /// Agent：查 Skill 的命名与写法
     Agent(agent::AgentArgs),
     /// 文字体检：合并文字与文档审计，每期只说一处
@@ -81,7 +80,7 @@ fn main() {
                 std::process::exit(2);
             }
         },
-        Some(CliCommand::Skill(args)) => match skill::run(&args) {
+        Some(CliCommand::Skill(args)) => match agent::install::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

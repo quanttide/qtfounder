@@ -12,8 +12,9 @@
 
 ### Changed
 
+- 安装实现从 `src/skill/` 移进 `src/agent/`：`install` 管装，`registry` 管嵌入清单，与 `agent skill` 的检查同域；命令名不变
 - 安装位置缺省改为系统位置（`$HOME/.agents/skills`），不装进当前仓；只装某个仓时给 `--root`。去掉 `--global`：它现在是默认行为
-- 依赖工具箱的 `agent::skills` 模块：从 crates.io 取 `quanttide-founder` 0.1.0-alpha.3；嵌装逻辑在库里，CLI 只登记清单与命令行
+- 依赖工具箱的 `agent::skill` 模块：从 crates.io 取 `quanttide-founder`，嵌装逻辑在库里，CLI 只登记清单与命令行
 - 跨域提示与用户指南里的 Skill 名改为 `meta-classify`：原来的 `meta-domain` 与 `meta-category` 已合并
 
 ## [0.0.11] - 2026-10-25
