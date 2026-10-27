@@ -922,7 +922,7 @@ dependencies = [
 
 [[package]]
 name = "qtfounder-cli"
-version = "0.0.38"
+version = "0.0.39"
 dependencies = [
  "assert_cmd",
  "clap",

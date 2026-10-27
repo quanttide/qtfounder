@@ -2,11 +2,19 @@
 
 ## [Unreleased]
 
+## [0.0.39] - 2026-10-27
+
+### Changed
+
+- `asset maintain` 按「领域 / 资产」结构重写：整理 context、校验、按关系搬到长期记忆仓；`--check` 只校验，`--dry-run` 预览，`--json` 给脚本读；目标已存在不覆盖
+- `asset catalog` 改为 20 种资产，路径精确到仓库；`asset relation` 改为按角色与迁入边输出
+- 契约新增 `[[asset]]` 20 条与 `[[relation]]` 3 条；toolkit、platform、laboratory 的 path 修正为具体仓库
+
 ## [0.0.38] - 2026-10-27
 
 ### Added
 
-- `asset maintain`：整理 context 的「领域 / 资产」结构，按关系搬到长期记忆仓；`--check` 只校验，`--dry-run` 预览，`--json` 给脚本读；目标已存在不覆盖
+- `asset maintain`：资产维护视图——九条共用做法（目录、索引、变更记录、版本、发布、提交、迁移、闸门、只读），规则写在归位契约的 `[maintain]` 段；`--json` 给脚本读
 
 ## [0.0.37] - 2026-10-27
 
