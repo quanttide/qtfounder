@@ -30,40 +30,40 @@ max_paragraphs = 5
 name = "quanttide-write"
 label = "write 领域"
 cues = ["小说", "章节", "文风", "叙事", "人物", "改稿"]
-status = "suspected"
+status = "confirmed"
 
 [[domain]]
 name = "quanttide-health"
 label = "health 领域"
 cues = ["健康", "睡眠", "心理", "情绪", "认知扭曲", "体检"]
-status = "suspected"
+status = "confirmed"
 
 [[domain]]
 name = "quanttide-finance"
 label = "finance 领域"
 cues = ["财务", "预算", "成本", "报销", "毛利", "现金流"]
-status = "suspected"
+status = "confirmed"
 
 [[domain]]
 name = "quanttide-code"
 label = "code 领域"
 cues = ["代码", "函数", "编译", "单元测试", "重构"]
-status = "suspected"
+status = "confirmed"
 
 [[domain]]
 name = "quanttide-learn"
 label = "learn 领域"
 cues = ["课程", "教学", "学员", "培训", "课堂"]
-status = "suspected"
+status = "confirmed"
 
 [[domain]]
 name = "quanttide-legal"
 label = "legal 领域"
 cues = ["法律", "合同", "诉讼", "知识产权", "合规"]
+status = "confirmed"
 
 # ---------------- 陈述型：时间 × 类型 ----------------
 # 回答组织「知道什么」。时间看契约走到哪一步，类型看这条内容本身是什么。
-status = "suspected"
 
 [[cell]]
 name = "report"

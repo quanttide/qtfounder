@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.33] - 2026-10-27
+
+### Changed
+
+- 六个领域的 `status` 全部置为 `confirmed`；`domain.md` 同步标记「确认」
+
 ## [0.0.32] - 2026-10-27
 
 ### Added
