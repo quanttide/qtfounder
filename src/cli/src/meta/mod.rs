@@ -7,6 +7,7 @@
 
 pub mod classify;
 pub mod contract;
+pub mod relation;
 
 #[cfg(test)]
 mod tests;
@@ -14,12 +15,15 @@ mod tests;
 use clap::Subcommand;
 
 use classify::ClassifyArgs;
+use relation::RelationArgs;
 
 /// `meta` 下的子命令。
 #[derive(Subcommand, Debug)]
 pub enum MetaCommand {
     /// 归位：给一段内容一张落位卡（域、格、档、写法）
     Classify(ClassifyArgs),
+    /// 关系：看一格的迁出、迁入与分辨句
+    Relation(RelationArgs),
 }
 
 /// 归位侧入口。
@@ -32,5 +36,6 @@ pub struct MetaArgs {
 pub fn run(args: &MetaArgs) -> Result<i32, String> {
     match &args.command {
         MetaCommand::Classify(classify) => classify::run(classify),
+        MetaCommand::Relation(relation) => relation::run(relation),
     }
 }

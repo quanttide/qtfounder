@@ -1,6 +1,6 @@
 # qtfounder-cli
 
-量潮创始人 CLI 工具。十个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知（含负载诊断与反思记录），`meta` 判归位，`product` 记需求差，`agent` 装 Skill 并查写法，`git` 管钩子配置，`audit` 出体检报告。
+量潮创始人 CLI 工具。十一个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知（含负载诊断与反思记录），`meta` 判归位与看归位边，`asset` 看资产契约、清单与关系，`product` 记需求差，`agent` 装 Skill、查写法与看命令关系，`git` 管钩子配置，`audit` 出体检报告。
 
 ## 开发
 
@@ -16,11 +16,12 @@ cargo test
 |---|---|
 | `qtfounder code` | 代码语用检查：词汇、句法、语篇、语用四层，判下一个维护者能不能看懂。用法见 [docs/user-guide/code.md](docs/user-guide/code.md) |
 | `qtfounder language` | 语言检查：落点、自造术语、体系词、数字、句法、语用六层，判这段文字是不是在跟读者说话 |
-| `qtfounder docs` | 文档审计：表格、列表、密度、加粗、分割线五层，判这段内容该不该是这个形状；`docs check` 比对技能索引与目录。用法见 [docs/user-guide/docs.md](docs/user-guide/docs.md) |
+| `qtfounder docs` | 文档审计：表格、列表、密度、加粗、分割线、front matter 与日志模板七层，判这段内容该不该是这个形状；`docs check` 比对技能索引与目录。用法见 [docs/user-guide/docs.md](docs/user-guide/docs.md) |
 | `qtfounder write` | 表达审计：体裁、读者、主题三轴，加空话、口号、指路、结构四层。用法见 [docs/user-guide/write.md](docs/user-guide/write.md) |
 | `qtfounder think` | 认知：`load` 从会话库看消耗落在哪，`reflect` 按 CBT 那套记一条并到点回填，`model` 看当前模型。用法见 [docs/user-guide/think.md](docs/user-guide/think.md) |
-| `qtfounder meta` | 归位：`classify` 给一段内容一张落位卡——域、格、档、写法；判不了只问一句，套不上就不收。用法见 [docs/user-guide/meta.md](docs/user-guide/meta.md) |
-| `qtfounder agent` | Agent：`skill` 一组——`list`／`check` 看装到哪一步，`install` 装到系统位置 `~/.agents/skills`，`lint` 查名字、说明与正文合不合标准。用法见 [docs/user-guide/agent.md](docs/user-guide/agent.md) |
+| `qtfounder meta` | 归位：`classify` 给一段内容一张落位卡——域、格、档、写法；`relation` 看一格的迁出、迁入与分辨句。用法见 [docs/user-guide/meta.md](docs/user-guide/meta.md) |
+| `qtfounder asset` | 资产：`contract` 看每类资产的边界、分档与写法，`catalog` 看仓库里有哪些，`relation` 看家族与目录分组。用法见 [docs/user-guide/asset.md](docs/user-guide/asset.md) |
+| `qtfounder agent` | Agent：`skill` 一组——`list`／`check` 看装到哪一步，`install` 装到系统位置 `~/.agents/skills`，`lint` 查名字、说明与正文合不合标准；`relation` 看 Skill 引用了哪些命令、哪些命令组还没 Skill。用法见 [docs/user-guide/agent.md](docs/user-guide/agent.md) |
 | `qtfounder git` | Git：`hook` 一组——`install`／`status`／`uninstall` 管主仓与子模块的 `core.hooksPath`，`run` 执行钩子；`submodule check` 查指针与推送状态。用法见 [docs/user-guide/git.md](docs/user-guide/git.md) |
 | `qtfounder audit` | 文字体检：合并 `language` 与 `docs`，按「一个词、一条规则」归堆，每期只报一处。用法见 [docs/user-guide/audit.md](docs/user-guide/audit.md) |
 

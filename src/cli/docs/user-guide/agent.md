@@ -77,3 +77,13 @@ qtfounder agent skill lint --json
 文字措辞归 `language`，格式归 `docs`。`lint` 只管 Agent 能不能靠名字和说明找对门。
 
 主仓不需要装：它自己那些 Skill 就地维护，这四条随着 CLI 装在系统位置，在哪个目录下都找得到。
+
+## 七、relation：Skill 与命令的边
+
+```bash
+qtfounder agent relation                    # 每条 Skill 引用了哪些命令
+qtfounder agent relation meta-classify      # 只看一条
+qtfounder agent relation --json
+```
+
+命令从 Skill 正文里的 `qtfounder <组> <动词>` 读出来；对照契约的 `cli_scopes`，列出还没有 Skill 引用的命令组。只读，不跑命令，也不改 Skill。

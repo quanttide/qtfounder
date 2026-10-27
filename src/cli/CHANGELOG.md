@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.0.20] - 2026-10-27
+
+### Added
+
+- `qtfounder asset`：`contract` 看十八类资产的边界、分档与写法，`catalog` 看仓库里在不在，`relation` 看家族与目录分组
+- `qtfounder meta relation`：看一格的迁出、迁入与分辨句
+- `qtfounder agent relation`：看 Skill 引用了哪些命令，以及哪些命令组还没有 Skill
+
 ## [0.0.19] - 2026-10-27
 
 ### Added

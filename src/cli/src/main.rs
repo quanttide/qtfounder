@@ -6,6 +6,7 @@
 //! 3. 把该功能的依赖加回 `Cargo.toml`
 
 mod agent;
+mod asset;
 mod audit;
 mod code;
 mod docs;
@@ -40,6 +41,8 @@ enum CliCommand {
     Think(think::ThinkArgs),
     /// 归位：判一段内容该进哪一格、要不要跨域
     Meta(meta::MetaArgs),
+    /// 资产：看契约、清单与关系
+    Asset(asset::AssetArgs),
     /// 产品：需求与澄清，名词读、动词写
     Product(product::ProductArgs),
     /// Agent：装 Skill、查写法
@@ -88,6 +91,13 @@ fn main() {
             }
         },
         Some(CliCommand::Meta(args)) => match meta::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Asset(args)) => match asset::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

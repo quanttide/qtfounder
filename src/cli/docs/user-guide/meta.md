@@ -76,3 +76,13 @@ qtfounder meta classify notes.md --rules ./my-contract.toml
 ## 七、退出码
 
 `0` 有落位（留在这里或搬走），`1` 不收，`3` 待定，`2` 是读不了文件或契约。待定单独一档，是为了让脚本能停下来等人回答那一个问题，而不是当成失败重跑。
+
+## 八、relation：看归位边
+
+```bash
+qtfounder meta relation              # 全部迁移与分辨句
+qtfounder meta relation insight      # 只看这一格的进出与对端
+qtfounder meta relation --json
+```
+
+迁移分迁出与迁入两个方向；分辨句按对端列出。只读契约，不重新判内容。
