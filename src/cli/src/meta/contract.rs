@@ -23,6 +23,9 @@ const CONTRACT_RELATIVE: [&str; 3] = [
 pub struct Contract {
     #[serde(default)]
     pub verdict: Verdict,
+    /// 维护规则：每类资产共用的做法。
+    #[serde(default)]
+    pub maintain: Maintain,
     #[serde(default)]
     pub home: Vec<Home>,
     /// 本体论根：这份契约属于哪个域。
@@ -74,6 +77,20 @@ impl Default for Verdict {
             question_fallback: "它说的是世界怎么运转，还是你下一步要做什么？".to_string(),
         }
     }
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Maintain {
+    #[serde(default)]
+    pub description: String,
+    #[serde(default)]
+    pub rule: Vec<MaintainRule>,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct MaintainRule {
+    pub name: String,
+    pub description: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

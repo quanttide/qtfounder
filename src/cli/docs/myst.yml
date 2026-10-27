@@ -13,6 +13,7 @@ project:
         - file: user-guide/write.md
         - file: user-guide/think.md
         - file: user-guide/meta.md
+        - file: user-guide/asset.md
         - file: user-guide/product.md
         - file: user-guide/agent.md
     - title: 开发指南

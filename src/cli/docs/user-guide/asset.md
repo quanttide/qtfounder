@@ -1,6 +1,6 @@
 # `qtfounder asset` 用户指南
 
-资产契约、清单与关系，三个都是只读视图。数据源是归位契约：十八格就是十八类资产。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
+资产契约、清单、关系与维护规则，四个都是只读视图。数据源是归位契约：十八格就是十八类资产。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
 
 ## 一、catalog：仓库里到底有没有
 
@@ -106,6 +106,33 @@ insight  Insight 洞察
 
 只读契约的 `family` 与路径首段，不推断资产之间的引用或依赖。
 
-## 四、契约在哪
+## 四、maintain：怎么把它维护下去
+
+```bash
+qtfounder asset maintain
+qtfounder asset maintain insight
+qtfounder asset maintain --json
+```
+
+不带参数列出所有资产共用的九条做法：
+
+```text
+资产维护：18 类资产共用
+资产维护的共同做法。边界与写法看 asset contract，在不在看 asset catalog。
+
+1  目录
+   内容只放在契约给的 path；同一份内容不跨类复制。
+...
+```
+
+带资产名时多一行定位，说明边界与写法去 `asset contract` 看。规则只读，不改文件；发布、打标签与指针更新仍按规则手工执行。
+
+用途：
+
+- 接手一个资产仓前，先看维护清单。
+- 评审一批改动时，对照发布与迁移两条。
+- 写新的资产规则时，先改契约的 `[maintain]` 段，不改代码。
+
+## 五、契约在哪
 
 `src/meta/default-contract.toml`，查找顺序与 `meta` 一致；`--rules` 可换一份。

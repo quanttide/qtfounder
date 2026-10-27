@@ -1,6 +1,6 @@
 # qtfounder CLI 文档
 
-命令行工具，九个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知，`meta` 判归位，`product` 记需求差，`agent` 装 Skill 并查写法，`audit` 出体检报告。
+命令行工具，十一个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知，`meta` 判归位，`asset` 看资产契约、清单、关系与维护规则，`product` 记需求差，`agent` 装 Skill 并查写法，`git` 管钩子配置，`audit` 出体检报告。
 
 ## 用户指南
 
@@ -10,6 +10,7 @@
 - [`write`](user-guide/write.md)：表达审计，体裁、读者、主题三轴，加空话、口号、指路与结构四层。
 - [`think`](user-guide/think.md)：认知侧，`load` 看消耗落点、`reflect` 记一条反思、`model` 看模型。
 - [`meta`](user-guide/meta.md)：归位，`classify` 给一段内容一张落位卡：域、格、档、写法。
+- [`asset`](user-guide/asset.md)：资产，`catalog` 清点、`contract` 看边界、`relation` 看分组、`maintain` 看维护规则。
 - [`product`](user-guide/product.md)：需求与澄清，`clarify` 记一次「不对劲」，`requirement` 看攒出了什么。
 - [`agent`](user-guide/agent.md)：装 Skill（`list`、`install`、`check`）并查写法（`lint`）。
 - [`audit`](user-guide/audit.md)：文字体检，合并两套审计，每期只说一处。

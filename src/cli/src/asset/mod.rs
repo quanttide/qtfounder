@@ -1,10 +1,12 @@
-//! `qtfounder asset`：资产契约、清单与关系。
+//! `qtfounder asset`：资产契约、清单、关系与维护规则。
 //!
-//! 三个子命令都是只读视图，数据源是归位契约——十八格就是十八类资产。
-//! `contract` 看每类资产该写成什么样，`catalog` 看仓库里有哪些，`relation` 看它们怎么分组。
+//! 四个子命令都是只读视图，数据源是归位契约——十八格就是十八类资产。
+//! `contract` 看每类资产该写成什么样，`catalog` 看仓库里有哪些，`relation` 看它们怎么分组，
+//! `maintain` 看怎么把它们维护下去。
 
 pub mod catalog;
 pub mod contract;
+pub mod maintain;
 pub mod relation;
 
 use std::path::PathBuf;
@@ -28,6 +30,8 @@ pub enum AssetCommand {
     Catalog(catalog::CatalogArgs),
     /// 看资产关系：家族与目录分组
     Relation(relation::RelationArgs),
+    /// 看资产维护规则：每类资产共用的做法
+    Maintain(maintain::MaintainArgs),
 }
 
 pub fn run(args: &AssetArgs) -> Result<i32, String> {
@@ -35,5 +39,6 @@ pub fn run(args: &AssetArgs) -> Result<i32, String> {
         AssetCommand::Contract(command) => contract::run(command, args.rules.as_deref()),
         AssetCommand::Catalog(command) => catalog::run(command, args.rules.as_deref()),
         AssetCommand::Relation(command) => relation::run(command, args.rules.as_deref()),
+        AssetCommand::Maintain(command) => maintain::run(command, args.rules.as_deref()),
     }
 }
