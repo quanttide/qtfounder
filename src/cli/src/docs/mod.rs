@@ -10,6 +10,7 @@ mod common;
 pub mod contract;
 pub mod density;
 mod frontmatter;
+mod journal;
 mod list;
 pub mod model;
 mod rule;
@@ -27,7 +28,7 @@ use clap::{Args, Subcommand};
 use contract::Contract;
 use model::{Finding, Kind, Severity};
 
-/// 文档审计：表格、列表、密度、加粗、分割线五层，加 front matter 字段。
+/// 文档审计：表格、列表、密度、加粗、分割线五层，加 front matter 与日志模板。
 #[derive(Args, Debug)]
 pub struct DocsArgs {
     #[command(subcommand)]
@@ -35,7 +36,7 @@ pub struct DocsArgs {
     /// 要扫的目录或文件
     #[arg(default_value = ".")]
     pub root: PathBuf,
-    /// 只看一层：table／list／density／bold／rule／frontmatter
+    /// 只看一层：table／list／density／bold／rule／frontmatter／journal
     #[arg(long)]
     pub kind: Option<String>,
     /// 契约路径（缺省按 src/docs/default-contract.toml 逐级往上找）
@@ -89,7 +90,7 @@ fn line_of(finding: &Finding) -> String {
 fn print_report(findings: &[Finding], scanned: usize, top: usize) {
     if findings.is_empty() {
         println!(
-            "审了 {scanned} 个文件，没有命中：表格、列表、密度、加粗、分割线与 front matter 都没有越界"
+            "审了 {scanned} 个文件，没有命中：表格、列表、密度、加粗、分割线、front matter 与日志模板都没有越界"
         );
         return;
     }

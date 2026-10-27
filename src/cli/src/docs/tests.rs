@@ -3,7 +3,9 @@
 use super::bold::check_bold;
 use super::contract::Contract;
 use super::density;
+use super::journal::{check_journal, is_journal};
 use super::list::check_list;
+use super::model::Kind;
 use super::rule::check_rule;
 use super::table::check_table;
 
@@ -191,4 +193,77 @@ fn frontmatter_and_code_rules_are_ignored() {
 fn setext_underline_is_not_a_rule() {
     let text = "甲\n---\n乙\n---\n丙\n---\n丁\n---\n";
     assert!(!kinds(text).contains(&"rule"));
+}
+
+#[test]
+fn journal_entry_with_matching_title_is_quiet() {
+    let contract = contract();
+    let text = "# 2026-10-27\n\n今天把日志模板接进 docs。\n";
+    assert!(
+        check_journal(
+            "data/journal/2026-10/2026-10-27.md",
+            text,
+            &contract.journal
+        )
+        .is_empty()
+    );
+}
+
+#[test]
+fn journal_entry_with_wrong_title_is_reported() {
+    let contract = contract();
+    let text = "# 2026-10-26\n\n正文。\n";
+    let findings = check_journal(
+        "data/journal/2026-10/2026-10-27.md",
+        text,
+        &contract.journal,
+    );
+    assert_eq!(findings.len(), 1);
+    assert_eq!(findings[0].kind, Kind::Journal);
+    assert!(findings[0].advice.contains("2026-10-27"));
+}
+
+#[test]
+fn journal_entry_without_title_is_quiet() {
+    let contract = contract();
+    let text = "今天把日志模板接进 docs。\n";
+    assert!(
+        check_journal(
+            "data/journal/2026-10/2026-10-27.md",
+            text,
+            &contract.journal
+        )
+        .is_empty()
+    );
+}
+
+#[test]
+fn journal_entry_with_non_date_filename_is_reported() {
+    let contract = contract();
+    let text = "今天把日志模板接进 docs。\n";
+    let findings = check_journal("data/journal/2026-10/notes.md", text, &contract.journal);
+    assert_eq!(findings.len(), 1);
+    assert!(findings[0].advice.contains("YYYY-MM-DD"));
+}
+
+#[test]
+fn journal_readme_is_not_checked() {
+    let contract = contract();
+    assert!(!is_journal("data/journal/README.md", &contract.journal));
+}
+
+#[test]
+fn excluded_journal_entry_is_still_checked() {
+    let dir = std::env::temp_dir().join(format!("qtfounder-docs-journal-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("data/journal/2026-10")).unwrap();
+    std::fs::write(
+        dir.join("data/journal/2026-10/2026-10-27.md"),
+        "# 2026-10-26\n\n正文。\n",
+    )
+    .unwrap();
+
+    let (findings, _, _) = super::scan::scan(&dir, &contract());
+    assert!(findings.iter().any(|finding| finding.kind == Kind::Journal));
+    let _ = std::fs::remove_dir_all(&dir);
 }

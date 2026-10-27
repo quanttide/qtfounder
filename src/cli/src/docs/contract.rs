@@ -31,6 +31,8 @@ pub struct Contract {
     pub rule: Rule,
     #[serde(default)]
     pub frontmatter: Frontmatter,
+    #[serde(default)]
+    pub journal: Journal,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -142,6 +144,20 @@ pub struct Frontmatter {
     /// topic 的取值表；与 write 契约的主题画像保持一致
     #[serde(default)]
     pub topic: Vec<String>,
+}
+
+/// 日志模板：事件型资产可以有固定模板，陈述型不设。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Journal {
+    /// 开关
+    #[serde(default)]
+    pub enabled: bool,
+    /// 路径里出现这些片段即按日志处理
+    #[serde(default)]
+    pub paths: Vec<String>,
+    /// 写了标题就必须是 `# YYYY-MM-DD`；不写标题放行
+    #[serde(default)]
+    pub title_must_be_date: bool,
 }
 
 /// 找契约：环境变量 → 当前目录往上找 → 用户级目录 → 都没有就报错。刻意不内置兜底。

@@ -3,7 +3,7 @@
 //! 表格与列表是缺陷规则，逐块定位；密度是兜底，只在缺陷规则没命中时才看整篇。
 //! 同一篇已经指出具体位置，再补一条整体判断只会淹没有用信息。
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -14,6 +14,7 @@ use super::common::is_excluded;
 use super::contract::Contract;
 use super::density;
 use super::frontmatter::check_frontmatter;
+use super::journal::{check_journal, is_journal};
 use super::list::check_list;
 use super::model::Finding;
 use super::rule::check_rule;
@@ -45,6 +46,9 @@ pub fn check_file(path: &Path, contract: &Contract, root: Option<&Path>) -> Vec<
     }
     findings.extend(check_bold(&rel, &text, contract));
     findings.extend(check_rule(&rel, &text, contract));
+    if is_journal(&rel, &contract.journal) {
+        findings.extend(check_journal(&rel, &text, &contract.journal));
+    }
     findings
 }
 
@@ -63,20 +67,54 @@ pub fn markdown_files(root: &Path, contract: &Contract) -> Vec<PathBuf> {
     out
 }
 
+/// 日志文件：不受 `[scope] exclude` 限制，单独交给模板校验。
+fn journal_files(root: &Path, contract: &Contract) -> Vec<PathBuf> {
+    if root.is_file() || !contract.journal.enabled {
+        return Vec::new();
+    }
+    let mut out: Vec<PathBuf> = WalkDir::new(root)
+        .into_iter()
+        .filter_map(Result::ok)
+        .map(|entry| entry.into_path())
+        .filter(|path| path.extension().map(|ext| ext == "md").unwrap_or(false))
+        .filter(|path| is_journal(&path.display().to_string(), &contract.journal))
+        .collect();
+    out.sort();
+    out
+}
+
 /// 全量扫描：返回（命中，读不了的文件，审了几个文件）。
 pub fn scan(root: &Path, contract: &Contract) -> (Vec<Finding>, Vec<String>, usize) {
     let mut findings = Vec::new();
     let mut broken = Vec::new();
     let base = if root.is_dir() { Some(root) } else { None };
     let files = markdown_files(root, contract);
-    let scanned = files.len();
+    let mut scanned = 0;
+    let mut seen = HashSet::new();
     for path in files {
         if fs::read_to_string(&path).is_err() {
             broken.push(rel_of(&path, base));
             continue;
         }
+        scanned += 1;
+        seen.insert(path.clone());
         findings.extend(check_file(&path, contract, base));
     }
+
+    // 日志目录通常排除在通用格式规则之外；模板单独跑一遍，只查文件名与标题。
+    for path in journal_files(root, contract) {
+        if seen.contains(&path) {
+            continue;
+        }
+        let rel = rel_of(&path, base);
+        let Ok(text) = fs::read_to_string(&path) else {
+            broken.push(rel);
+            continue;
+        };
+        scanned += 1;
+        findings.extend(check_journal(&rel, &text, &contract.journal));
+    }
+
     (findings, broken, scanned)
 }
 

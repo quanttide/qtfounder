@@ -11,6 +11,7 @@ pub enum Kind {
     Bold,
     Rule,
     Frontmatter,
+    Journal,
 }
 
 impl Kind {
@@ -22,6 +23,7 @@ impl Kind {
             Kind::Bold => "bold",
             Kind::Rule => "rule",
             Kind::Frontmatter => "frontmatter",
+            Kind::Journal => "journal",
         }
     }
 
@@ -33,6 +35,7 @@ impl Kind {
             Kind::Bold,
             Kind::Rule,
             Kind::Frontmatter,
+            Kind::Journal,
         ]
         .into_iter()
         .find(|kind| kind.key() == text)
