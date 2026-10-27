@@ -16,7 +16,7 @@ use crate::language::contract::{self, Contract};
 use crate::language::model::{Finding, Severity, Verdict};
 use crate::language::scan;
 
-use super::common::{HOOKS_DIR, display_name, git, resolve_root};
+use super::common::{HOOKS_DIR, display_name, git, git_command, resolve_root};
 use super::submodule;
 
 /// 能执行的钩子。
@@ -148,12 +148,7 @@ impl TempBase {
 
     fn findings(&self, repo: &Path, rel: &str, contract: &Contract) -> Vec<Finding> {
         let spec = format!("HEAD:{rel}");
-        let Ok(output) = Command::new("git")
-            .arg("-C")
-            .arg(repo)
-            .args(["show", &spec])
-            .output()
-        else {
+        let Ok(output) = git_command(repo).args(["show", &spec]).output() else {
             return Vec::new();
         };
         if !output.status.success() {
@@ -272,9 +267,7 @@ fn log_suspect(workspace: &Path, path: &str, count: usize) {
 
 fn sync_submodules(repo: &Path) {
     let _ = git(repo, &["submodule", "sync", "--recursive"]);
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(repo)
+    let output = git_command(repo)
         .args(["submodule", "update", "--init", "--recursive"])
         .env("QT_SUBMODULE_SYNC", "1")
         .output();

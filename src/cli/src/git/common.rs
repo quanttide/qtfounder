@@ -3,6 +3,23 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+/// 钩子里 Git 会导出 GIT_DIR 等变量；不去掉，`-C` 会失效，命令跑回父仓。
+pub(super) fn git_command(dir: &Path) -> Command {
+    let mut command = Command::new("git");
+    command.arg("-C").arg(dir);
+    for key in [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_INDEX_FILE",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_COMMON_DIR",
+        "GIT_PREFIX",
+    ] {
+        command.env_remove(key);
+    }
+    command
+}
+
 /// 钩子目录的固定名字。
 pub(super) const HOOKS_DIR: &str = ".githooks";
 
@@ -16,9 +33,7 @@ pub(super) struct Repo {
 
 pub(super) fn resolve_root(root: Option<&Path>) -> Result<PathBuf, String> {
     let dir = root.unwrap_or(Path::new("."));
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(dir)
+    let output = git_command(dir)
         .args(["rev-parse", "--show-toplevel"])
         .output()
         .map_err(|error| format!("跑不了 git：{error}"))?;
@@ -31,9 +46,7 @@ pub(super) fn resolve_root(root: Option<&Path>) -> Result<PathBuf, String> {
 }
 
 pub(super) fn git(dir: &Path, args: &[&str]) -> Result<String, String> {
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(dir)
+    let output = git_command(dir)
         .args(args)
         .output()
         .map_err(|error| format!("跑不了 git：{error}"))?;

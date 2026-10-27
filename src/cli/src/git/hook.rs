@@ -9,7 +9,8 @@ use clap::{Args, Subcommand};
 use serde_json::json;
 
 use super::common::{
-    HOOKS_DIR, Repo, configured_path, display_name, non_executable, repos, resolve_root, same_path,
+    HOOKS_DIR, Repo, configured_path, display_name, git_command, non_executable, repos,
+    resolve_root, same_path,
 };
 use super::run::{self, RunArgs};
 
@@ -136,9 +137,7 @@ fn inspect(repo: &Repo, managed: &Path, managed_exists: bool) -> Result<State, S
 }
 
 fn hooks_path(repo: &Path) -> Result<Option<String>, String> {
-    let output = std::process::Command::new("git")
-        .arg("-C")
-        .arg(repo)
+    let output = git_command(repo)
         .args(["config", "--get", "core.hooksPath"])
         .output()
         .map_err(|error| format!("跑不了 git：{error}"))?;
@@ -154,9 +153,7 @@ fn hooks_path(repo: &Path) -> Result<Option<String>, String> {
 }
 
 fn set_hooks_path(repo: &Path, value: &Path) -> Result<(), String> {
-    let output = std::process::Command::new("git")
-        .arg("-C")
-        .arg(repo)
+    let output = git_command(repo)
         .args(["config", "core.hooksPath"])
         .arg(value)
         .output()
@@ -169,9 +166,7 @@ fn set_hooks_path(repo: &Path, value: &Path) -> Result<(), String> {
 }
 
 fn unset_hooks_path(repo: &Path) -> Result<(), String> {
-    let output = std::process::Command::new("git")
-        .arg("-C")
-        .arg(repo)
+    let output = git_command(repo)
         .args(["config", "--unset-all", "core.hooksPath"])
         .output()
         .map_err(|error| format!("跑不了 git：{error}"))?;

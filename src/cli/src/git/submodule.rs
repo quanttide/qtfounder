@@ -3,12 +3,11 @@
 //! 只读，不改工作区。`pre-push` 复用同一份判定，只取其中会挡推送的几项。
 
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-use super::common::{display_name, git, repos, resolve_root};
+use super::common::{display_name, git, git_command, repos, resolve_root};
 
 /// `git submodule` 下的子命令。
 #[derive(Subcommand, Debug)]
@@ -190,9 +189,7 @@ enum PointerState {
 }
 
 fn pointer_state(dir: &Path, sha: &str) -> PointerState {
-    let probe = Command::new("git")
-        .arg("-C")
-        .arg(dir)
+    let probe = git_command(dir)
         .args(["cat-file", "-e", &format!("{sha}^{{commit}}")])
         .output();
     match probe {
@@ -209,9 +206,7 @@ fn pointer_state(dir: &Path, sha: &str) -> PointerState {
 fn recorded_sha(dir: &Path) -> Option<String> {
     let parent = parent_repo(dir)?;
     let relative = dir.strip_prefix(parent).ok()?;
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(parent)
+    let output = git_command(parent)
         .args(["ls-tree", "-z", "HEAD", "--"])
         .arg(relative)
         .output()

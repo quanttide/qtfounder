@@ -277,7 +277,13 @@ fn 子模块未推送时pushed检查失败() {
     assert!(git(&sub, &["add", "."]).status.success());
     commit(&sub, "extra");
 
-    let blocked = run(&root, &["git", "submodule", "check", "--pushed"]);
+    let git_dir = root.join(".git");
+    let git_dir = git_dir.to_str().expect("路径可转");
+    let blocked = run_with_env(
+        &root,
+        &["git", "submodule", "check", "--pushed"],
+        &[("GIT_DIR", git_dir)],
+    );
     assert_eq!(blocked.code, 1, "{}", blocked.stderr);
     assert!(blocked.stdout.contains("未推送"), "{}", blocked.stdout);
 
@@ -288,7 +294,11 @@ fn 子模块未推送时pushed检查失败() {
         String::from_utf8_lossy(&pushed.stderr)
     );
 
-    let safe = run(&root, &["git", "submodule", "check", "--pushed"]);
+    let safe = run_with_env(
+        &root,
+        &["git", "submodule", "check", "--pushed"],
+        &[("GIT_DIR", git_dir)],
+    );
     assert_eq!(safe.code, 0, "{}", safe.stdout);
 
     let full = run(&root, &["git", "submodule", "check"]);
