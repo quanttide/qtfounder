@@ -1,6 +1,6 @@
 # `qtfounder asset` 用户指南
 
-资产契约、清单、关系与维护规则，四个都是只读视图。数据源是归位契约：十八格就是十八类资产。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
+资产契约、清单、关系与维护，四个入口。数据源是归位契约：十八类长期记忆，加 context 与 archive，共二十种资产。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
 
 ## 一、catalog：仓库里到底有没有
 
@@ -10,23 +10,23 @@
 qtfounder asset catalog
 ```
 
-主仓根跑，当前是 18/18：
+主仓根跑，当前是 20/20：
 
 ```text
 根：.
-18 类资产，仓库里有 18 类，缺 0 类
+20 种资产，仓库里有 20 种，缺 0 种
 
-report  Report 报告  data/report/  陈述型  有
-library  Library 图书馆  data/library/  陈述型  有
+context  Context 入口  data/context/  source  有
+report  Report 报告  data/report/  memory  有
 ...
-laboratory  Laboratory 实验室  examples/  程序型  有
+archive  Archive 归档  data/archive/  exit  有
 ```
 
-从子目录跑时，`根` 会指向当前目录，结果可能是 0/18。这不是资产丢了，是根不对：
+从子目录跑时，`根` 会指向当前目录，结果可能是 0/20。这不是资产丢了，是根不对：
 
 ```text
 根：.
-18 类资产，仓库里有 0 类，缺 18 类
+20 种资产，仓库里有 0 种，缺 20 种
 ```
 
 用 `--root` 指回仓根：
@@ -65,73 +65,85 @@ insight  Insight 洞察  data/insight/  陈述型
 
 这是契约的展开，不是写作模板。陈述型不规定章节，模板只归 `docs/` 下的手册与规格。
 
-## 三、relation：和谁一类、和谁同目录
+## 三、relation：资产与迁入边
 
 ```bash
 qtfounder asset relation
 qtfounder asset relation insight
 ```
 
-不带参数按两条线分组：
+不带参数按三种角色列出资产，再列关系：
 
 ```text
-陈述型（9）
-  report  data/report/
+入口（1）
+  context  data/context/
+长期记忆（18）
+  report  data/report/  report
+  library  data/library/  library
   ...
-程序型（9）
-  bylaw  docs/bylaw/
-  ...
-按目录
-  data/  report、library、history、journal、profile、brochure、roadmap、insight、intention
-  docs/  bylaw、specification、handbook、gallery、tutorial、essay
-  packages/  toolkit
-  apps/  platform
-  examples/  laboratory
+归档（1）
+  archive  data/archive/
+
+关系
+  intake  context -> memory  flip
+  archive  context -> archive  same
+  archive  memory -> archive  flip
 ```
 
-带资产名看它和谁住在一起：
+带资产名看它的位置、类别与相关关系：
 
 ```text
-insight  Insight 洞察
+insight  Insight 洞察  长期记忆
+  路径：data/insight/
+  类别：insight
   家族：陈述型
-  目录：data/
   同目录：report、library、history、journal、profile、brochure、roadmap、intention
+  关系：
+    intake  context -> memory  flip
+    archive  memory -> archive  flip
 ```
 
 用途：
 
-- 判断一类新资产该归哪个家族、哪个目录。最终仍以契约里的 `path` 为准。
-- 比较同类资产：同目录的资产通常共享发布时间线与维护方式。
+- 判断内容该用哪条迁入边。
+- 查一个资产在长期记忆里的位置与同类资产。
 - 换目录或拆仓库前，先看会牵动哪些同目录资产。
 
-只读契约的 `family` 与路径首段，不推断资产之间的引用或依赖。
+只读契约，不推断资产之间的引用或依赖。
 
-## 四、maintain：怎么把它维护下去
+## 四、maintain：整理 context 并搬进长期记忆仓
 
-```bash
-qtfounder asset maintain
-qtfounder asset maintain insight
-qtfounder asset maintain --json
-```
-
-不带参数列出所有资产共用的九条做法：
+context 与 archive 是「领域 / 资产」两级；长期记忆是资产一级仓库、领域一级文件夹。搬动时交换前两段：
 
 ```text
-资产维护：18 类资产共用
-资产维护的共同做法。边界与写法看 asset contract，在不在看 asset catalog。
-
-1  目录
-   内容只放在契约给的 path；同一份内容不跨类复制。
-...
+context/<领域>/<资产>/<余下> → <资产仓>/<领域>/<余下>
 ```
 
-带资产名时多一行定位，说明边界与写法去 `asset contract` 看。规则只读，不改文件；发布、打标签与指针更新仍按规则手工执行。
+context 里资产在前、领域在后，也会被认出来并整理成领域在前。
 
-用途：
+```bash
+qtfounder asset maintain --dry-run   # 预览要移动的文件
+qtfounder asset maintain --check     # 只整理与校验，不移动；有待移动时退出码 1
+qtfounder asset maintain             # 移动
+qtfounder asset maintain --json      # 给脚本读
+```
 
-- 接手一个资产仓前，先看维护清单。
-- 评审一批改动时，对照发布与迁移两条。
-- 写新的资产规则时，先改契约的 `[maintain]` 段，不改代码。
+输出分四段：
+
+```text
+根：.
+待移动 2
+  life/insight/a.md -> data/insight/life/a.md
+  work/journal/2026-10-27.md -> data/journal/work/2026-10-27.md
+目标已存在 0
+无法归位 0
+目标布局异常 0
+```
+
+- `--root` 指仓根，缺省当前目录。
+- 目标已存在时不覆盖，报「目标已存在」。
+- 目标仓的顶层出现资产名，说明还没做二次整理，报「目标布局异常」。
+- 命令只移动文件，不提交、不推、不改子模块指针。
 
 ## 五、契约在哪
 

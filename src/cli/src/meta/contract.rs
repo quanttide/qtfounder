@@ -25,7 +25,14 @@ pub struct Contract {
     pub verdict: Verdict,
     /// 维护规则：每类资产共用的做法。
     #[serde(default)]
+    #[allow(dead_code)]
     pub maintain: Maintain,
+    /// 资产：入口、长期记忆与归档，共 20 种。
+    #[serde(default)]
+    pub asset: Vec<Asset>,
+    /// 资产之间的关系。
+    #[serde(default)]
+    pub relation: Vec<Relation>,
     #[serde(default)]
     pub home: Vec<Home>,
     /// 本体论根：这份契约属于哪个域。
@@ -80,6 +87,7 @@ impl Default for Verdict {
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
+#[allow(dead_code)]
 pub struct Maintain {
     #[serde(default)]
     pub description: String,
@@ -88,9 +96,78 @@ pub struct Maintain {
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
+#[allow(dead_code)]
 pub struct MaintainRule {
     pub name: String,
     pub description: String,
+}
+
+/// 资产：一个可维护的仓库。入口、长期记忆与归档共用这一形状。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Asset {
+    pub name: String,
+    #[serde(default)]
+    pub label: String,
+    /// `source`（context）、`memory`（十八类）、`exit`（archive）。
+    #[serde(default)]
+    pub role: String,
+    pub path: String,
+    #[serde(default)]
+    pub category: String,
+    /// `domain-asset` 或 `asset-domain`：前两段是领域在前还是资产在前。
+    #[serde(default)]
+    pub layout: String,
+}
+
+impl Asset {
+    pub fn label(&self) -> &str {
+        if self.label.is_empty() {
+            &self.name
+        } else {
+            &self.label
+        }
+    }
+
+    pub fn is_memory(&self) -> bool {
+        self.role == "memory"
+    }
+
+    pub fn is_source(&self) -> bool {
+        self.role == "source"
+    }
+
+    pub fn is_exit(&self) -> bool {
+        self.role == "exit"
+    }
+}
+
+/// 关系：资产之间的迁移边。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Relation {
+    /// `intake` 或 `archive`。
+    pub kind: String,
+    pub from: String,
+    pub to: String,
+    /// `flip` 交换前两段，`same` 保持。
+    #[serde(default)]
+    pub transform: String,
+}
+
+impl Contract {
+    pub fn source(&self) -> Option<&Asset> {
+        self.asset.iter().find(|asset| asset.is_source())
+    }
+
+    pub fn exit(&self) -> Option<&Asset> {
+        self.asset.iter().find(|asset| asset.is_exit())
+    }
+
+    pub fn memory(&self) -> Vec<&Asset> {
+        self.asset
+            .iter()
+            .filter(|asset| asset.is_memory())
+            .collect()
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]

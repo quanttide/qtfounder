@@ -67,6 +67,189 @@ description = "提交前跑 language、docs 与 write；旧文本被拦不顺手
 name = "只读"
 description = "contract、catalog、relation 与 maintain 都不改文件。"
 
+# ---------------- 资产 ----------------
+# 20 种：context（入口）、18 类长期记忆、archive（出口）。
+# context 与 archive 是「领域 / 资产」，长期记忆是「资产 / 领域」。
+
+[[asset]]
+name = "context"
+label = "Context 入口"
+role = "source"
+path = "data/context/"
+layout = "domain-asset"
+
+[[asset]]
+name = "archive"
+label = "Archive 归档"
+role = "exit"
+path = "data/archive/"
+layout = "domain-asset"
+
+[[asset]]
+name = "report"
+label = "Report 报告"
+role = "memory"
+category = "report"
+path = "data/report/"
+layout = "asset-domain"
+
+[[asset]]
+name = "library"
+label = "Library 图书馆"
+role = "memory"
+category = "library"
+path = "data/library/"
+layout = "asset-domain"
+
+[[asset]]
+name = "history"
+label = "History 历史"
+role = "memory"
+category = "history"
+path = "data/history/"
+layout = "asset-domain"
+
+[[asset]]
+name = "journal"
+label = "Journal 日志"
+role = "memory"
+category = "journal"
+path = "data/journal/"
+layout = "asset-domain"
+
+[[asset]]
+name = "profile"
+label = "Profile 档案"
+role = "memory"
+category = "profile"
+path = "data/profile/"
+layout = "asset-domain"
+
+[[asset]]
+name = "brochure"
+label = "Brochure 宣传册"
+role = "memory"
+category = "brochure"
+path = "data/brochure/"
+layout = "asset-domain"
+
+[[asset]]
+name = "roadmap"
+label = "Roadmap 路线图"
+role = "memory"
+category = "roadmap"
+path = "data/roadmap/"
+layout = "asset-domain"
+
+[[asset]]
+name = "insight"
+label = "Insight 洞察"
+role = "memory"
+category = "insight"
+path = "data/insight/"
+layout = "asset-domain"
+
+[[asset]]
+name = "intention"
+label = "Intention 愿景"
+role = "memory"
+category = "intention"
+path = "data/intention/"
+layout = "asset-domain"
+
+[[asset]]
+name = "bylaw"
+label = "Bylaw 章程"
+role = "memory"
+category = "bylaw"
+path = "docs/bylaw/"
+layout = "asset-domain"
+
+[[asset]]
+name = "specification"
+label = "Specification 工程标准"
+role = "memory"
+category = "specification"
+path = "docs/specification/"
+layout = "asset-domain"
+
+[[asset]]
+name = "toolkit"
+label = "Toolkit 标准库"
+role = "memory"
+category = "toolkit"
+path = "packages/quanttide-founder-toolkit/"
+layout = "asset-domain"
+
+[[asset]]
+name = "handbook"
+label = "Handbook 手册"
+role = "memory"
+category = "handbook"
+path = "docs/handbook/"
+layout = "asset-domain"
+
+[[asset]]
+name = "gallery"
+label = "Gallery 案例"
+role = "memory"
+category = "gallery"
+path = "docs/gallery/"
+layout = "asset-domain"
+
+[[asset]]
+name = "platform"
+label = "Platform 平台"
+role = "memory"
+category = "platform"
+path = "apps/qtfounder/"
+layout = "asset-domain"
+
+[[asset]]
+name = "tutorial"
+label = "Tutorial 教程"
+role = "memory"
+category = "tutorial"
+path = "docs/tutorial/"
+layout = "asset-domain"
+
+[[asset]]
+name = "essay"
+label = "Essay 论文"
+role = "memory"
+category = "essay"
+path = "docs/essay/"
+layout = "asset-domain"
+
+[[asset]]
+name = "laboratory"
+label = "Laboratory 实验室"
+role = "memory"
+category = "laboratory"
+path = "examples/quanttide-founder-lab/"
+layout = "asset-domain"
+
+# ---------------- 关系 ----------------
+# 迁移边。flip 交换前两段，same 保持。
+
+[[relation]]
+kind = "intake"
+from = "context"
+to = "memory"
+transform = "flip"
+
+[[relation]]
+kind = "archive"
+from = "context"
+to = "archive"
+transform = "same"
+
+[[relation]]
+kind = "archive"
+from = "memory"
+to = "archive"
+transform = "flip"
+
 # ---------------- 去处 ----------------
 # 判域只看正文，不看它现在住在哪。没命中任何领域，就是留在这里。
 # 名字与 domains/ 下的仓库一一对应；换领域改这里。

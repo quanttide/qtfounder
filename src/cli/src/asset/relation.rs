@@ -1,17 +1,18 @@
-//! 资产关系：家族与目录两条分组线。
+//! 资产关系：二十种资产与迁入边。
 //!
-//! 只读归位契约，不推断依赖。家族回答「它属于哪一类」，目录回答「它和谁住在一起」。
+//! 资产分三种角色：context 是入口，十八类是长期记忆，archive 是出口。
+//! 关系回答内容从哪搬到哪，`flip` 交换前两段，`same` 保持。
 
 use std::path::Path;
 
 use clap::Args;
 use serde_json::json;
 
-use crate::meta::contract::{Category, Contract};
+use crate::meta::contract::{Contract, Relation};
 
 #[derive(Args, Debug)]
 pub struct RelationArgs {
-    /// 只看这类资产的关系
+    /// 只看这种资产的关系
     pub name: Option<String>,
     /// 输出 JSON
     #[arg(long)]
@@ -23,141 +24,170 @@ pub fn root_of(path: &str) -> &str {
     path.split('/').next().unwrap_or(path)
 }
 
-/// 按某个键分组，保留契约里的出现顺序。
-fn group<'a, F>(categories: &'a [Category], key: F) -> Vec<(String, Vec<&'a Category>)>
-where
-    F: Fn(&Category) -> String,
-{
-    let mut groups: Vec<(String, Vec<&Category>)> = Vec::new();
-    for category in categories {
-        let name = key(category);
-        match groups.iter_mut().find(|(existing, _)| *existing == name) {
-            Some((_, items)) => items.push(category),
-            None => groups.push((name, vec![category])),
-        }
+fn role_label(role: &str) -> &'static str {
+    match role {
+        "source" => "入口",
+        "memory" => "长期记忆",
+        "exit" => "归档",
+        _ => "未分角色",
     }
-    groups
-}
-
-pub fn family_groups(categories: &[Category]) -> Vec<(String, Vec<&Category>)> {
-    group(categories, |category| {
-        if category.family.is_empty() {
-            "未分家族".to_string()
-        } else {
-            category.family.clone()
-        }
-    })
-}
-
-pub fn root_groups(categories: &[Category]) -> Vec<(String, Vec<&Category>)> {
-    group(categories, |category| root_of(&category.path).to_string())
 }
 
 pub fn run(args: &RelationArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
     if let Some(name) = &args.name {
-        let category = contract.category(name).ok_or_else(|| {
-            let names: Vec<&str> = contract
-                .category
-                .iter()
-                .map(|category| category.name.as_str())
-                .collect();
-            format!("没有这类资产：{name}；可选：{}", names.join("、"))
-        })?;
-        return show_one(category, &contract, args.json);
+        return show_one(name, &contract, args.json);
     }
-
-    let families = family_groups(&contract.category);
-    let roots = root_groups(&contract.category);
     if args.json {
-        let families: Vec<serde_json::Value> = families
-            .iter()
-            .map(|(name, categories)| {
-                json!({
-                    "name": name,
-                    "assets": categories.iter().map(|category| &category.name).collect::<Vec<_>>(),
-                })
-            })
-            .collect();
-        let roots: Vec<serde_json::Value> = roots
-            .iter()
-            .map(|(name, categories)| {
-                json!({
-                    "name": name,
-                    "assets": categories.iter().map(|category| &category.name).collect::<Vec<_>>(),
-                })
-            })
-            .collect();
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&json!({
-                "families": families,
-                "roots": roots,
-            }))
-            .unwrap_or_else(|_| "{}".to_string())
-        );
-        return Ok(0);
-    }
-
-    for (name, categories) in &families {
-        println!("{name}（{}）", categories.len());
-        for category in categories {
-            println!("  {}  {}", category.name, category.path);
-        }
-        println!();
-    }
-    println!("按目录");
-    for (name, categories) in &roots {
-        let names: Vec<&str> = categories
-            .iter()
-            .map(|category| category.name.as_str())
-            .collect();
-        println!("  {name}/  {}", names.join("、"));
+        print_json(&contract);
+    } else {
+        print_text(&contract);
     }
     Ok(0)
 }
 
-fn show_one(category: &Category, contract: &Contract, json: bool) -> Result<i32, String> {
-    let root = root_of(&category.path);
-    let siblings: Vec<&str> = contract
-        .category
+fn print_text(contract: &Contract) {
+    for role in ["source", "memory", "exit"] {
+        let assets: Vec<&crate::meta::contract::Asset> = contract
+            .asset
+            .iter()
+            .filter(|asset| asset.role == role)
+            .collect();
+        if assets.is_empty() {
+            continue;
+        }
+        println!("{}（{}）", role_label(role), assets.len());
+        for asset in assets {
+            println!("  {}  {}  {}", asset.name, asset.path, asset.category);
+        }
+        println!();
+    }
+    println!("关系");
+    for relation in &contract.relation {
+        println!(
+            "  {}  {} -> {}  {}",
+            relation.kind, relation.from, relation.to, relation.transform
+        );
+    }
+}
+
+fn print_json(contract: &Contract) {
+    let assets: Vec<serde_json::Value> = contract
+        .asset
         .iter()
-        .filter(|other| root_of(&other.path) == root && other.name != category.name)
-        .map(|other| other.name.as_str())
+        .map(|asset| {
+            json!({
+                "name": asset.name,
+                "label": asset.label(),
+                "role": asset.role,
+                "path": asset.path,
+                "category": asset.category,
+            })
+        })
         .collect();
+    let relations: Vec<serde_json::Value> = contract
+        .relation
+        .iter()
+        .map(|relation| {
+            json!({
+                "kind": relation.kind,
+                "from": relation.from,
+                "to": relation.to,
+                "transform": relation.transform,
+            })
+        })
+        .collect();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&json!({
+            "assets": assets,
+            "relations": relations,
+        }))
+        .unwrap_or_else(|_| "{}".to_string())
+    );
+}
+
+fn show_one(name: &str, contract: &Contract, json: bool) -> Result<i32, String> {
+    let asset = contract.asset.iter().find(|asset| asset.name == name);
+    let Some(asset) = asset else {
+        let names: Vec<&str> = contract
+            .asset
+            .iter()
+            .map(|asset| asset.name.as_str())
+            .collect();
+        return Err(format!("没有这种资产：{name}；可选：{}", names.join("、")));
+    };
+    let edges: Vec<&Relation> = contract
+        .relation
+        .iter()
+        .filter(|relation| relation.from == name || relation.to == name)
+        .collect();
+    let category = contract
+        .category(&asset.category)
+        .filter(|_| !asset.category.is_empty());
+    let siblings = category.map(|category| {
+        contract
+            .category
+            .iter()
+            .filter(|other| {
+                root_of(&other.path) == root_of(&category.path) && other.name != category.name
+            })
+            .map(|other| other.name.as_str())
+            .collect::<Vec<&str>>()
+    });
+
     if json {
         println!(
             "{}",
             serde_json::to_string_pretty(&json!({
-                "asset": category.name,
-                "label": category.label,
-                "family": category.family,
-                "root": root,
+                "asset": asset.name,
+                "label": asset.label(),
+                "role": asset.role,
+                "path": asset.path,
+                "category": asset.category,
+                "family": category.map(|category| category.family.clone()),
                 "siblings": siblings,
+                "relations": edges.iter().map(|relation| json!({
+                    "kind": relation.kind,
+                    "from": relation.from,
+                    "to": relation.to,
+                    "transform": relation.transform,
+                })).collect::<Vec<_>>(),
             }))
             .unwrap_or_else(|_| "{}".to_string())
         );
         return Ok(0);
     }
-    println!("{}  {}", category.name, category.label);
-    println!("  家族：{}", category.family);
-    println!("  目录：{root}/");
-    println!("  同目录：{}", siblings.join("、"));
+
+    println!(
+        "{}  {}  {}",
+        asset.name,
+        asset.label(),
+        role_label(&asset.role)
+    );
+    println!("  路径：{}", asset.path);
+    if !asset.category.is_empty() {
+        println!("  类别：{}", asset.category);
+    }
+    if let Some(category) = category {
+        println!("  家族：{}", category.family);
+        if let Some(siblings) = &siblings {
+            println!("  同目录：{}", siblings.join("、"));
+        }
+    }
+    println!("  关系：");
+    for relation in edges {
+        println!(
+            "    {}  {} -> {}  {}",
+            relation.kind, relation.from, relation.to, relation.transform
+        );
+    }
     Ok(0)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn 家族按契约分组() {
-        let contract = Contract::bundled();
-        let families = family_groups(&contract.category);
-        let names: Vec<&str> = families.iter().map(|(name, _)| name.as_str()).collect();
-        assert!(names.contains(&"陈述型"));
-        assert!(names.contains(&"程序型"));
-    }
 
     #[test]
     fn 目录根取第一段() {
@@ -179,5 +209,23 @@ mod tests {
         assert!(siblings.contains(&"insight"));
         assert!(!siblings.contains(&"report"));
         let _ = report;
+    }
+
+    #[test]
+    fn 关系覆盖入口长期记忆与归档() {
+        let contract = Contract::bundled();
+        assert_eq!(contract.asset.len(), 20);
+        assert!(
+            contract
+                .relation
+                .iter()
+                .any(|relation| relation.kind == "intake")
+        );
+        assert!(
+            contract
+                .relation
+                .iter()
+                .any(|relation| relation.kind == "archive")
+        );
     }
 }

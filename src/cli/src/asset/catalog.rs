@@ -1,13 +1,14 @@
-//! 资产清单：十八类资产在仓库里各是什么状态。
+//! 资产清单：20 种资产在仓库里各是什么状态。
 //!
 //! 只读文件系统，不改目录。路径相对 `--root` 算，缺省是当前目录。
+//! 二十种 = context（入口）+ 十八类长期记忆 + archive（出口）。
 
 use std::path::{Path, PathBuf};
 
 use clap::Args;
 use serde_json::json;
 
-use crate::meta::contract::{Category, Contract};
+use crate::meta::contract::{Asset, Contract};
 
 #[derive(Args, Debug)]
 pub struct CatalogArgs {
@@ -24,22 +25,22 @@ pub struct CatalogArgs {
 
 pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
-    let rows: Vec<(&Category, bool)> = contract
-        .category
+    let rows: Vec<(&Asset, bool)> = contract
+        .asset
         .iter()
-        .map(|category| (category, args.root.join(&category.path).exists()))
+        .map(|asset| (asset, args.root.join(&asset.path).exists()))
         .filter(|(_, present)| !args.present || *present)
         .collect();
 
     if args.json {
         let assets: Vec<serde_json::Value> = rows
             .iter()
-            .map(|(category, present)| {
+            .map(|(asset, present)| {
                 json!({
-                    "name": category.name,
-                    "label": category.label,
-                    "path": category.path,
-                    "family": category.family,
+                    "name": asset.name,
+                    "label": asset.label(),
+                    "path": asset.path,
+                    "role": asset.role,
                     "present": present,
                 })
             })
@@ -55,26 +56,25 @@ pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
         return Ok(0);
     }
 
-    let total = contract.category.len();
+    let total = contract.asset.len();
     let found = contract
-        .category
+        .asset
         .iter()
-        .filter(|category| args.root.join(&category.path).exists())
+        .filter(|asset| args.root.join(&asset.path).exists())
         .count();
     println!("根：{}", args.root.display());
     println!(
-        "{} 类资产，仓库里有 {found} 类，缺 {} 类",
-        total,
+        "{total} 种资产，仓库里有 {found} 种，缺 {} 种",
         total - found
     );
     println!();
-    for (category, present) in rows {
+    for (asset, present) in rows {
         println!(
             "{}  {}  {}  {}  {}",
-            category.name,
-            category.label,
-            category.path,
-            category.family,
+            asset.name,
+            asset.label(),
+            asset.path,
+            asset.role,
             if present { "有" } else { "缺" }
         );
     }
@@ -88,16 +88,16 @@ mod tests {
     fn rows(root: &Path) -> Vec<(String, bool)> {
         let contract = Contract::bundled();
         contract
-            .category
+            .asset
             .iter()
-            .map(|category| (category.name.clone(), root.join(&category.path).exists()))
+            .map(|asset| (asset.name.clone(), root.join(&asset.path).exists()))
             .collect()
     }
 
     #[test]
-    fn 清单覆盖十八类资产() {
+    fn 清单覆盖二十种资产() {
         let contract = Contract::bundled();
-        assert_eq!(contract.category.len(), 18);
+        assert_eq!(contract.asset.len(), 20);
     }
 
     #[test]
@@ -120,5 +120,16 @@ mod tests {
         );
 
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn 工具链路径到具体仓库() {
+        let contract = Contract::bundled();
+        let toolkit = contract
+            .asset
+            .iter()
+            .find(|asset| asset.name == "toolkit")
+            .unwrap();
+        assert_eq!(toolkit.path, "packages/quanttide-founder-toolkit/");
     }
 }
