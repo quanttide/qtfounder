@@ -1,6 +1,6 @@
 //! `qtfounder asset`：资产契约、清单、关系与维护。
 //!
-//! `contract`、`catalog`、`relation` 是只读视图，数据源是归位契约——十八格就是十八类资产。
+//! `contract`、`catalog`、`relation` 是只读视图，数据源是归位契约——十八类长期记忆加两端，共二十种资产。
 //! `maintain` 整理 context 的「领域 / 资产」结构，并按关系搬到长期记忆仓。
 
 pub mod catalog;

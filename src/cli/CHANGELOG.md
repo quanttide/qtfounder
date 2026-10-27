@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- `meta category` 增加两端：`context`（入口）与 `archive`（出口）排在十八格之后，`meta category context` 可直接查；收什么写在契约 `[[asset]]` 的 `description`
+- `meta validate` 同时比对两端：称呼、目录与界线不一致都报漂移
+
+### Changed
+
+- 契约 `Asset` 新增 `description`（缺省空）；`Contract::asset` 按名字取资产
+
 ## [0.0.40] - 2026-10-27
 
 ### Changed

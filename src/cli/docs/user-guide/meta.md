@@ -14,7 +14,7 @@
 | 关系 | `meta relation` | 一格的迁出、迁入与分辨句 |
 | 公理 | `meta axiom` | 归位时不重新论证的前提 |
 | 属性 | `meta property` | 标准属性的字段名、组与定义 |
-| 范畴 | `meta category` | 十八格各收什么 |
+| 范畴 | `meta category` | 十八格与两端各收什么 |
 | 去处 | `meta home` | 内容搬出本仓能去哪里 |
 | 域（本体论） | `meta domain` | 这个域里有哪些范畴、属性与公理 |
 | 范式 | `meta paradigm` | 每个范式的对象、态射与合成律 |
@@ -271,11 +271,12 @@ qtfounder meta property --json
 - 加字段前先看这个名字有没有：有就照它的意思用，不另起一个。
 - 契约里 name 重复、缺 group、缺 description、status 写了别的值，读契约时就报。
 
-## 十四、category：十八格
+## 十四、category：十八格与两端
 
 ```bash
 qtfounder meta category
 qtfounder meta category insight
+qtfounder meta category context
 ```
 
 ```text
@@ -283,11 +284,19 @@ qtfounder meta category insight
   report  Report 报告  data/report/
     这一轮已经结束，收的是履行完毕的契约。
 ...
+
+两端
+  context  Context 入口  data/context/  入口
+    按「领域 / 资产」先放进来、还没通过整理校验的稿子；校验通过就搬去对应的长期记忆。
+  archive  Archive 归档  data/archive/  出口
+    已经退出使用的内容，只移动不改写，留一份可追溯的底。
 ```
+
+十八格判类型，两端记位置：context 是还没归好类的入口，archive 是已经退出的出口。两者的「收什么」写在契约 `[[asset]]` 的 `description` 里，`classify` 不会把内容判进这两端。
 
 `category` 是名词，看格有哪些、各收什么、落在哪个目录；`classify` 是动词，把一条内容放进某一格。要写法与分档看 `asset contract`。
 
-`docs/gallery/meta/category.md` 是给人看的镜像，名字、族、目录与界线都与契约逐条对，跑 `meta validate` 能查出漂移。
+`docs/gallery/meta/category.md` 是给人看的镜像，名字、族、目录与界线都与契约逐条对，两端也在其中，跑 `meta validate` 能查出漂移。
 
 ## 十五、validate：查漂移
 

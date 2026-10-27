@@ -97,6 +97,9 @@ pub struct Asset {
     /// `domain-asset` 或 `asset-domain`：前两段是领域在前还是资产在前。
     #[serde(default)]
     pub layout: String,
+    /// 这一位置收什么。两端写在这里；十八类的内容写在 `[[category]]`。
+    #[serde(default)]
+    pub description: String,
 }
 
 impl Asset {
@@ -134,6 +137,10 @@ pub struct Relation {
 }
 
 impl Contract {
+    pub fn asset(&self, name: &str) -> Option<&Asset> {
+        self.asset.iter().find(|asset| asset.name == name)
+    }
+
     pub fn source(&self) -> Option<&Asset> {
         self.asset.iter().find(|asset| asset.is_source())
     }

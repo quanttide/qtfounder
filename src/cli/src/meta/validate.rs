@@ -227,8 +227,39 @@ fn check_categories(contract: &Contract, docs: &Path) -> Vec<String> {
             }
         }
     }
+    for asset in contract.asset.iter().filter(|asset| !asset.is_memory()) {
+        match doc.get(&asset.name) {
+            None => problems.push(format!("category.md：契约里有 {}，文档没写", asset.name)),
+            Some(entry) => {
+                if entry.label != asset.label() {
+                    problems.push(format!(
+                        "category.md：{} 的称呼不一致——文档 {}，契约 {}",
+                        asset.name,
+                        entry.label,
+                        asset.label()
+                    ));
+                }
+                if entry.path != asset.path {
+                    problems.push(format!(
+                        "category.md：{} 的目录不一致——文档 {}，契约 {}",
+                        asset.name, entry.path, asset.path
+                    ));
+                }
+                if entry.description.trim() != asset.description.trim() {
+                    problems.push(format!(
+                        "category.md：{} 的界线不一致——文档「{}」，契约「{}」",
+                        asset.name, entry.description, asset.description
+                    ));
+                }
+            }
+        }
+    }
     for name in doc.keys() {
-        if contract.category(name).is_none() {
+        let known_end = contract
+            .asset(name)
+            .map(|asset| !asset.is_memory())
+            .unwrap_or(false);
+        if contract.category(name).is_none() && !known_end {
             problems.push(format!("category.md：文档写了 {name}，契约里没有"));
         }
     }

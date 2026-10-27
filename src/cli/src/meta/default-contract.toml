@@ -34,6 +34,7 @@ label = "Context 入口"
 role = "source"
 path = "data/context/"
 layout = "domain-asset"
+description = "按「领域 / 资产」先放进来、还没通过整理校验的稿子；校验通过就搬去对应的长期记忆。"
 
 [[asset]]
 name = "archive"
@@ -41,6 +42,7 @@ label = "Archive 归档"
 role = "exit"
 path = "data/archive/"
 layout = "domain-asset"
+description = "已经退出使用的内容，只移动不改写，留一份可追溯的底。"
 
 [[asset]]
 name = "report"

@@ -85,6 +85,8 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 | | `question_fallback` | 没有现成分辨句时问那一句 |
 | `domain` | 字符串 | 这份契约属于哪个域 |
 | `[[home]]` | `name`／`label`／`cues`／`status` | 去处仓名、显示名、线索与确认状态 |
+| `[[asset]]` | `name`／`label`／`role`／`path`／`layout` | 资产身份、角色（`source`／`memory`／`exit`）、目录与两级顺序 |
+| | `description` | 两端各收什么；十八类的内容写在 `[[category]]` |
 | `[[category]]` | `name`／`label`／`path`／`family` | 范畴的身份与目录 |
 | | `cues`／`description`／`skeleton` | 线索、界线、写法 |
 | `[[category.grade]]` | `label`／`cues`／`fallback` | 档的顺序即展示顺序；`fallback` 兜底 |
