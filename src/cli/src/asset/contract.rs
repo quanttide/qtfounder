@@ -70,8 +70,8 @@ fn print_text(cells: &[&Cell]) {
             "{}  {}  {}  {}",
             cell.name, cell.label, cell.path, cell.family
         );
-        if !cell.boundary.is_empty() {
-            println!("  边界：{}", cell.boundary);
+        if !cell.description.is_empty() {
+            println!("  边界：{}", cell.description);
         }
         let grades = grade_line(cell);
         if !grades.is_empty() {
@@ -110,7 +110,7 @@ fn print_json(cells: &[&Cell]) {
                 "label": cell.label,
                 "path": cell.path,
                 "family": cell.family,
-                "boundary": cell.boundary,
+                "description": cell.description,
                 "skeleton": cell.skeleton,
                 "grades": grades,
             })
@@ -132,7 +132,7 @@ mod tests {
         for cell in &contract.cell {
             assert!(!cell.name.is_empty());
             assert!(!cell.path.is_empty());
-            assert!(!cell.boundary.is_empty(), "{} 缺边界", cell.name);
+            assert!(!cell.description.is_empty(), "{} 缺边界", cell.name);
             assert!(!cell.skeleton.trim().is_empty(), "{} 缺写法", cell.name);
         }
     }

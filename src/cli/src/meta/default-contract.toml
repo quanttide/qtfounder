@@ -65,7 +65,7 @@ label = "Report 报告"
 path = "data/report/"
 family = "陈述型"
 cues = ["本轮", "这周做完", "结项", "交付完成", "总结这轮", "阶段结束", "复盘"]
-boundary = "这一轮已经结束，收的是履行完毕的契约。"
+description = "这一轮已经结束，收的是履行完毕的契约。"
 skeleton = '''# 标题
 
 一轮工作做完，先说结论，再说留下了什么。
@@ -79,7 +79,7 @@ label = "Library 图书馆"
 path = "data/library/"
 family = "陈述型"
 cues = ["摘录", "摘自", "出处", "参考文献", "资料", "引文", "书目", "原文"]
-boundary = "收的是外面的东西，不是自己的判断；出处必须写清。"
+description = "收的是外面的东西，不是自己的判断；出处必须写清。"
 skeleton = '''# 主题
 
 - 摘录：「原话」。
@@ -92,7 +92,7 @@ label = "History 历史"
 path = "data/history/"
 family = "陈述型"
 cues = ["沿革", "创立于", "历史上", "前任", "过去几年", "最早", "当年"]
-boundary = "说的是组织怎么走到今天，不是某一轮工作。"
+description = "说的是组织怎么走到今天，不是某一轮工作。"
 skeleton = '''# 主题
 
 按时间写发生了什么，一段一个阶段。
@@ -104,7 +104,7 @@ label = "Journal 日志"
 path = "data/journal/"
 family = "陈述型"
 cues = ["今天", "昨天", "上午", "下午", "晚上", "见了", "聊了", "开了", "收到", "发给", "试了", "去了", "回来"]
-boundary = "记得住日期和当事人；抽掉这些，这句话就空了。"
+description = "记得住日期和当事人；抽掉这些，这句话就空了。"
 skeleton = '''# YYYY-MM-DD
 
 今天做了什么，结果如何，留一句当时的判断。
@@ -116,7 +116,7 @@ label = "Profile 档案"
 path = "data/profile/"
 family = "陈述型"
 cues = ["我总是", "我习惯", "我一向", "我反复", "我倾向", "性格", "每次都", "我的判断"]
-boundary = "跨事稳定，改起来要动整个人的判断方式，才是档案。"
+description = "跨事稳定，改起来要动整个人的判断方式，才是档案。"
 skeleton = '''# 主题
 
 - **特征**：一句话。证据：几次具体的事（YYYY-MM-DD）。
@@ -128,7 +128,7 @@ label = "Brochure 宣传册"
 path = "data/brochure/"
 family = "陈述型"
 cues = ["对外", "介绍给", "读者", "客户", "口径", "话术", "卖点", "宣传", "听众"]
-boundary = "写给外面的人看，讲的是「它是什么」，不是内部怎么想。"
+description = "写给外面的人看，讲的是「它是什么」，不是内部怎么想。"
 skeleton = '''# 主题
 
 一段话讲清它是什么，再按对象分层说。
@@ -140,7 +140,7 @@ label = "Roadmap 路线图"
 path = "data/roadmap/"
 family = "陈述型"
 cues = ["先做", "下一步", "计划", "待定", "优先级", "排期", "决定", "要做", "接下来", "顺序", "落地场景"]
-boundary = "回答「下一步干什么」，讲先后与取舍。只在解释为什么必须这样排、没有当前动作的，不是路线图。"
+description = "回答「下一步干什么」，讲先后与取舍。只在解释为什么必须这样排、没有当前动作的，不是路线图。"
 skeleton = '''# 主题名
 
 当前先解决……，以……作为首个落地场景；在此基础上再确定……的顺序。
@@ -168,7 +168,7 @@ label = "Insight 洞察"
 path = "data/insight/"
 family = "陈述型"
 cues = ["其实", "发现", "规律", "本质", "机制", "导致", "因为", "根源", "说明", "原理", "教训", "很难", "容易", "不对称", "反而", "前提", "地基", "断言", "否则", "返工"]
-boundary = "一句话能被推翻，推翻之后做法会变；抽掉日期和当事人还成立。"
+description = "一句话能被推翻，推翻之后做法会变；抽掉日期和当事人还成立。"
 skeleton = '''# 主题名
 
 不规定章节。开篇说清这条要回答什么、推翻什么；正文按论证需要组织；可信度与推翻条件写进论证；结尾落一句能据以行动的判断。
@@ -186,7 +186,7 @@ label = "Intention 愿景"
 path = "data/intention/"
 family = "陈述型"
 cues = ["我要", "我不要", "我希望", "我要求", "必须", "应该", "澄清", "为准"]
-boundary = "收原话：「要 X，不要 Y」。提炼过的结论不是愿景。"
+description = "收原话：「要 X，不要 Y」。提炼过的结论不是愿景。"
 skeleton = '''# 主题名
 
 - **意图**：要 X，不要 Y。背景：摩擦或提问一句（YYYY-MM-DD）。
@@ -201,7 +201,7 @@ label = "Bylaw 章程"
 path = "docs/bylaw/"
 family = "程序型"
 cues = ["章程", "权责", "授权", "签字", "生效", "条款", "应当", "不得"]
-boundary = "涉及授权与权责划分，要人签字放行才生效。"
+description = "涉及授权与权责划分，要人签字放行才生效。"
 skeleton = '''# 章程名
 
 ## 第一条 目的
@@ -217,7 +217,7 @@ label = "Specification 工程标准"
 path = "docs/specification/"
 family = "程序型"
 cues = ["必须满足", "字段", "契约", "阈值", "验收标准", "取值范围", "判定", "定义", "对错"]
-boundary = "回答「必须满足什么」，每条能单独求值；概念入体系、阈值有数据。"
+description = "回答「必须满足什么」，每条能单独求值；概念入体系、阈值有数据。"
 skeleton = '''# 标准名
 
 ## 要求
@@ -235,7 +235,7 @@ label = "Toolkit 标准库"
 path = "packages/"
 family = "程序型"
 cues = ["函数", "接口", "包", "库", "安装", "调用", "依赖项"]
-boundary = "直接运行的代码资产，不是关于代码的说明。"
+description = "直接运行的代码资产，不是关于代码的说明。"
 skeleton = '''# 包名
 
 一句话说它解决什么，再给安装与调用示例。
@@ -247,7 +247,7 @@ label = "Handbook 手册"
 path = "docs/handbook/"
 family = "程序型"
 cues = ["流程", "步骤", "检查", "走一遍", "做法", "规范", "清单"]
-boundary = "收一类情况的判断尺子：换一个实例仍然成立。"
+description = "收一类情况的判断尺子：换一个实例仍然成立。"
 skeleton = '''# 主题
 
 这类情况怎么判、怎么做，分几步。
@@ -262,7 +262,7 @@ label = "Gallery 案例"
 path = "docs/gallery/"
 family = "程序型"
 cues = ["案例", "那次", "参与人", "现场", "经过", "耗时"]
-boundary = "收一次具体工作：时间、参与人、做法与结果；换一个实例就散架。"
+description = "收一次具体工作：时间、参与人、做法与结果；换一个实例就散架。"
 skeleton = '''# 案例名
 
 那天发生了什么：时间、参与人、做法、结果。
@@ -276,7 +276,7 @@ label = "Platform 平台"
 path = "apps/"
 family = "程序型"
 cues = ["平台", "服务", "部署", "上线", "运维", "监控"]
-boundary = "承载能力的产品本体，不是用法说明。"
+description = "承载能力的产品本体，不是用法说明。"
 skeleton = '''# 平台名
 
 它承载什么，边界在哪，怎么部署。
@@ -288,7 +288,7 @@ label = "Tutorial 教程"
 path = "docs/tutorial/"
 family = "程序型"
 cues = ["教程", "入门", "第一步", "教你", "跟着做", "示例", "练习"]
-boundary = "带人从不会到会，一步一步走；讲原理的不是教程。"
+description = "带人从不会到会，一步一步走；讲原理的不是教程。"
 skeleton = '''# 教程名
 
 学完能做什么。
@@ -304,7 +304,7 @@ label = "Essay 论文"
 path = "docs/essay/"
 family = "程序型"
 cues = ["方法论", "原理", "论述", "我认为", "推演", "解释", "为什么", "争论"]
-boundary = "讲原理与方法论，约束力最低；同一主题已有规格的，只写解释与例外。"
+description = "讲原理与方法论，约束力最低；同一主题已有规格的，只写解释与例外。"
 skeleton = '''# 标题
 
 提出一个问题，给出一种解释，说明它在什么条件下成立。
@@ -316,7 +316,7 @@ label = "Laboratory 实验室"
 path = "examples/"
 family = "程序型"
 cues = ["实验", "验证", "试验", "假设", "样本", "对照组", "跑一遍"]
-boundary = "还没被验证的东西先在这里跑；验证通过就升进正式入口，实验室不留复制件，Skill 与文档只指向正式入口。"
+description = "还没被验证的东西先在这里跑；验证通过就升进正式入口，实验室不留复制件，Skill 与文档只指向正式入口。"
 skeleton = '''# 实验名
 
 假设：一句话。
@@ -410,12 +410,12 @@ ask = "概念定义稳定、阈值有数据吗？都有进规格，否则进论�
 # 两者都不参与算分：模型只描述轴，公理只在落位卡上点名出处；判断仍看 [[cell]]、[[transition]] 与 [[question]]。
 
 [model]
-summary = "一份内容只有一个正确去处。十八格分两族，各成九宫格。"
+description = "一份内容只有一个正确去处。十八格分两族，各成九宫格。"
 
 [[model.family]]
 name = "陈述型"
 question = "组织知道什么"
-summary = "过去是已履行的契约，现在是正在履行的，未来是将要履行的。"
+description = "过去是已履行的契约，现在是正在履行的，未来是将要履行的。"
 
 [[model.family.axis]]
 name = "时间"
@@ -428,7 +428,7 @@ values = ["事件", "语义", "自我"]
 [[model.family]]
 name = "程序型"
 question = "组织怎么做事"
-summary = "宪法定权责，法律写程序，法理讲方法论。"
+description = "宪法定权责，法律写程序，法理讲方法论。"
 
 [[model.family.axis]]
 name = "约束力"
@@ -440,54 +440,54 @@ values = ["人读", "AI 解析", "直接运行"]
 
 [[axiom]]
 name = "one-place"
-statement = "一份内容只有一个正确去处。"
+description = "一份内容只有一个正确去处。"
 why = "放错格的代价不是难看，是下一轮没人找得到它。"
 status = "suspected"
 
 [[axiom]]
 name = "domain-before-cell"
-statement = "先定域，再定格，再过准入，最后给写法。"
+description = "先定域，再定格，再过准入，最后给写法。"
 why = "顺序换了，域错时格越准，搬得越远。"
 status = "suspected"
 
 [[axiom]]
 name = "text-only"
-statement = "只看正文，不看它现在住在哪。"
+description = "只看正文，不看它现在住在哪。"
 why = "现在的位置可能是上一次判错留下的。"
 status = "suspected"
 
 [[axiom]]
 name = "no-fit"
-statement = "一格都套不上就不收，留在日志里等它重复。"
+description = "一格都套不上就不收，留在日志里等它重复。"
 why = "硬归进某一格，只会让那一格多一条没人再看的记录。"
 status = "suspected"
 
 [[axiom]]
 name = "one-source"
-statement = "同一内容只在一处完整展开，其余留一句互链。"
+description = "同一内容只在一处完整展开，其余留一句互链。"
 why = "两处都写同一个事实，就是两个真源。"
 status = "suspected"
 
 [[axiom]]
 name = "no-fallback"
-statement = "契约缺了就停手，不内置兜底。"
+description = "契约缺了就停手，不内置兜底。"
 why = "静默回退会让人以为规则生效了。"
 status = "suspected"
 
 [[axiom]]
 name = "target-then-source"
-statement = "迁移先写目标、再删源，源侧不留复制件。"
+description = "迁移先写目标、再删源，源侧不留复制件。"
 why = "窗口里不能两边都空；完成后也不能两边都有。"
 status = "suspected"
 
 [[axiom]]
 name = "archive-vs-transfer"
-statement = "归档只移动不改写；移交必须改体例。"
+description = "归档只移动不改写；移交必须改体例。"
 why = "改错了形态，历史对不上，或者目标仓多一份不合体的文。"
 status = "suspected"
 
 [[axiom]]
 name = "template-scope"
-statement = "有固定结构才有模板；结构随内容走的不设固定写法。手册、规格与按日期落的日志结构固定，可以有模板。"
+description = "有固定结构才有模板；结构随内容走的不设固定写法。手册、规格与按日期落的日志结构固定，可以有模板。"
 why = "结构不固定还套模板，等于让模板替作者删内容。"
 status = "confirmed"

@@ -241,7 +241,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
         None => (top.clone(), None),
     };
     let grade = pick_grade(text, &cell);
-    let rule = rule.unwrap_or_else(|| cell.boundary.clone());
+    let rule = rule.unwrap_or_else(|| cell.description.clone());
     let verdict = if has_domain {
         Verdict::Move
     } else {

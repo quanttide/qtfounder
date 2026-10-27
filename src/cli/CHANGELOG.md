@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.29] - 2026-10-27
+
+### Changed
+
+- `statement`、`summary`、`boundary` 三种内容字段统一成 `description`：公理、模型、族、格各用一份描述。`[[axiom]]`、`[model]`、`[[model.family]]`、`[[cell]]` 的字段与 `meta axiom`、`meta model`、`asset contract` 的 JSON 键一并改；`why`、`skeleton`、`cues` 不动，它们不是描述
+
 ## [0.0.28] - 2026-10-27
 
 ### Changed

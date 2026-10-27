@@ -63,7 +63,7 @@ fn print_text(axioms: &[&Axiom]) {
             "{}  {}  {}",
             axiom.name,
             axiom.status_label(),
-            axiom.statement
+            axiom.description,
         );
         if !axiom.why.is_empty() {
             println!("  {}", axiom.why);
@@ -77,7 +77,7 @@ fn print_json(axioms: &[&Axiom]) {
         .map(|axiom| {
             json!({
                 "name": axiom.name,
-                "statement": axiom.statement,
+                "description": axiom.description,
                 "why": axiom.why,
                 "status": axiom.status_key(),
                 "status_label": axiom.status_label(),
@@ -100,7 +100,11 @@ mod tests {
         assert!(!contract.axiom.is_empty());
         for axiom in &contract.axiom {
             assert!(!axiom.name.is_empty());
-            assert!(!axiom.statement.is_empty(), "{} 缺 statement", axiom.name);
+            assert!(
+                !axiom.description.is_empty(),
+                "{} 缺 description",
+                axiom.name
+            );
             assert!(!axiom.why.is_empty(), "{} 缺 why", axiom.name);
         }
     }
@@ -109,7 +113,7 @@ mod tests {
     fn 公理缺省按怀疑算() {
         let axiom = Axiom {
             name: "x".to_string(),
-            statement: "甲".to_string(),
+            description: "甲".to_string(),
             why: "乙".to_string(),
             status: String::new(),
         };

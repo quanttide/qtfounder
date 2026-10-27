@@ -44,14 +44,14 @@ pub fn run(args: &ModelArgs) -> Result<i32, String> {
 
 fn print_text(contract: &Contract) {
     println!("归位本体");
-    if !contract.model.summary.is_empty() {
-        println!("{}", contract.model.summary);
+    if !contract.model.description.is_empty() {
+        println!("{}", contract.model.description);
     }
     for family in &contract.model.family {
         println!();
         println!("{}  {}", family.name, family.question);
-        if !family.summary.is_empty() {
-            println!("  {}", family.summary);
+        if !family.description.is_empty() {
+            println!("  {}", family.description);
         }
         for axis in &family.axis {
             println!("  {}：{}", axis.name, axis.values.join(" / "));
@@ -84,7 +84,7 @@ fn print_json(contract: &Contract) {
             json!({
                 "name": family.name,
                 "question": family.question,
-                "summary": family.summary,
+                "description": family.description,
                 "axes": axes,
                 "cells": cells_of(contract, &family.name),
             })
@@ -98,7 +98,7 @@ fn print_json(contract: &Contract) {
     println!(
         "{}",
         serde_json::to_string_pretty(&json!({
-            "summary": contract.model.summary,
+            "description": contract.model.description,
             "families": families,
             "domains": domains,
         }))
