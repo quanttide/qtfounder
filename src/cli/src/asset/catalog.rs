@@ -36,8 +36,8 @@ pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
             .iter()
             .map(|(cell, present)| {
                 json!({
-                    "key": cell.key,
                     "name": cell.name,
+                    "label": cell.label,
                     "path": cell.path,
                     "family": cell.family,
                     "present": present,
@@ -71,8 +71,8 @@ pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
     for (cell, present) in rows {
         println!(
             "{}  {}  {}  {}  {}",
-            cell.key,
             cell.name,
+            cell.label,
             cell.path,
             cell.family,
             if present { "有" } else { "缺" }
@@ -90,7 +90,7 @@ mod tests {
         contract
             .cell
             .iter()
-            .map(|cell| (cell.key.clone(), root.join(&cell.path).exists()))
+            .map(|cell| (cell.name.clone(), root.join(&cell.path).exists()))
             .collect()
     }
 
@@ -111,12 +111,12 @@ mod tests {
         assert!(
             found
                 .iter()
-                .any(|(key, present)| key == "report" && *present)
+                .any(|(name, present)| name == "report" && *present)
         );
         assert!(
             found
                 .iter()
-                .any(|(key, present)| key == "insight" && !present)
+                .any(|(name, present)| name == "insight" && !present)
         );
 
         let _ = std::fs::remove_dir_all(&dir);

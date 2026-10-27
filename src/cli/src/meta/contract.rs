@@ -90,8 +90,10 @@ impl Domain {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Cell {
-    pub key: String,
+    /// 机器可读的标识。
     pub name: String,
+    /// 给人看的称呼。
+    pub label: String,
     pub path: String,
     #[serde(default)]
     pub family: String,
@@ -220,7 +222,11 @@ impl Contract {
             return Err(format!("契约 {origin} 没有一格：十八格至少得写进来"));
         }
         // 降格目标与分辨句里的格必须是真格，写错了会在判定后才暴露，宁可在读契约时拦下。
-        let known: Vec<&str> = contract.cell.iter().map(|cell| cell.key.as_str()).collect();
+        let known: Vec<&str> = contract
+            .cell
+            .iter()
+            .map(|cell| cell.name.as_str())
+            .collect();
         for transition in &contract.transition {
             for key in [&transition.from, &transition.to] {
                 if !known.contains(&key.as_str()) {
@@ -293,8 +299,8 @@ impl Contract {
         Ok(contract)
     }
 
-    pub fn cell(&self, key: &str) -> Option<&Cell> {
-        self.cell.iter().find(|cell| cell.key == key)
+    pub fn cell(&self, name: &str) -> Option<&Cell> {
+        self.cell.iter().find(|cell| cell.name == name)
     }
 
     pub fn question(&self, first: &str, second: &str) -> &str {
@@ -318,8 +324,8 @@ mod tests {
 
     const CELL: &str = r#"
 [[cell]]
-key = "insight"
-name = "洞察"
+name = "insight"
+label = "洞察"
 path = "data/insight"
 "#;
 

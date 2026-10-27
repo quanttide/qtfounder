@@ -25,7 +25,7 @@ pub fn cells_of<'a>(contract: &'a Contract, family: &str) -> Vec<&'a str> {
         .cell
         .iter()
         .filter(|cell| cell.family == family)
-        .map(|cell| cell.key.as_str())
+        .map(|cell| cell.name.as_str())
         .collect()
 }
 

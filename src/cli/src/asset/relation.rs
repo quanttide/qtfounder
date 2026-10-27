@@ -12,7 +12,7 @@ use crate::meta::contract::{Cell, Contract};
 #[derive(Args, Debug)]
 pub struct RelationArgs {
     /// 只看这类资产的关系
-    pub key: Option<String>,
+    pub name: Option<String>,
     /// 输出 JSON
     #[arg(long)]
     pub json: bool,
@@ -55,10 +55,14 @@ pub fn root_groups(cells: &[Cell]) -> Vec<(String, Vec<&Cell>)> {
 
 pub fn run(args: &RelationArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
-    if let Some(key) = &args.key {
-        let cell = contract.cell(key).ok_or_else(|| {
-            let keys: Vec<&str> = contract.cell.iter().map(|cell| cell.key.as_str()).collect();
-            format!("没有这类资产：{key}；可选：{}", keys.join("、"))
+    if let Some(name) = &args.name {
+        let cell = contract.cell(name).ok_or_else(|| {
+            let names: Vec<&str> = contract
+                .cell
+                .iter()
+                .map(|cell| cell.name.as_str())
+                .collect();
+            format!("没有这类资产：{name}；可选：{}", names.join("、"))
         })?;
         return show_one(cell, &contract, args.json);
     }
@@ -71,7 +75,7 @@ pub fn run(args: &RelationArgs, rules: Option<&Path>) -> Result<i32, String> {
             .map(|(name, cells)| {
                 json!({
                     "name": name,
-                    "assets": cells.iter().map(|cell| &cell.key).collect::<Vec<_>>(),
+                    "assets": cells.iter().map(|cell| &cell.name).collect::<Vec<_>>(),
                 })
             })
             .collect();
@@ -80,7 +84,7 @@ pub fn run(args: &RelationArgs, rules: Option<&Path>) -> Result<i32, String> {
             .map(|(name, cells)| {
                 json!({
                     "name": name,
-                    "assets": cells.iter().map(|cell| &cell.key).collect::<Vec<_>>(),
+                    "assets": cells.iter().map(|cell| &cell.name).collect::<Vec<_>>(),
                 })
             })
             .collect();
@@ -98,14 +102,14 @@ pub fn run(args: &RelationArgs, rules: Option<&Path>) -> Result<i32, String> {
     for (name, cells) in &families {
         println!("{name}（{}）", cells.len());
         for cell in cells {
-            println!("  {}  {}", cell.key, cell.path);
+            println!("  {}  {}", cell.name, cell.path);
         }
         println!();
     }
     println!("按目录");
     for (name, cells) in &roots {
-        let keys: Vec<&str> = cells.iter().map(|cell| cell.key.as_str()).collect();
-        println!("  {name}/  {}", keys.join("、"));
+        let names: Vec<&str> = cells.iter().map(|cell| cell.name.as_str()).collect();
+        println!("  {name}/  {}", names.join("、"));
     }
     Ok(0)
 }
@@ -115,15 +119,15 @@ fn show_one(cell: &Cell, contract: &Contract, json: bool) -> Result<i32, String>
     let siblings: Vec<&str> = contract
         .cell
         .iter()
-        .filter(|other| root_of(&other.path) == root && other.key != cell.key)
-        .map(|other| other.key.as_str())
+        .filter(|other| root_of(&other.path) == root && other.name != cell.name)
+        .map(|other| other.name.as_str())
         .collect();
     if json {
         println!(
             "{}",
             serde_json::to_string_pretty(&json!({
-                "asset": cell.key,
-                "name": cell.name,
+                "asset": cell.name,
+                "label": cell.label,
                 "family": cell.family,
                 "root": root,
                 "siblings": siblings,
@@ -132,7 +136,7 @@ fn show_one(cell: &Cell, contract: &Contract, json: bool) -> Result<i32, String>
         );
         return Ok(0);
     }
-    println!("{}  {}", cell.key, cell.name);
+    println!("{}  {}", cell.name, cell.label);
     println!("  家族：{}", cell.family);
     println!("  目录：{root}/");
     println!("  同目录：{}", siblings.join("、"));
@@ -166,8 +170,8 @@ mod tests {
         let siblings: Vec<&str> = contract
             .cell
             .iter()
-            .filter(|other| root_of(&other.path) == "data" && other.key != "report")
-            .map(|other| other.key.as_str())
+            .filter(|other| root_of(&other.path) == "data" && other.name != "report")
+            .map(|other| other.name.as_str())
             .collect();
         assert!(siblings.contains(&"insight"));
         assert!(!siblings.contains(&"report"));

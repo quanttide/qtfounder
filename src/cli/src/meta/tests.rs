@@ -24,7 +24,7 @@ fn place(text: &str) -> super::classify::Card {
 fn key_of(card: &super::classify::Card) -> &str {
     card.cell
         .as_ref()
-        .map(|cell| cell.key.as_str())
+        .map(|cell| cell.name.as_str())
         .unwrap_or("")
 }
 
@@ -228,7 +228,7 @@ fn 一个口头禅只按两次算() {
     let insight = card
         .candidates
         .iter()
-        .find(|candidate| candidate.key == "insight")
+        .find(|candidate| candidate.name == "insight")
         .expect("应命中洞察");
     assert_eq!(insight.score, 2);
 }

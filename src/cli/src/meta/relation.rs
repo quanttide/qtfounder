@@ -66,8 +66,12 @@ pub fn run(args: &RelationArgs) -> Result<i32, String> {
     match &args.cell {
         Some(key) => {
             let cell = contract.cell(key).ok_or_else(|| {
-                let keys: Vec<&str> = contract.cell.iter().map(|cell| cell.key.as_str()).collect();
-                format!("没有这一格：{key}；可选：{}", keys.join("、"))
+                let names: Vec<&str> = contract
+                    .cell
+                    .iter()
+                    .map(|cell| cell.name.as_str())
+                    .collect();
+                format!("没有这一格：{key}；可选：{}", names.join("、"))
             })?;
             if args.json {
                 print_one_json(cell, &contract);
@@ -105,8 +109,8 @@ fn print_all(contract: &Contract) {
 }
 
 fn print_one(cell: &Cell, contract: &Contract) {
-    let edges = edges(contract, &cell.key);
-    println!("{}  {}", cell.key, cell.name);
+    let edges = edges(contract, &cell.name);
+    println!("{}  {}", cell.name, cell.label);
     println!("  迁出：");
     if edges.outgoing.is_empty() {
         println!("    （无）");
@@ -165,7 +169,7 @@ fn print_all_json(contract: &Contract) {
 }
 
 fn print_one_json(cell: &Cell, contract: &Contract) {
-    let edges = edges(contract, &cell.key);
+    let edges = edges(contract, &cell.name);
     let outgoing: Vec<serde_json::Value> = edges
         .outgoing
         .iter()
@@ -184,7 +188,7 @@ fn print_one_json(cell: &Cell, contract: &Contract) {
     println!(
         "{}",
         serde_json::to_string_pretty(&json!({
-            "cell": cell.key,
+            "cell": cell.name,
             "outgoing": outgoing,
             "incoming": incoming,
             "questions": questions,

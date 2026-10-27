@@ -12,7 +12,7 @@ use crate::meta::contract::{Cell, Contract};
 #[derive(Args, Debug)]
 pub struct ContractArgs {
     /// 只看一类资产
-    pub key: Option<String>,
+    pub name: Option<String>,
     /// 输出 JSON
     #[arg(long)]
     pub json: bool,
@@ -20,8 +20,8 @@ pub struct ContractArgs {
 
 pub fn run(args: &ContractArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
-    let cells: Vec<&Cell> = match &args.key {
-        Some(key) => vec![cell_of(&contract, key)?],
+    let cells: Vec<&Cell> = match &args.name {
+        Some(name) => vec![cell_of(&contract, name)?],
         None => contract.cell.iter().collect(),
     };
     if args.json {
@@ -32,10 +32,14 @@ pub fn run(args: &ContractArgs, rules: Option<&Path>) -> Result<i32, String> {
     Ok(0)
 }
 
-fn cell_of<'a>(contract: &'a Contract, key: &str) -> Result<&'a Cell, String> {
-    contract.cell(key).ok_or_else(|| {
-        let keys: Vec<&str> = contract.cell.iter().map(|cell| cell.key.as_str()).collect();
-        format!("没有这类资产：{key}；可选：{}", keys.join("、"))
+fn cell_of<'a>(contract: &'a Contract, name: &str) -> Result<&'a Cell, String> {
+    contract.cell(name).ok_or_else(|| {
+        let names: Vec<&str> = contract
+            .cell
+            .iter()
+            .map(|cell| cell.name.as_str())
+            .collect();
+        format!("没有这类资产：{name}；可选：{}", names.join("、"))
     })
 }
 
@@ -64,7 +68,7 @@ fn print_text(cells: &[&Cell]) {
         }
         println!(
             "{}  {}  {}  {}",
-            cell.key, cell.name, cell.path, cell.family
+            cell.name, cell.label, cell.path, cell.family
         );
         if !cell.boundary.is_empty() {
             println!("  边界：{}", cell.boundary);
@@ -102,8 +106,8 @@ fn print_json(cells: &[&Cell]) {
                 })
                 .collect();
             json!({
-                "key": cell.key,
                 "name": cell.name,
+                "label": cell.label,
                 "path": cell.path,
                 "family": cell.family,
                 "boundary": cell.boundary,
@@ -126,10 +130,10 @@ mod tests {
     fn 每类资产都有契约() {
         let contract = Contract::bundled();
         for cell in &contract.cell {
-            assert!(!cell.key.is_empty());
+            assert!(!cell.name.is_empty());
             assert!(!cell.path.is_empty());
-            assert!(!cell.boundary.is_empty(), "{} 缺边界", cell.key);
-            assert!(!cell.skeleton.trim().is_empty(), "{} 缺写法", cell.key);
+            assert!(!cell.boundary.is_empty(), "{} 缺边界", cell.name);
+            assert!(!cell.skeleton.trim().is_empty(), "{} 缺写法", cell.name);
         }
     }
 

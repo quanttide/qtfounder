@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.28] - 2026-10-27
+
+### Changed
+
+- 格不再用 `key`：机器可读标识并入 `name`，原来的中文名改用 `label`。`[[cell]]` 的字段、`meta classify` 与 `asset *` 的 JSON 键（`key` → `name`、`name` → `label`）、`asset contract <name>` 与 `asset relation <name>` 的位置参数一并改；与公理、领域、家族的名字口径一致
+
 ## [0.0.27] - 2026-10-27
 
 ### Changed

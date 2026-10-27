@@ -58,8 +58,8 @@ impl Verdict {
 
 #[derive(Debug, Clone)]
 pub struct Candidate {
-    pub key: String,
     pub name: String,
+    pub label: String,
     pub score: usize,
 }
 
@@ -145,8 +145,8 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
     let candidates: Vec<Candidate> = scored
         .iter()
         .map(|(score, _, cell)| Candidate {
-            key: cell.key.clone(),
             name: cell.name.clone(),
+            label: cell.label.clone(),
             score: *score,
         })
         .collect();
@@ -211,12 +211,12 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
             cell: None,
             grade: None,
             rule: None,
-            question: Some(contract.question(&top.key, &second.key).to_string()),
+            question: Some(contract.question(&top.name, &second.name).to_string()),
             candidates,
             reason: Some(format!(
                 "{} 与 {} 只差 {} 分，不硬猜。",
-                top.name,
-                second.name,
+                top.label,
+                second.label,
                 top_score - second_score
             )),
             axioms: cited(&contract, Verdict::Undecided, has_domain),
@@ -226,7 +226,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
     // 准入：名义上进对了格、但过不了的，往下一格走。
     let top = *top;
     let (cell, rule) = match contract.transition.iter().find(|transition| {
-        transition.from == top.key
+        transition.from == top.name
             && hits(text, &transition.require_any) > 0
             && hits(text, &transition.lack_any) == 0
     }) {
@@ -361,7 +361,7 @@ fn print_card(card: &Card, contract: &Contract) {
     match card.verdict {
         Verdict::Place | Verdict::Move => {
             if let Some(cell) = &card.cell {
-                println!("格：{}  {}", cell.name, cell.path);
+                println!("格：{}  {}", cell.label, cell.path);
                 println!("档：{}", card.grade.as_deref().unwrap_or("不分档"));
                 if let Some(rule) = &card.rule {
                     println!("凭什么：{rule}");
@@ -380,7 +380,7 @@ fn print_card(card: &Card, contract: &Contract) {
                 .candidates
                 .iter()
                 .take(3)
-                .map(|item| format!("{} {}", item.name, item.score))
+                .map(|item| format!("{} {}", item.label, item.score))
                 .collect();
             println!("待定");
             if !listed.is_empty() {
@@ -447,8 +447,8 @@ struct JsonDomain<'a> {
 
 #[derive(Serialize)]
 struct JsonCell<'a> {
-    key: &'a str,
     name: &'a str,
+    label: &'a str,
     path: &'a str,
     family: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -457,8 +457,8 @@ struct JsonCell<'a> {
 
 #[derive(Serialize)]
 struct JsonCandidate<'a> {
-    key: &'a str,
     name: &'a str,
+    label: &'a str,
     score: usize,
 }
 
@@ -470,8 +470,8 @@ fn print_json(card: &Card) -> Result<(), String> {
         reason: card.domain_reason.as_deref().unwrap_or(""),
     });
     let cell = card.cell.as_ref().map(|cell| JsonCell {
-        key: &cell.key,
         name: &cell.name,
+        label: &cell.label,
         path: &cell.path,
         family: &cell.family,
         skeleton: Some(&cell.skeleton),
@@ -488,8 +488,8 @@ fn print_json(card: &Card) -> Result<(), String> {
             .candidates
             .iter()
             .map(|candidate| JsonCandidate {
-                key: &candidate.key,
                 name: &candidate.name,
+                label: &candidate.label,
                 score: candidate.score,
             })
             .collect(),
