@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.0.35] - 2026-10-27
+
+### Added
+
+- `meta validate` 纳入 `category.md` 与 `paradigm.md`：名字、族、目录、界线、状态、来源、合成、对象与态射数逐条比，缺页也报
+- 文档新增 `docs/gallery/meta/category.md`（十八格）与 `paradigm.md`（两个范式）
+
 ## [0.0.34] - 2026-10-27
 
 ### Added

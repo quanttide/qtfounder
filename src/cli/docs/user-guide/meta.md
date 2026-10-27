@@ -256,6 +256,8 @@ qtfounder meta category insight
 
 `category` 是名词，看格有哪些、各收什么、落在哪个目录；`classify` 是动词，把一条内容放进某一格。要写法与分档看 `asset contract`。
 
+`docs/gallery/meta/category.md` 是给人看的镜像，名字、族、目录与界线都与契约逐条对，跑 `meta validate` 能查出漂移。
+
 ## 十四、validate：查漂移
 
 ```bash
@@ -269,7 +271,7 @@ qtfounder meta validate --docs docs/gallery/meta
 
 对不上时退出码 1，逐条列出：文档多写了谁、少写了谁、状态不一致、分组不一致、定义文字不一致。文档目录不在就直接报错，不猜。
 
-它只对三份镜像——`axioms.md`、`property.md` 与 `domain.md`；模型、关系两页还没纳入。改完契约或这三份文档，跑一遍再提交。
+它只对五份镜像——`axioms.md`、`property.md`、`domain.md`、`category.md` 与 `paradigm.md`；模型、关系两页还没纳入。改完契约或这五份文档，跑一遍再提交。
 
 ## 十五、paradigm：把归位写成一个范式
 
@@ -292,6 +294,8 @@ quanttide-founder  归位  确认  合成：部分  18 个对象 / 3 条态射
 `compose` 写三档：`transitive` 要求合成闭合，缺一处就退出码 1；`partial` 是条件不满足就不断言，缺了只报个数；`none` 当图看，不查。
 
 `--check` 另查一件事：两个对象互相可达。这类两个代表同在一个同构类里，按 `one-place` 该只留一个。它报的是嫌疑，不是结论。
+
+`docs/gallery/meta/paradigm.md` 是给人看的镜像，名字、状态、来源、合成与对象数都与契约逐条对。
 
 ## 十六、compare：比两个范式
 

@@ -1,6 +1,6 @@
 //! `meta validate`：查文档镜像与契约是否还对得上。
 //!
-//! 只比对，不改写。公理与领域看二级、三级标题，属性看列表项；
+//! 只比对，不改写。公理、领域与范式看标题，属性、范畴看列表项；
 //! 名字、状态、分组、定义任一处不一致都算漂移。
 
 use std::collections::BTreeMap;
@@ -35,6 +35,8 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
     problems.extend(check_axioms(&contract, &args.docs));
     problems.extend(check_properties(&contract, &args.docs));
     problems.extend(check_domains(&contract, &args.docs));
+    problems.extend(check_categories(&contract, &args.docs));
+    problems.extend(check_paradigms(&contract, &args.docs));
 
     if args.json {
         println!(
@@ -43,12 +45,14 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
                 "axioms": contract.axiom.len(),
                 "properties": contract.property.len(),
                 "domains": contract.domain.len(),
+                "categories": contract.cell.len(),
+                "paradigms": contract.paradigm.len(),
                 "problems": problems,
             }))
             .unwrap_or_else(|_| "{}".to_string())
         );
     } else if problems.is_empty() {
-        println!("对得上：公理、属性与领域都一致");
+        println!("对得上：公理、属性、领域、范畴与范式都一致");
     } else {
         println!("对不上 {} 处：", problems.len());
         for problem in &problems {
@@ -175,6 +179,302 @@ fn check_domains(contract: &Contract, docs: &Path) -> Vec<String> {
     problems
 }
 
+#[derive(Default)]
+struct CategoryEntry {
+    family: String,
+    label: String,
+    path: String,
+    description: String,
+}
+
+fn check_categories(contract: &Contract, docs: &Path) -> Vec<String> {
+    let path = docs.join("category.md");
+    let Some(text) = read(&path) else {
+        return vec![format!("读不到 {}", path.display())];
+    };
+    let doc = parse_categories(&text);
+    let mut problems = Vec::new();
+    for cell in &contract.cell {
+        match doc.get(&cell.name) {
+            None => problems.push(format!("category.md：契约里有 {}，文档没写", cell.name)),
+            Some(entry) => {
+                if entry.family != cell.family {
+                    problems.push(format!(
+                        "category.md：{} 的族不一致——文档 {}，契约 {}",
+                        cell.name, entry.family, cell.family
+                    ));
+                }
+                if entry.label != cell.label {
+                    problems.push(format!(
+                        "category.md：{} 的称呼不一致——文档 {}，契约 {}",
+                        cell.name, entry.label, cell.label
+                    ));
+                }
+                if entry.path != cell.path {
+                    problems.push(format!(
+                        "category.md：{} 的目录不一致——文档 {}，契约 {}",
+                        cell.name, entry.path, cell.path
+                    ));
+                }
+                if entry.description.trim() != cell.description.trim() {
+                    problems.push(format!(
+                        "category.md：{} 的界线不一致——文档「{}」，契约「{}」",
+                        cell.name, entry.description, cell.description
+                    ));
+                }
+            }
+        }
+    }
+    for name in doc.keys() {
+        if contract.cell(name).is_none() {
+            problems.push(format!("category.md：文档写了 {name}，契约里没有"));
+        }
+    }
+    problems
+}
+
+fn parse_categories(text: &str) -> BTreeMap<String, CategoryEntry> {
+    let mut doc = BTreeMap::new();
+    let mut family = String::new();
+    let mut current: Option<String> = None;
+    for line in text.lines() {
+        if let Some(heading) = line.strip_prefix("## ") {
+            family = heading.trim().to_string();
+            current = None;
+            continue;
+        }
+        if let Some(heading) = line.strip_prefix("### ") {
+            let name = heading.trim().to_string();
+            doc.insert(
+                name.clone(),
+                CategoryEntry {
+                    family: family.clone(),
+                    ..Default::default()
+                },
+            );
+            current = Some(name);
+            continue;
+        }
+        let Some(item) = line.strip_prefix("- ") else {
+            continue;
+        };
+        let Some(name) = current.as_ref() else {
+            continue;
+        };
+        let Some((key, value)) = item.split_once('：') else {
+            continue;
+        };
+        let Some(entry) = doc.get_mut(name) else {
+            continue;
+        };
+        match key.trim() {
+            "称呼" => entry.label = value.trim().to_string(),
+            "目录" => entry.path = value.trim().trim_matches('`').to_string(),
+            "收什么" => entry.description = value.trim().to_string(),
+            _ => {}
+        }
+    }
+    doc
+}
+
+#[derive(Default)]
+struct ParadigmEntry {
+    status: &'static str,
+    label: String,
+    source: String,
+    compose: String,
+    description: String,
+    object_count: Option<usize>,
+    objects: Option<Vec<String>>,
+    morphism_count: Option<usize>,
+    morphisms: Option<Vec<String>>,
+}
+
+fn check_paradigms(contract: &Contract, docs: &Path) -> Vec<String> {
+    let path = docs.join("paradigm.md");
+    let Some(text) = read(&path) else {
+        return vec![format!("读不到 {}", path.display())];
+    };
+    let doc = parse_paradigms(&text);
+    let mut problems = Vec::new();
+    for paradigm in &contract.paradigm {
+        let resolved = contract.resolve(paradigm);
+        let Some(entry) = doc.get(&resolved.name) else {
+            problems.push(format!("paradigm.md：契约里有 {}，文档没写", resolved.name));
+            continue;
+        };
+        let name = resolved.name.as_str();
+        if entry.status != resolved.status_key() {
+            problems.push(status_problem(
+                "paradigm.md",
+                name,
+                entry.status,
+                resolved.status_label(),
+            ));
+        }
+        if entry.label != resolved.label() {
+            problems.push(format!(
+                "paradigm.md：{name} 的称呼不一致——文档 {}，契约 {}",
+                entry.label,
+                resolved.label()
+            ));
+        }
+        if entry.source != resolved.source {
+            problems.push(format!(
+                "paradigm.md：{name} 的来源不一致——文档 {}，契约 {}",
+                entry.source, resolved.source
+            ));
+        }
+        if entry.compose != resolved.compose_label() {
+            problems.push(format!(
+                "paradigm.md：{name} 的合成不一致——文档 {}，契约 {}",
+                entry.compose,
+                resolved.compose_label()
+            ));
+        }
+        if entry.description.trim() != resolved.description.trim() {
+            problems.push(format!(
+                "paradigm.md：{name} 的描述不一致——文档「{}」，契约「{}」",
+                entry.description, resolved.description
+            ));
+        }
+        let object_names: Vec<String> = resolved
+            .objects
+            .iter()
+            .map(|object| object.name.clone())
+            .collect();
+        if let Some(count) = entry.object_count {
+            if count != object_names.len() {
+                problems.push(format!(
+                    "paradigm.md：{name} 的对象数不一致——文档 {count}，契约 {}",
+                    object_names.len()
+                ));
+            }
+        }
+        if let Some(names) = &entry.objects {
+            if names != &object_names {
+                problems.push(format!("paradigm.md：{name} 的对象名单不一致"));
+            }
+        }
+        let edges: Vec<String> = resolved
+            .morphisms
+            .iter()
+            .map(|morphism| format!("{} → {}", morphism.from, morphism.to))
+            .collect();
+        if let Some(count) = entry.morphism_count {
+            if count != edges.len() {
+                problems.push(format!(
+                    "paradigm.md：{name} 的态射数不一致——文档 {count}，契约 {}",
+                    edges.len()
+                ));
+            }
+        }
+        if let Some(listed) = &entry.morphisms {
+            if listed != &edges {
+                problems.push(format!("paradigm.md：{name} 的态射名单不一致"));
+            }
+        }
+    }
+    for name in doc.keys() {
+        if contract.paradigm_of(name).is_none() {
+            problems.push(format!("paradigm.md：文档写了 {name}，契约里没有"));
+        }
+    }
+    problems
+}
+
+fn parse_paradigms(text: &str) -> BTreeMap<String, ParadigmEntry> {
+    let mut doc = BTreeMap::new();
+    let mut current: Option<String> = None;
+    for line in text.lines() {
+        if let Some(heading) = line.strip_prefix("## ") {
+            match marked(heading.trim()) {
+                Some((name, key)) => {
+                    doc.insert(
+                        name.clone(),
+                        ParadigmEntry {
+                            status: key,
+                            ..Default::default()
+                        },
+                    );
+                    current = Some(name);
+                }
+                None => current = None,
+            }
+            continue;
+        }
+        if line.starts_with("### ") {
+            current = None;
+            continue;
+        }
+        let Some(item) = line.strip_prefix("- ") else {
+            continue;
+        };
+        let Some(name) = current.as_ref() else {
+            continue;
+        };
+        let Some((raw_key, value)) = item.split_once('：') else {
+            continue;
+        };
+        let value = value.trim();
+        let (key, count) = split_count(raw_key.trim());
+        let Some(entry) = doc.get_mut(name) else {
+            continue;
+        };
+        match key {
+            "称呼" => entry.label = value.to_string(),
+            "来源" => entry.source = value.to_string(),
+            "合成" => entry.compose = value.to_string(),
+            "描述" => entry.description = value.to_string(),
+            "对象" => {
+                entry.object_count = count;
+                entry.objects = if value.starts_with("见 ") {
+                    None
+                } else {
+                    Some(list(value, '、'))
+                };
+            }
+            "态射" => {
+                entry.morphism_count = count;
+                entry.morphisms = if value.contains('→') {
+                    Some(edges(value))
+                } else {
+                    None
+                };
+            }
+            _ => {}
+        }
+    }
+    doc
+}
+
+/// `对象（18）` → («对象», 18)。
+fn split_count(key: &str) -> (&str, Option<usize>) {
+    match key.split_once('（') {
+        Some((name, rest)) => (name.trim(), rest.trim_end_matches('）').trim().parse().ok()),
+        None => (key, None),
+    }
+}
+
+fn list(value: &str, separator: char) -> Vec<String> {
+    value
+        .split(separator)
+        .map(|item| item.trim().to_string())
+        .filter(|item| !item.is_empty())
+        .collect()
+}
+
+/// `a → b；c → d` → [«a → b», «c → d»]。
+fn edges(value: &str) -> Vec<String> {
+    list(value, '；')
+        .into_iter()
+        .map(|edge| match edge.split_once('→') {
+            Some((from, to)) => format!("{} → {}", from.trim(), to.trim()),
+            None => edge,
+        })
+        .collect()
+}
+
 /// 取带标记的标题：`### name（确认）`。
 fn headings(text: &str, prefix: &str) -> BTreeMap<String, &'static str> {
     let mut found = BTreeMap::new();
@@ -259,6 +559,35 @@ mod tests {
                 "confirmed",
                 "全局唯一键，用 uuid；改名不动它，引用认它。".to_string()
             ))
+        );
+    }
+
+    #[test]
+    fn 范畴字段能拆出来() {
+        let doc = parse_categories(
+            "## 陈述型\n\n### insight\n\n- 称呼：Insight 洞察\n- 目录：`data/insight/`\n- 收什么：一句话能被推翻。\n",
+        );
+        let entry = doc.get("insight").unwrap();
+        assert_eq!(entry.family, "陈述型");
+        assert_eq!(entry.label, "Insight 洞察");
+        assert_eq!(entry.path, "data/insight/");
+        assert_eq!(entry.description, "一句话能被推翻。");
+    }
+
+    #[test]
+    fn 范式计数与名单能拆出来() {
+        let doc =
+            parse_paradigms("## aristotle（确认）\n\n- 对象（2）：a、b\n- 态射（1）：a → b\n");
+        let entry = doc.get("aristotle").unwrap();
+        assert_eq!(entry.status, "confirmed");
+        assert_eq!(entry.object_count, Some(2));
+        assert_eq!(
+            entry.objects.as_ref().unwrap(),
+            &vec!["a".to_string(), "b".to_string()]
+        );
+        assert_eq!(
+            entry.morphisms.as_ref().unwrap(),
+            &vec!["a → b".to_string()]
         );
     }
 
