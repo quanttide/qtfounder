@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.0.31] - 2026-10-27
+
+### Added
+
+- `meta property`：看标准属性——字段名、所属组与定义，组内确认的排前；十九条定义进契约的 `[[property]]`
+- `meta category`：看十八格各收什么，按族分组；与动词 `classify` 一静一动
+- `meta validate`：查 `axioms.md`、`property.md` 与契约是否还对得上——名字、状态、分组、定义任一处不一致就报，对不上时退出码 1
+
 ## [0.0.30] - 2026-10-27
 
 ### Changed

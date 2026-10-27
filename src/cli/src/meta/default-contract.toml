@@ -491,3 +491,120 @@ name = "template-scope"
 description = "有固定结构才有模板；结构随内容走的不设固定写法。手册、规格与按日期落的日志结构固定，可以有模板。"
 why = "结构不固定还套模板，等于让模板替作者删内容。"
 status = "confirmed"
+
+# ---------------- 标准属性 ----------------
+# 字段名、所属组与定义。`meta property` 读这里，`meta validate` 拿它跟 property.md 对。
+
+[[property]]
+name = "id"
+group = "标识"
+description = "全局唯一键，用 uuid；改名不动它，引用认它。"
+status = "confirmed"
+
+[[property]]
+name = "name"
+group = "标识"
+description = "机器可读标识，小写、连字符、英文；同一类里不重复，格、家族、公理都用它。"
+status = "confirmed"
+
+[[property]]
+name = "label"
+group = "标识"
+description = "给人看的称呼，可中文、可改，不进引用。"
+status = "confirmed"
+
+[[property]]
+name = "title"
+group = "标识"
+description = "标题，写在正文第一行；日志的标题就是日期。"
+status = "confirmed"
+
+[[property]]
+name = "category"
+group = "分类"
+description = "用户自定义的类别，谁用谁定，可增可删。"
+status = "confirmed"
+
+[[property]]
+name = "type"
+group = "分类"
+description = "系统定义的类型，由本体写定，用户不改；格用 `family` 承载它，取值陈述型或程序型。"
+status = "confirmed"
+
+[[property]]
+name = "path"
+group = "位置"
+description = "存在哪，写到目录或文件。"
+status = "confirmed"
+
+[[property]]
+name = "status"
+group = "状态"
+description = "可信到什么程度，公理写 confirmed 或 suspected。"
+status = "confirmed"
+
+[[property]]
+name = "description"
+group = "内容"
+description = "一段话说清它是什么，管到哪，收什么不收什么。"
+status = "confirmed"
+
+[[property]]
+name = "skeleton"
+group = "内容"
+description = "通常要交代的内容，不排顺序。"
+status = "suspected"
+
+[[property]]
+name = "cues"
+group = "内容"
+description = "用来认出它的词。"
+status = "suspected"
+
+[[property]]
+name = "why"
+group = "内容"
+description = "当初为什么这么定，写代价，不写好处。"
+status = "suspected"
+
+[[property]]
+name = "from"
+group = "关系"
+description = "起点。"
+status = "suspected"
+
+[[property]]
+name = "to"
+group = "关系"
+description = "终点。"
+status = "suspected"
+
+[[property]]
+name = "pair"
+group = "关系"
+description = "成对出现的两个对象。"
+status = "suspected"
+
+[[property]]
+name = "ask"
+group = "关系"
+description = "把 pair 分开问的那一句。"
+status = "suspected"
+
+[[property]]
+name = "require_any"
+group = "关系"
+description = "出现其中任意一个才连上。"
+status = "suspected"
+
+[[property]]
+name = "lack_any"
+group = "关系"
+description = "出现其中任意一个就不连。"
+status = "suspected"
+
+[[property]]
+name = "reason"
+group = "关系"
+description = "这条关系成立的理由。"
+status = "suspected"

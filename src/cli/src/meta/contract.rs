@@ -35,6 +35,8 @@ pub struct Contract {
     pub model: Model,
     #[serde(default)]
     pub axiom: Vec<Axiom>,
+    #[serde(default)]
+    pub property: Vec<Property>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -178,19 +180,50 @@ pub struct Axiom {
 
 impl Axiom {
     pub fn status_key(&self) -> &'static str {
-        if self.status.trim() == "confirmed" {
-            "confirmed"
-        } else {
-            "suspected"
-        }
+        status_key(&self.status)
     }
 
     pub fn status_label(&self) -> &'static str {
-        if self.status_key() == "confirmed" {
-            "确认"
-        } else {
-            "怀疑"
-        }
+        status_label(&self.status)
+    }
+}
+
+/// 标准属性：字段名、所属组与定义。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Property {
+    pub name: String,
+    #[serde(default)]
+    pub group: String,
+    pub description: String,
+    /// `confirmed` 或 `suspected`，缺省按怀疑算。
+    #[serde(default)]
+    pub status: String,
+}
+
+impl Property {
+    pub fn status_key(&self) -> &'static str {
+        status_key(&self.status)
+    }
+
+    pub fn status_label(&self) -> &'static str {
+        status_label(&self.status)
+    }
+}
+
+/// 确认状态归一：只认 `confirmed`，其余都当怀疑。
+pub fn status_key(raw: &str) -> &'static str {
+    if raw.trim() == "confirmed" {
+        "confirmed"
+    } else {
+        "suspected"
+    }
+}
+
+pub fn status_label(raw: &str) -> &'static str {
+    if status_key(raw) == "confirmed" {
+        "确认"
+    } else {
+        "怀疑"
     }
 }
 
@@ -288,6 +321,31 @@ impl Contract {
                 return Err(format!(
                     "契约 {origin} 的公理 status 只能写 confirmed 或 suspected：{}",
                     axiom.name
+                ));
+            }
+        }
+        let mut property_names = HashSet::new();
+        for property in &contract.property {
+            if property.name.trim().is_empty() {
+                return Err(format!("契约 {origin} 的属性缺 name"));
+            }
+            if !property_names.insert(property.name.as_str()) {
+                return Err(format!("契约 {origin} 的属性 name 重复：{}", property.name));
+            }
+            if property.group.trim().is_empty() {
+                return Err(format!("契约 {origin} 的属性没有 group：{}", property.name));
+            }
+            if property.description.trim().is_empty() {
+                return Err(format!(
+                    "契约 {origin} 的属性没有 description：{}",
+                    property.name
+                ));
+            }
+            let status = property.status.trim();
+            if !status.is_empty() && status != "confirmed" && status != "suspected" {
+                return Err(format!(
+                    "契约 {origin} 的属性 status 只能写 confirmed 或 suspected：{}",
+                    property.name
                 ));
             }
         }

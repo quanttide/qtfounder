@@ -4,16 +4,19 @@
 
 `classify` 一次判一条线索：给一段内容，出一张落位卡。卡上四行——域、格、档、写法——加一个结论：收，还是收不了。
 
-## 四部分
+## 七条命令
 
-`meta` 下四块各有命令，先看模型与公理，再判范畴，卡住了再看关系：
+名词读本体，动词分两种：`classify` 把内容放进格，`validate` 看有没有漂。
 
 | 部分 | 命令 | 看什么 |
 |---|---|---|
 | 模型 | `meta model` | 两族九宫格的轴与格 |
 | 关系 | `meta relation` | 一格的迁出、迁入与分辨句 |
 | 公理 | `meta axiom` | 归位时不重新论证的前提 |
-| 范畴 | `meta classify` | 把一条内容放进十八格 |
+| 属性 | `meta property` | 标准属性的字段名、组与定义 |
+| 范畴 | `meta category` | 十八格各收什么 |
+| 范畴（动词） | `meta classify` | 给一条内容一张落位卡 |
+| 验证（动词） | `meta validate` | 文档镜像与契约是否还对得上 |
 
 ## 一、四步，顺序不能换
 
@@ -191,3 +194,56 @@ domain-before-cell  怀疑  先定域，再定格，再过准入，最后给写�
 - 不收：`no-fit`
 
 点名只点契约里还在的：把一条 `[[axiom]]` 删了，卡上就不会再出现它——沉默比报错早一步暴露改动。反过来，契约里加了新公理，卡也不会自动引用，要在 `classify` 的 `cited` 里写上它管哪一步。
+
+## 十一、property：标准属性
+
+```bash
+qtfounder meta property
+qtfounder meta property name
+qtfounder meta property --json
+```
+
+```text
+标识属性
+  id  确认  全局唯一键，用 uuid；改名不动它，引用认它。
+  name  确认  机器可读标识，小写、连字符、英文；同一类里不重复，格、家族、公理都用它。
+...
+```
+
+属性定义写在契约的 `[[property]]` 里，`docs/gallery/meta/property.md` 是给人看的镜像。组内确认的排前面，没写 `status` 的按怀疑算。
+
+用途：
+
+- 加字段前先看这个名字有没有：有就照它的意思用，不另起一个。
+- 契约里 name 重复、缺 group、缺 description、status 写了别的值，读契约时就报。
+
+## 十二、category：十八格
+
+```bash
+qtfounder meta category
+qtfounder meta category insight
+```
+
+```text
+陈述型
+  report  Report 报告  data/report/
+    这一轮已经结束，收的是履行完毕的契约。
+...
+```
+
+`category` 是名词，看格有哪些、各收什么、落在哪个目录；`classify` 是动词，把一条内容放进某一格。要写法与分档看 `asset contract`。
+
+## 十三、validate：查漂移
+
+```bash
+qtfounder meta validate
+qtfounder meta validate --docs docs/gallery/meta
+```
+
+```text
+对得上：公理与属性都一致
+```
+
+对不上时退出码 1，逐条列出：文档多写了谁、少写了谁、状态不一致、分组不一致、定义文字不一致。文档目录不在就直接报错，不猜。
+
+它只对两份镜像——`axioms.md` 与 `property.md`；模型、关系两页还没纳入。改完契约或这两份文档，跑一遍再提交。

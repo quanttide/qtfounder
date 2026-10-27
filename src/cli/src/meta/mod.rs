@@ -1,16 +1,19 @@
 //! `qtfounder meta`：归位这一侧。
 //!
-//! 四部分：`model` 看本体（两族九宫格的轴），`relation` 看关系（迁移与分辨句），
-//! `axiom` 看公理（归位时不重新论证的前提），`classify` 看范畴（把一条内容放进十八格）。
-//! 十八格的目录、领域线索、降格规则与分辨句都在 `default-contract.toml` 里，判定层只读它。
+//! 名词读本体：`model` 看轴与族、`relation` 看边、`axiom` 看前提、`property` 看字段、
+//! `category` 看格。动词干两件事：`classify` 把一条内容放进某一格，`validate` 查文档与契约
+//! 是否还对得上。十八格的目录、领域线索、降格规则与分辨句都在 `default-contract.toml` 里。
 //!
 //! 只判定，不改写、不落盘、不搬文件：跨域搬迁按 `meta-classify` 执行。
 
 pub mod axiom;
+pub mod category;
 pub mod classify;
 pub mod contract;
 pub mod model;
+pub mod property;
 pub mod relation;
+pub mod validate;
 
 #[cfg(test)]
 mod tests;
@@ -18,9 +21,12 @@ mod tests;
 use clap::Subcommand;
 
 use axiom::AxiomArgs;
+use category::CategoryArgs;
 use classify::ClassifyArgs;
 use model::ModelArgs;
+use property::PropertyArgs;
 use relation::RelationArgs;
+use validate::ValidateArgs;
 
 /// `meta` 下的子命令。
 #[derive(Subcommand, Debug)]
@@ -31,8 +37,14 @@ pub enum MetaCommand {
     Relation(RelationArgs),
     /// 公理：看归位时不重新论证的前提
     Axiom(AxiomArgs),
-    /// 范畴：给一段内容一张落位卡（域、格、档、写法）
+    /// 属性：看标准属性——字段名、所属组与定义
+    Property(PropertyArgs),
+    /// 范畴：看十八格各收什么
+    Category(CategoryArgs),
+    /// 范畴（动词）：给一段内容一张落位卡
     Classify(ClassifyArgs),
+    /// 验证：查文档镜像与契约是否还对得上
+    Validate(ValidateArgs),
 }
 
 /// 归位侧入口。
@@ -47,6 +59,9 @@ pub fn run(args: &MetaArgs) -> Result<i32, String> {
         MetaCommand::Model(model) => model::run(model),
         MetaCommand::Relation(relation) => relation::run(relation),
         MetaCommand::Axiom(axiom) => axiom::run(axiom),
+        MetaCommand::Property(property) => property::run(property),
+        MetaCommand::Category(category) => category::run(category),
         MetaCommand::Classify(classify) => classify::run(classify),
+        MetaCommand::Validate(validate) => validate::run(validate),
     }
 }
