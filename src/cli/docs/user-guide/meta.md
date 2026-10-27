@@ -175,7 +175,7 @@ domain-before-cell  先定域，再定格，再过准入，最后给写法。
 
 - 判一条内容前，先看哪些前提不再论证，省得每次重新讨论。
 - 迁移或归档前，`target-then-source` 与 `archive-vs-transfer` 是操作边界。
-- 写模板前，`template-scope` 说明模板只归 `docs/` 下的手册与规格，陈述型不设固定写法。
+- 写模板前，`template-scope` 说明有固定结构才有模板：手册、规格与按日期落的日志可以有，结构随内容走的不设固定写法。
 
 公理在契约里是 `[[axiom]]`，每条写清 id、statement 与 why。id 为空、statement 为空、why 为空、id 重复，都会在读契约时被拦下：只有结论的公理是口号，记不住当初的失败，后来的人就无从判断它还算不算前提。
 
