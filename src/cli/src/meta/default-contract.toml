@@ -614,3 +614,109 @@ name = "reason"
 group = "关系"
 description = "这条关系成立的理由。"
 status = "suspected"
+
+# ---------------- 范式 ----------------
+# 一个范式就是一个范畴：对象、态射、合成律。归位本身是其中之一，对象取格、态射取降格；
+# 别的范式只用于对比与吸收，不参与判域、判格。
+# compose 写 transitive（合成必须闭合）、partial（条件不满足就不断言）或 none（只当图看）。
+
+[[paradigm]]
+name = "quanttide-founder"
+label = "归位"
+description = "十八格按时间乘类型、约束力乘消费对象张开；降格是有条件的有向边。"
+status = "confirmed"
+source = "cells"
+compose = "partial"
+
+[[paradigm]]
+name = "aristotle"
+label = "亚里士多德十范畴"
+description = "实体作主词，其余九样作谓词依附在实体上；偶性之间不互相迁移。"
+status = "confirmed"
+compose = "transitive"
+
+[[paradigm.object]]
+name = "substance"
+label = "实体"
+description = "主词本身，不依附别的东西。"
+
+[[paradigm.object]]
+name = "quantity"
+label = "数量"
+
+[[paradigm.object]]
+name = "quality"
+label = "性质"
+
+[[paradigm.object]]
+name = "relation"
+label = "关系"
+
+[[paradigm.object]]
+name = "place"
+label = "地点"
+
+[[paradigm.object]]
+name = "time"
+label = "时间"
+
+[[paradigm.object]]
+name = "position"
+label = "姿态"
+
+[[paradigm.object]]
+name = "possession"
+label = "拥有"
+
+[[paradigm.object]]
+name = "action"
+label = "动作"
+
+[[paradigm.object]]
+name = "passion"
+label = "承受"
+
+[[paradigm.morphism]]
+from = "quantity"
+to = "substance"
+reason = "依附实体。"
+
+[[paradigm.morphism]]
+from = "quality"
+to = "substance"
+reason = "依附实体。"
+
+[[paradigm.morphism]]
+from = "relation"
+to = "substance"
+reason = "依附实体。"
+
+[[paradigm.morphism]]
+from = "place"
+to = "substance"
+reason = "依附实体。"
+
+[[paradigm.morphism]]
+from = "time"
+to = "substance"
+reason = "依附实体。"
+
+[[paradigm.morphism]]
+from = "position"
+to = "substance"
+reason = "依附实体。"
+
+[[paradigm.morphism]]
+from = "possession"
+to = "substance"
+reason = "依附实体。"
+
+[[paradigm.morphism]]
+from = "action"
+to = "substance"
+reason = "依附实体。"
+
+[[paradigm.morphism]]
+from = "passion"
+to = "substance"
+reason = "依附实体。"

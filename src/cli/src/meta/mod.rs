@@ -1,18 +1,22 @@
 //! `qtfounder meta`：归位这一侧。
 //!
 //! 名词读本体：`model` 看轴与族、`relation` 看边、`axiom` 看前提、`property` 看字段、
-//! `category` 看格、`domain` 看搬出去的去处。动词干两件事：`classify` 把一条内容放进某一格，
-//! `validate` 查文档与契约是否还对得上。十八格的目录、领域线索、降格规则与分辨句都在
+//! `category` 看格、`domain` 看搬出去的去处。动词干三件事：`classify` 把一条内容放进某一格，
+//! `validate` 查文档与契约是否还对得上，`compare` 比两个范式。
+//! `paradigm` 把归位写成一个范式（对象、态射、合成律）：归位本身是其中之一，别的范式
+//! 放在同一张单上，只为对比与吸收。十八格的目录、领域线索、降格规则与分辨句都在
 //! `default-contract.toml` 里。
 //!
-//! 只判定，不改写、不落盘、不搬文件：跨域搬迁按 `meta-classify` 执行。
+//! 只判断，不改写、不落盘、不搬文件：跨域搬迁按 `meta-classify` 执行。
 
 pub mod axiom;
 pub mod category;
 pub mod classify;
+pub mod compare;
 pub mod contract;
 pub mod domain;
 pub mod model;
+pub mod paradigm;
 pub mod property;
 pub mod relation;
 pub mod validate;
@@ -25,8 +29,10 @@ use clap::Subcommand;
 use axiom::AxiomArgs;
 use category::CategoryArgs;
 use classify::ClassifyArgs;
+use compare::CompareArgs;
 use domain::DomainArgs;
 use model::ModelArgs;
+use paradigm::ParadigmArgs;
 use property::PropertyArgs;
 use relation::RelationArgs;
 use validate::ValidateArgs;
@@ -46,8 +52,12 @@ pub enum MetaCommand {
     Category(CategoryArgs),
     /// 领域：看内容搬出本仓的去处
     Domain(DomainArgs),
+    /// 范式：看每个范式的对象、态射与合成律
+    Paradigm(ParadigmArgs),
     /// 范畴（动词）：给一段内容一张落位卡
     Classify(ClassifyArgs),
+    /// 对比（动词）：比两个范式的对象、态射与形状
+    Compare(CompareArgs),
     /// 验证：查文档镜像与契约是否还对得上
     Validate(ValidateArgs),
 }
@@ -67,7 +77,9 @@ pub fn run(args: &MetaArgs) -> Result<i32, String> {
         MetaCommand::Property(property) => property::run(property),
         MetaCommand::Category(category) => category::run(category),
         MetaCommand::Domain(domain) => domain::run(domain),
+        MetaCommand::Paradigm(paradigm) => paradigm::run(paradigm),
         MetaCommand::Classify(classify) => classify::run(classify),
+        MetaCommand::Compare(compare) => compare::run(compare),
         MetaCommand::Validate(validate) => validate::run(validate),
     }
 }

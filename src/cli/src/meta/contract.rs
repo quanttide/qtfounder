@@ -37,6 +37,8 @@ pub struct Contract {
     pub axiom: Vec<Axiom>,
     #[serde(default)]
     pub property: Vec<Property>,
+    #[serde(default)]
+    pub paradigm: Vec<Paradigm>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -221,6 +223,97 @@ impl Property {
     }
 }
 
+/// 范式：一个有名字的范畴描述。对象、态射、合成律三样，归位本身是其中之一。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Paradigm {
+    pub name: String,
+    #[serde(default)]
+    pub label: String,
+    #[serde(default)]
+    pub description: String,
+    /// `confirmed` 或 `suspected`，缺省按怀疑算。
+    #[serde(default)]
+    pub status: String,
+    /// `cells` 表示对象取 `[[cell]]`、态射取 `[[transition]]`；其余按 inline 读。
+    #[serde(default)]
+    pub source: String,
+    /// `transitive`、`partial` 或 `none`，缺省 partial。
+    #[serde(default)]
+    pub compose: String,
+    #[serde(default)]
+    pub object: Vec<ParadigmObject>,
+    #[serde(default)]
+    pub morphism: Vec<ParadigmMorphism>,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct ParadigmObject {
+    pub name: String,
+    #[serde(default)]
+    pub label: String,
+    #[serde(default)]
+    pub description: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct ParadigmMorphism {
+    pub from: String,
+    pub to: String,
+    #[serde(default)]
+    pub reason: String,
+}
+
+/// 解析后的范式：对象与态射都已展开成同一形状，调用方不必再管 source。
+#[derive(Debug, Clone, Default)]
+pub struct ResolvedParadigm {
+    pub name: String,
+    pub label: String,
+    pub description: String,
+    pub status: String,
+    pub source: String,
+    pub compose: String,
+    pub objects: Vec<ParadigmObject>,
+    pub morphisms: Vec<ParadigmMorphism>,
+}
+
+impl ResolvedParadigm {
+    pub fn label(&self) -> &str {
+        if self.label.is_empty() {
+            &self.name
+        } else {
+            &self.label
+        }
+    }
+
+    pub fn status_key(&self) -> &'static str {
+        status_key(&self.status)
+    }
+
+    pub fn status_label(&self) -> &'static str {
+        status_label(&self.status)
+    }
+
+    pub fn compose_key(&self) -> &'static str {
+        match self.compose.trim() {
+            "transitive" => "transitive",
+            "none" => "none",
+            _ => "partial",
+        }
+    }
+
+    pub fn compose_label(&self) -> &'static str {
+        match self.compose_key() {
+            "transitive" => "传递",
+            "none" => "不要求",
+            _ => "部分",
+        }
+    }
+
+    pub fn object(&self, name: &str) -> Option<&ParadigmObject> {
+        self.objects.iter().find(|object| object.name == name)
+    }
+}
+
 /// 确认状态归一：只认 `confirmed`，其余都当怀疑。
 pub fn status_key(raw: &str) -> &'static str {
     if raw.trim() == "confirmed" {
@@ -376,6 +469,69 @@ impl Contract {
                 ));
             }
         }
+        let mut paradigm_names = HashSet::new();
+        for paradigm in &contract.paradigm {
+            if paradigm.name.trim().is_empty() {
+                return Err(format!("契约 {origin} 的范式缺 name"));
+            }
+            if !paradigm_names.insert(paradigm.name.as_str()) {
+                return Err(format!("契约 {origin} 的范式 name 重复：{}", paradigm.name));
+            }
+            let status = paradigm.status.trim();
+            if !status.is_empty() && status != "confirmed" && status != "suspected" {
+                return Err(format!(
+                    "契约 {origin} 的范式 status 只能写 confirmed 或 suspected：{}",
+                    paradigm.name
+                ));
+            }
+            let source = paradigm.source.trim();
+            if !source.is_empty() && source != "cells" && source != "inline" {
+                return Err(format!(
+                    "契约 {origin} 的范式 source 只能写 cells 或 inline：{}",
+                    paradigm.name
+                ));
+            }
+            let compose = paradigm.compose.trim();
+            if !compose.is_empty()
+                && compose != "transitive"
+                && compose != "partial"
+                && compose != "none"
+            {
+                return Err(format!(
+                    "契约 {origin} 的范式 compose 只能写 transitive、partial 或 none：{}",
+                    paradigm.name
+                ));
+            }
+            let resolved = contract.resolve(paradigm);
+            if resolved.objects.is_empty() {
+                return Err(format!("契约 {origin} 的范式没有对象：{}", paradigm.name));
+            }
+            let mut object_names = HashSet::new();
+            for object in &resolved.objects {
+                if object.name.trim().is_empty() {
+                    return Err(format!(
+                        "契约 {origin} 的范式 {} 有对象缺 name",
+                        paradigm.name
+                    ));
+                }
+                if !object_names.insert(object.name.as_str()) {
+                    return Err(format!(
+                        "契约 {origin} 的范式 {} 的对象 name 重复：{}",
+                        paradigm.name, object.name
+                    ));
+                }
+            }
+            for morphism in &resolved.morphisms {
+                for end in [&morphism.from, &morphism.to] {
+                    if !object_names.contains(end.as_str()) {
+                        return Err(format!(
+                            "契约 {origin} 的范式 {} 的态射指向不存在的对象：{}",
+                            paradigm.name, end
+                        ));
+                    }
+                }
+            }
+        }
         if bundled && contract.domain.is_empty() {
             return Err(format!(
                 "契约 {origin} 没有领域：至少写清留在这里之外的去处"
@@ -386,6 +542,53 @@ impl Contract {
 
     pub fn cell(&self, name: &str) -> Option<&Cell> {
         self.cell.iter().find(|cell| cell.name == name)
+    }
+
+    pub fn paradigm_of(&self, name: &str) -> Option<&Paradigm> {
+        self.paradigm.iter().find(|paradigm| paradigm.name == name)
+    }
+
+    /// 把范式展开成对象与态射：`source = "cells"` 时取格与降格，否则取 inline。
+    pub fn resolve(&self, paradigm: &Paradigm) -> ResolvedParadigm {
+        let cells = paradigm.source.trim() == "cells";
+        let objects = if cells {
+            self.cell
+                .iter()
+                .map(|cell| ParadigmObject {
+                    name: cell.name.clone(),
+                    label: cell.label.clone(),
+                    description: cell.description.clone(),
+                })
+                .collect()
+        } else {
+            paradigm.object.clone()
+        };
+        let morphisms = if cells {
+            self.transition
+                .iter()
+                .map(|transition| ParadigmMorphism {
+                    from: transition.from.clone(),
+                    to: transition.to.clone(),
+                    reason: transition.reason.clone(),
+                })
+                .collect()
+        } else {
+            paradigm.morphism.clone()
+        };
+        ResolvedParadigm {
+            name: paradigm.name.clone(),
+            label: paradigm.label.clone(),
+            description: paradigm.description.clone(),
+            status: paradigm.status.clone(),
+            source: if cells {
+                "cells".to_string()
+            } else {
+                "inline".to_string()
+            },
+            compose: paradigm.compose.clone(),
+            objects,
+            morphisms,
+        }
     }
 
     pub fn question(&self, first: &str, second: &str) -> &str {

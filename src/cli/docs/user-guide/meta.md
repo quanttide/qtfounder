@@ -4,9 +4,9 @@
 
 `classify` 一次判一条线索：给一段内容，出一张落位卡。卡上四行——域、格、档、写法——加一个结论：收，还是收不了。
 
-## 八条命令
+## 十条命令
 
-名词读本体，动词分两种：`classify` 把内容放进格，`validate` 看有没有漂。
+名词读本体，动词分三种：`classify` 把内容放进格，`validate` 看有没有漂，`compare` 比两个范式。
 
 | 部分 | 命令 | 看什么 |
 |---|---|---|
@@ -16,8 +16,10 @@
 | 属性 | `meta property` | 标准属性的字段名、组与定义 |
 | 范畴 | `meta category` | 十八格各收什么 |
 | 领域 | `meta domain` | 内容搬出本仓的去处 |
+| 范式 | `meta paradigm` | 每个范式的对象、态射与合成律 |
 | 范畴（动词） | `meta classify` | 给一条内容一张落位卡 |
 | 验证（动词） | `meta validate` | 文档镜像与契约是否还对得上 |
+| 对比（动词） | `meta compare` | 两个范式对上了什么、各自独有什么 |
 
 ## 一、四步，顺序不能换
 
@@ -268,3 +270,54 @@ qtfounder meta validate --docs docs/gallery/meta
 对不上时退出码 1，逐条列出：文档多写了谁、少写了谁、状态不一致、分组不一致、定义文字不一致。文档目录不在就直接报错，不猜。
 
 它只对三份镜像——`axioms.md`、`property.md` 与 `domain.md`；模型、关系两页还没纳入。改完契约或这三份文档，跑一遍再提交。
+
+## 十五、paradigm：把归位写成一个范式
+
+```bash
+qtfounder meta paradigm            # 有哪些范式，各自的点与边
+qtfounder meta paradigm aristotle  # 只看一个
+qtfounder meta paradigm --check    # 查合成断没断、有没有互相可达
+```
+
+```text
+quanttide-founder  归位  确认  合成：部分  18 个对象 / 3 条态射
+  insight  Insight 洞察  出 1 入 0
+  ...
+  态射：
+    insight → essay  推不翻也改不了做法，适合进论文，不进洞察。
+```
+
+一个范式就是一个范畴的写法：对象、态射、合成律。归位本身是其中一个，契约里写 `source = "cells"`，对象直接取 `[[cell]]`、态射取 `[[transition]]`，不另存一份。别的一并挂在 `[[paradigm]]` 下，只用于对比与吸收，不参与判域判格。
+
+`compose` 写三档：`transitive` 要求合成闭合，缺一处就退出码 1；`partial` 是条件不满足就不断言，缺了只报个数；`none` 当图看，不查。
+
+`--check` 另查一件事：两个对象互相可达。这类两个代表同在一个同构类里，按 `one-place` 该只留一个。它报的是嫌疑，不是结论。
+
+## 十六、compare：比两个范式
+
+```bash
+qtfounder meta compare quanttide-founder aristotle
+qtfounder meta compare quanttide-founder aristotle --json
+```
+
+```text
+归位  ↔  亚里士多德十范畴
+
+  形状    对象 18 ↔ 10；态射 3 ↔ 9；最长链 1 ↔ 1
+  合成    部分（缺 0） ↔ 传递（缺 0）
+
+  同名：无
+  同称呼：无
+  只在左边 18 个：report、library、...
+  只在右边 10 个：substance、quantity、...
+
+  可吸收（右边独有，名字与称呼都没对上）：
+    substance  实体
+      主词本身，不依附别的东西。
+```
+
+对上的条件只有两条：name 相同，或 label 相同。两条都不算同构，只算线索——是不是同一个东西，仍要人看。
+
+可吸收清单是候选，不是建议。它只说明「对方有我这边没有对上的」，加不加、怎么加，看它能不能落进本边的轴：落得进就加；落不进，说明两边不是同一个范式，记下差异就够。
+
+形状那一行是跨范式真正能对上的部分：点数、边数、最长链、合成是否闭合。名字对不上时，先看形状——一个只有星形边、一个没有边，说明两张表的用法本来就不同。
