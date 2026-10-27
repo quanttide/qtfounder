@@ -39,7 +39,7 @@ enum CliCommand {
     Write(write::WriteArgs),
     /// 认知：负载看消耗落点、reflect 记一条、model 看模型
     Think(think::ThinkArgs),
-    /// 归位：判一段内容该进哪一格、要不要跨域
+    /// 归位：模型、关系、公理与范畴
     Meta(meta::MetaArgs),
     /// 资产：看契约、清单与关系
     Asset(asset::AssetArgs),

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.0.22] - 2026-10-27
+
+### Added
+
+- `qtfounder meta model`：看两族九宫格的轴与格，以及登记过的领域
+- `qtfounder meta axiom`：看归位时不重新论证的前提；契约新增 `[model]` 与 `[[axiom]]`，模型家族与 `family` 对不上、公理 id 重复或缺 `why` 都会在读契约时拦下
+
 ## [0.0.21] - 2026-10-27
 
 ### Changed

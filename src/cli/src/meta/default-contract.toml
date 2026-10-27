@@ -404,3 +404,81 @@ ask = "这条要人签字放行才生效吗？是章程，不是规格。"
 [[question]]
 pair = ["specification", "essay"]
 ask = "概念定义稳定、阈值有数据吗？都有进规格，否则进论文。"
+
+# ---------------- 本体 ----------------
+# 模型描述两族九宫格的轴；公理是归位时不重新论证的前提。
+# 两者都是描述，不参与判定；判定仍看 [[cell]]、[[transition]] 与 [[question]]。
+
+[model]
+summary = "一份内容只有一个正确去处。十八格分两族，各成九宫格。"
+
+[[model.family]]
+name = "陈述型"
+question = "组织知道什么"
+summary = "过去是已履行的契约，现在是正在履行的，未来是将要履行的。"
+
+[[model.family.axis]]
+name = "时间"
+values = ["过去", "现在", "未来"]
+
+[[model.family.axis]]
+name = "类型"
+values = ["事件", "语义", "自我"]
+
+[[model.family]]
+name = "程序型"
+question = "组织怎么做事"
+summary = "宪法定权责，法律写程序，法理讲方法论。"
+
+[[model.family.axis]]
+name = "约束力"
+values = ["宪法", "法律", "法理"]
+
+[[model.family.axis]]
+name = "消费对象"
+values = ["人读", "AI 解析", "直接运行"]
+
+[[axiom]]
+id = "one-place"
+statement = "一份内容只有一个正确去处。"
+why = "放错格的代价不是难看，是下一轮没人找得到它。"
+
+[[axiom]]
+id = "domain-before-cell"
+statement = "先定域，再定格，再过准入，最后给写法。"
+why = "顺序换了，域错时格越准，搬得越远。"
+
+[[axiom]]
+id = "text-only"
+statement = "只看正文，不看它现在住在哪。"
+why = "现在的位置可能是上一次判错留下的。"
+
+[[axiom]]
+id = "no-fit"
+statement = "一格都套不上就不收，留在日志里等它重复。"
+why = "硬归进某一格，只会让那一格多一条没人再看的记录。"
+
+[[axiom]]
+id = "one-source"
+statement = "同一内容只在一处完整展开，其余留一句互链。"
+why = "两处都写同一个事实，就是两个真源。"
+
+[[axiom]]
+id = "no-fallback"
+statement = "契约缺了就停手，不内置兜底。"
+why = "静默回退会让人以为规则生效了。"
+
+[[axiom]]
+id = "target-then-source"
+statement = "迁移先写目标、再删源，源侧不留复制件。"
+why = "窗口里不能两边都空；完成后也不能两边都有。"
+
+[[axiom]]
+id = "archive-vs-transfer"
+statement = "归档只移动不改写；移交必须改体例。"
+why = "改错了形态，历史对不上，或者目标仓多一份不合体的文。"
+
+[[axiom]]
+id = "template-scope"
+statement = "模板只归 docs/ 下的手册与规格；陈述型不设固定写法，日志可以有日期模板。"
+why = "陈述型靠能否被推翻验收，固定章节会掩盖论证。"

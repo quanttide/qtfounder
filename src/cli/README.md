@@ -19,7 +19,7 @@ cargo test
 | `qtfounder docs` | 文档审计：表格、列表、密度、加粗、分割线、front matter 与日志模板七层，判这段内容该不该是这个形状；`docs check` 比对技能索引与目录。用法见 [docs/user-guide/docs.md](docs/user-guide/docs.md) |
 | `qtfounder write` | 表达审计：体裁、读者、主题三轴，加空话、口号、指路、结构四层。用法见 [docs/user-guide/write.md](docs/user-guide/write.md) |
 | `qtfounder think` | 认知：`load` 从会话库看消耗落在哪，`reflect` 按 CBT 那套记一条并到点回填，`model` 看当前模型。用法见 [docs/user-guide/think.md](docs/user-guide/think.md) |
-| `qtfounder meta` | 归位：`classify` 给一段内容一张落位卡——域、格、档、写法；`relation` 看一格的迁出、迁入与分辨句。用法见 [docs/user-guide/meta.md](docs/user-guide/meta.md) |
+| `qtfounder meta` | 归位四部分：`model` 看两族九宫格，`relation` 看迁移与分辨句，`axiom` 看前提，`classify` 给落位卡。用法见 [docs/user-guide/meta.md](docs/user-guide/meta.md) |
 | `qtfounder asset` | 资产：`contract` 看每类资产的边界、分档与写法，`catalog` 看仓库里有哪些，`relation` 看家族与目录分组。用法见 [docs/user-guide/asset.md](docs/user-guide/asset.md) |
 | `qtfounder agent` | Agent：`skill` 一组——`list`／`check` 看装到哪一步，`install` 装到系统位置 `~/.agents/skills`，`lint` 查名字、说明与正文合不合标准；`relation` 看 Skill 引用了哪些命令、哪些命令组还没 Skill。用法见 [docs/user-guide/agent.md](docs/user-guide/agent.md) |
 | `qtfounder git` | Git：`hook` 一组——`install`／`status`／`uninstall` 管主仓与子模块的 `core.hooksPath`，`run` 执行钩子；`submodule check` 查指针与推送状态。用法见 [docs/user-guide/git.md](docs/user-guide/git.md) |

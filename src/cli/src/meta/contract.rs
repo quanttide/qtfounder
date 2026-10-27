@@ -6,6 +6,7 @@
 //! 刻意不内置兜底：这份契约是十八格的目录本身，缺了就无从判断归属，
 //! 与其猜一个去处，不如停手报错。
 
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
@@ -30,6 +31,10 @@ pub struct Contract {
     pub transition: Vec<Transition>,
     #[serde(default)]
     pub question: Vec<Question>,
+    #[serde(default)]
+    pub model: Model,
+    #[serde(default)]
+    pub axiom: Vec<Axiom>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -129,6 +134,42 @@ pub struct Question {
     pub ask: String,
 }
 
+/// 本体模型：两族九宫格的轴。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Model {
+    #[serde(default)]
+    pub summary: String,
+    #[serde(default)]
+    pub family: Vec<ModelFamily>,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct ModelFamily {
+    pub name: String,
+    #[serde(default)]
+    pub question: String,
+    #[serde(default)]
+    pub summary: String,
+    #[serde(default)]
+    pub axis: Vec<Axis>,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Axis {
+    pub name: String,
+    #[serde(default)]
+    pub values: Vec<String>,
+}
+
+/// 公理：归位时不重新论证的前提。
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Axiom {
+    pub id: String,
+    pub statement: String,
+    #[serde(default)]
+    pub why: String,
+}
+
 impl Contract {
     #[cfg(test)]
     pub fn bundled() -> Self {
@@ -173,6 +214,36 @@ impl Contract {
                 if !known.contains(&key.as_str()) {
                     return Err(format!("契约 {origin} 的分辨句指向不存在的格：{key}"));
                 }
+            }
+        }
+        if !contract.model.family.is_empty() {
+            let families: Vec<&str> = contract
+                .model
+                .family
+                .iter()
+                .map(|family| family.name.as_str())
+                .collect();
+            for cell in &contract.cell {
+                if !families.contains(&cell.family.as_str()) {
+                    return Err(format!("契约 {origin} 的模型没有这一族：{}", cell.family));
+                }
+            }
+            for family in &contract.model.family {
+                if !contract.cell.iter().any(|cell| cell.family == family.name) {
+                    return Err(format!(
+                        "契约 {origin} 的模型家族没有对应的格：{}",
+                        family.name
+                    ));
+                }
+            }
+        }
+        let mut axiom_ids = HashSet::new();
+        for axiom in &contract.axiom {
+            if axiom.id.trim().is_empty() {
+                return Err(format!("契约 {origin} 的公理缺 id"));
+            }
+            if !axiom_ids.insert(axiom.id.as_str()) {
+                return Err(format!("契约 {origin} 的公理 id 重复：{}", axiom.id));
             }
         }
         if bundled && contract.domain.is_empty() {

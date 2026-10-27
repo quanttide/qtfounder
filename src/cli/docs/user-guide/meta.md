@@ -4,6 +4,17 @@
 
 `classify` 一次判一条线索：给一段内容，出一张落位卡。卡上四行——域、格、档、写法——加一个结论：收，还是收不了。
 
+## 四部分
+
+`meta` 下四块各有命令，先看模型与公理，再判范畴，卡住了再看关系：
+
+| 部分 | 命令 | 看什么 |
+|---|---|---|
+| 模型 | `meta model` | 两族九宫格的轴与格 |
+| 关系 | `meta relation` | 一格的迁出、迁入与分辨句 |
+| 公理 | `meta axiom` | 归位时不重新论证的前提 |
+| 范畴 | `meta classify` | 把一条内容放进十八格 |
+
 ## 一、四步，顺序不能换
 
 先定域：留在这里，还是搬去领域仓。定域只看正文讲哪个领域，不看它现在住在哪。单个词命中不足以指路，免得一个顺带出现的领域词把整篇搬走。正文里有已废弃、旧版这类词，搬的时候按归档处理，只移动不改写；否则是移交，要按目标侧的体例重写。
@@ -82,7 +93,7 @@ qtfounder meta classify notes.md --rules ./my-contract.toml
 `classify` 给一张卡，`relation` 补它和邻居的关系。
 
 ```bash
-qtfounder meta relation            # 3 条迁移、14 条分辨句
+qtfounder meta relation            # 全部迁移与分辨句
 qtfounder meta relation insight    # 只看这一格
 ```
 
@@ -106,3 +117,60 @@ insight  Insight 洞察
 - 一格没有任何边（如 `brochure`），说明契约里它是终点，不必在它身上找分流。
 
 只读契约，不重新判内容，也不替你选格。
+
+## 九、model：本体模型
+
+```bash
+qtfounder meta model
+```
+
+```text
+归位本体
+一份内容只有一个正确去处。十八格分两族，各成九宫格。
+
+陈述型  组织知道什么
+  过去是已履行的契约，现在是正在履行的，未来是将要履行的。
+  时间：过去 / 现在 / 未来
+  类型：事件 / 语义 / 自我
+  九格：report、library、history、journal、profile、brochure、roadmap、insight、intention
+
+程序型  组织怎么做事
+  宪法定权责，法律写程序，法理讲方法论。
+  约束力：宪法 / 法律 / 法理
+  消费对象：人读 / AI 解析 / 直接运行
+  九格：bylaw、specification、toolkit、handbook、gallery、platform、tutorial、essay、laboratory
+
+领域（6）
+  quanttide-write  write 领域
+  ...
+```
+
+用途：
+
+- 第一次读契约，先看轴，知道十八格为什么这样分。
+- 新增或调整一格时，先确认它落在哪一族、两条轴上的位置；模型与 `family` 对不上时，契约加载就会报错。
+- 和 `asset relation` 的分工：`model` 看本体的轴与族，`asset relation` 看资产在仓库里的家族与目录分组。
+
+## 十、axiom：公理
+
+```bash
+qtfounder meta axiom
+qtfounder meta axiom no-fallback
+```
+
+```text
+one-place  一份内容只有一个正确去处。
+  放错格的代价不是难看，是下一轮没人找得到它。
+
+domain-before-cell  先定域，再定格，再过准入，最后给写法。
+  顺序换了，域错时格越准，搬得越远。
+...
+```
+
+用途：
+
+- 判一条内容前，先看哪些前提不再论证，省得每次重新讨论。
+- 迁移或归档前，`target-then-source` 与 `archive-vs-transfer` 是操作边界。
+- 写模板前，`template-scope` 说明模板只归 `docs/` 下的手册与规格，陈述型不设固定写法。
+
+公理在契约里是 `[[axiom]]`，每条写清 id、statement 与 why；id 重复或缺 why 会在读契约时被拦下。
