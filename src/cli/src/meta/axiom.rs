@@ -13,7 +13,7 @@ use super::contract::{Axiom, Contract};
 #[derive(Args, Debug)]
 pub struct AxiomArgs {
     /// 只看一条公理
-    pub id: Option<String>,
+    pub name: Option<String>,
     /// 契约路径（缺省按 src/meta/default-contract.toml 逐级往上找）
     #[arg(long)]
     pub rules: Option<PathBuf>,
@@ -27,9 +27,9 @@ pub fn run(args: &AxiomArgs) -> Result<i32, String> {
     if contract.axiom.is_empty() {
         return Err("契约里没有公理：在 [[axiom]] 里补".to_string());
     }
-    let axioms: Vec<&Axiom> = match &args.id {
-        Some(id) => vec![axiom_of(&contract, id)?],
-        None => contract.axiom.iter().collect(),
+    let axioms: Vec<&Axiom> = match &args.name {
+        Some(name) => vec![axiom_of(&contract, name)?],
+        None => ordered(&contract),
     };
     if args.json {
         print_json(&axioms);
@@ -37,6 +37,13 @@ pub fn run(args: &AxiomArgs) -> Result<i32, String> {
         print_text(&axioms);
     }
     Ok(0)
+}
+
+/// 公理按状态排：确认的在前，同组内保持契约里的顺序。
+pub fn ordered(contract: &Contract) -> Vec<&Axiom> {
+    let mut axioms: Vec<&Axiom> = contract.axiom.iter().collect();
+    axioms.sort_by_key(|axiom| axiom.status_key() != "confirmed");
+    axioms
 }
 
 fn axiom_of<'a>(contract: &'a Contract, name: &str) -> Result<&'a Axiom, String> {
@@ -119,6 +126,19 @@ mod tests {
         };
         assert_eq!(axiom.status_key(), "suspected");
         assert_eq!(axiom.status_label(), "怀疑");
+    }
+
+    #[test]
+    fn 确认的公理排在前面() {
+        let contract = Contract::bundled();
+        let axioms = ordered(&contract);
+        assert_eq!(axioms.first().unwrap().name, "template-scope");
+        assert_eq!(axioms.first().unwrap().status_key(), "confirmed");
+        assert!(
+            axioms[1..]
+                .iter()
+                .all(|axiom| axiom.status_key() == "suspected")
+        );
     }
 
     #[test]

@@ -34,7 +34,7 @@
 格：Insight 洞察  data/insight/
 档：假说
 凭什么：一句话能被推翻，推翻之后做法会变；抽掉日期和当事人还成立。
-公理：one-place、domain-before-cell、template-scope
+公理：template-scope（确认）、one-place（怀疑）、domain-before-cell（怀疑）
 
 写法：
 # 主题名
@@ -57,7 +57,7 @@
 待定
 候选：Insight 洞察 2、Roadmap 路线图 2
 问一句：这句话在解释为什么必须这样排（因为…否则…），还是现在就要做哪一步？前者进洞察，后者进路线图。
-公理：domain-before-cell
+公理：domain-before-cell（怀疑）
 先别落。
 ```
 
@@ -171,7 +171,7 @@ domain-before-cell  怀疑  先定域，再定格，再过准入，最后给写�
 ...
 ```
 
-名字后面跟一个标记：确认是自己验过的，怀疑是还没验过。没写 `status` 的一律当怀疑——没验过就不当前提用。
+名字后面跟一个标记：确认是自己验过的，怀疑是还没验过。没写 `status` 的一律当怀疑——没验过就不当前提用。确认的排在前面，同组内保持契约里的顺序；卡片上的公理也按这个顺序点。
 
 用途：
 

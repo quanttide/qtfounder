@@ -244,6 +244,10 @@ fn 落位卡点名这次用到的公理() {
         );
     }
     assert!(!card.axioms.iter().any(|axiom| axiom == "no-fit"));
+    assert_eq!(
+        card.axioms.first().map(String::as_str),
+        Some("template-scope")
+    );
 }
 
 #[test]

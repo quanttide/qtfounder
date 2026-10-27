@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use clap::Args;
 use serde::Serialize;
 
-use super::contract::{Cell, Contract, Domain};
+use super::contract::{Axiom, Cell, Contract, Domain};
 
 #[derive(Args, Debug)]
 pub struct ClassifyArgs {
@@ -262,9 +262,10 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
     }
 }
 
-/// 落位卡点名的公理：只列这次判定真用到的，不摊全表；契约里没有的也不点。
+/// 落位卡点名的公理：只列这次判断真用到的，不摊全表；契约里没有的也不点。
 ///
-/// 公理不参与算分，只留一行出处，事后能对账：前提被改了还是判定被改了。
+/// 确认过的排前面，同组内保持契约顺序。公理不参与算分，只留一行出处，事后能对账：
+/// 前提被改了还是规则被改了。
 fn cited(contract: &Contract, verdict: Verdict, has_domain: bool) -> Vec<String> {
     let mut names = vec!["domain-before-cell"];
     if has_domain {
@@ -279,12 +280,13 @@ fn cited(contract: &Contract, verdict: Verdict, has_domain: bool) -> Vec<String>
         }
         Verdict::Undecided => {}
     }
-    contract
+    let mut cited: Vec<&Axiom> = contract
         .axiom
         .iter()
         .filter(|axiom| names.contains(&axiom.name.as_str()))
-        .map(|axiom| axiom.name.clone())
-        .collect()
+        .collect();
+    cited.sort_by_key(|axiom| axiom.status_key() != "confirmed");
+    cited.into_iter().map(|axiom| axiom.name.clone()).collect()
 }
 
 /// 段数：空行分隔的正文段；标题、分割线不算，它们不承载线索。
@@ -366,7 +368,7 @@ fn print_card(card: &Card, contract: &Contract) {
                 if let Some(rule) = &card.rule {
                     println!("凭什么：{rule}");
                 }
-                print_axioms(card);
+                print_axioms(card, contract);
                 println!();
                 println!("写法：");
                 print!("{}", cell.skeleton);
@@ -392,7 +394,7 @@ fn print_card(card: &Card, contract: &Contract) {
             if let Some(question) = &card.question {
                 println!("问一句：{question}");
             }
-            print_axioms(card);
+            print_axioms(card, contract);
             println!("先别落。");
         }
         Verdict::Reject => {
@@ -403,7 +405,7 @@ fn print_card(card: &Card, contract: &Contract) {
             if card.domain.is_some() {
                 println!("本仓十八格都套不上，按 meta-classify 搬走。");
             }
-            print_axioms(card);
+            print_axioms(card, contract);
         }
     }
 
@@ -411,11 +413,22 @@ fn print_card(card: &Card, contract: &Contract) {
     println!("判定只给去处，不改写、不落盘、不搬文件。");
 }
 
-/// 公理只给 id：要看原话走 `meta axiom`，卡片上不重复展开。
-fn print_axioms(card: &Card) {
-    if !card.axioms.is_empty() {
-        println!("公理：{}", card.axioms.join("、"));
+/// 公理只给名字与状态：要看原话走 `meta axiom`，卡片上不重复展开。
+fn print_axioms(card: &Card, contract: &Contract) {
+    if card.axioms.is_empty() {
+        return;
     }
+    let listed: Vec<String> = card
+        .axioms
+        .iter()
+        .map(
+            |name| match contract.axiom.iter().find(|axiom| &axiom.name == name) {
+                Some(axiom) => format!("{name}（{}）", axiom.status_label()),
+                None => name.clone(),
+            },
+        )
+        .collect();
+    println!("公理：{}", listed.join("、"));
 }
 
 #[derive(Serialize)]
