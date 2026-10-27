@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.24] - 2026-10-27
+
+### Added
+
+- `meta classify` 的落位卡新增 `公理` 一行：只点名这次判断真用到的公理（定域点 `text-only`、指了域名点 `archive-vs-transfer`、收了点 `one-place` 与 `template-scope`、不收点 `no-fit`），JSON 同步多了 `axioms` 字段。公理不参与算分，只留一行出处；契约里删掉的公理不再上卡
+
 ## [0.0.23] - 2026-10-27
 
 ### Fixed

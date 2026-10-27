@@ -2,7 +2,7 @@
 //!
 //! 判定分四步，顺序不能换：定域（留在这里还是去领域仓）、定格（十八格之一）、
 //! 过准入（降格或退论文）、给写法。每张卡都要写清凭什么，
-//! 判不了就只问一句，不硬猜。
+//! 并点出这次用到的公理；判不了就只问一句，不硬猜。
 
 use std::io::Read;
 use std::path::PathBuf;
@@ -75,6 +75,8 @@ pub struct Card {
     pub question: Option<String>,
     pub candidates: Vec<Candidate>,
     pub reason: Option<String>,
+    /// 这次判定用到的公理 id：只留出处，不参与算分。
+    pub axioms: Vec<String>,
 }
 
 pub fn run(args: &ClassifyArgs) -> Result<i32, String> {
@@ -128,6 +130,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
             reason: Some(format!(
                 "这一篇有 {paragraphs} 段，是多条线索的材料，不是一条；一次判一篇会互相干扰。拆成一条再判。"
             )),
+            axioms: cited(&contract, Verdict::Undecided, false),
         };
     }
 
@@ -164,6 +167,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
         }
         None => (None, None, None),
     };
+    let has_domain = domain.is_some();
 
     let Some((top_score, _, top)) = scored.first() else {
         return Card {
@@ -177,6 +181,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
             question: None,
             candidates,
             reason: Some("一格都没命中——一句都套不上，留在日志里等它重复。".to_string()),
+            axioms: cited(&contract, Verdict::Reject, has_domain),
         };
     };
     if *top_score < contract.verdict.min_hits {
@@ -191,6 +196,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
             question: None,
             candidates,
             reason: Some("命中太弱——一句都套不上，留在日志里等它重复。".to_string()),
+            axioms: cited(&contract, Verdict::Reject, has_domain),
         };
     }
 
@@ -213,6 +219,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
                 second.name,
                 top_score - second_score
             )),
+            axioms: cited(&contract, Verdict::Undecided, has_domain),
         };
     }
 
@@ -235,12 +242,13 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
     };
     let grade = pick_grade(text, &cell);
     let rule = rule.unwrap_or_else(|| cell.boundary.clone());
+    let verdict = if has_domain {
+        Verdict::Move
+    } else {
+        Verdict::Place
+    };
     Card {
-        verdict: if domain.is_some() {
-            Verdict::Move
-        } else {
-            Verdict::Place
-        },
+        verdict,
         domain,
         domain_form,
         domain_reason,
@@ -250,7 +258,33 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
         question: None,
         candidates,
         reason: None,
+        axioms: cited(&contract, verdict, has_domain),
     }
+}
+
+/// 落位卡点名的公理：只列这次判定真用到的，不摊全表；契约里没有的也不点。
+///
+/// 公理不参与算分，只留一行出处，事后能对账：前提被改了还是判定被改了。
+fn cited(contract: &Contract, verdict: Verdict, has_domain: bool) -> Vec<String> {
+    let mut ids = vec!["domain-before-cell"];
+    if has_domain {
+        ids.push("text-only");
+        ids.push("archive-vs-transfer");
+    }
+    match verdict {
+        Verdict::Reject => ids.push("no-fit"),
+        Verdict::Place | Verdict::Move => {
+            ids.push("one-place");
+            ids.push("template-scope");
+        }
+        Verdict::Undecided => {}
+    }
+    contract
+        .axiom
+        .iter()
+        .filter(|axiom| ids.contains(&axiom.id.as_str()))
+        .map(|axiom| axiom.id.clone())
+        .collect()
 }
 
 /// 段数：空行分隔的正文段；标题、分割线不算，它们不承载线索。
@@ -332,6 +366,7 @@ fn print_card(card: &Card, contract: &Contract) {
                 if let Some(rule) = &card.rule {
                     println!("凭什么：{rule}");
                 }
+                print_axioms(card);
                 println!();
                 println!("写法：");
                 print!("{}", cell.skeleton);
@@ -357,6 +392,7 @@ fn print_card(card: &Card, contract: &Contract) {
             if let Some(question) = &card.question {
                 println!("问一句：{question}");
             }
+            print_axioms(card);
             println!("先别落。");
         }
         Verdict::Reject => {
@@ -367,11 +403,19 @@ fn print_card(card: &Card, contract: &Contract) {
             if card.domain.is_some() {
                 println!("本仓十八格都套不上，按 meta-classify 搬走。");
             }
+            print_axioms(card);
         }
     }
 
     println!();
     println!("判定只给去处，不改写、不落盘、不搬文件。");
+}
+
+/// 公理只给 id：要看原话走 `meta axiom`，卡片上不重复展开。
+fn print_axioms(card: &Card) {
+    if !card.axioms.is_empty() {
+        println!("公理：{}", card.axioms.join("、"));
+    }
 }
 
 #[derive(Serialize)]
@@ -390,6 +434,7 @@ struct JsonCard<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     reason: Option<&'a str>,
     candidates: Vec<JsonCandidate<'a>>,
+    axioms: Vec<&'a str>,
 }
 
 #[derive(Serialize)]
@@ -448,6 +493,7 @@ fn print_json(card: &Card) -> Result<(), String> {
                 score: candidate.score,
             })
             .collect(),
+        axioms: card.axioms.iter().map(String::as_str).collect(),
     };
     println!(
         "{}",

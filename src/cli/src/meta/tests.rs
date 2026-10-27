@@ -232,3 +232,48 @@ fn 一个口头禅只按两次算() {
         .expect("应命中洞察");
     assert_eq!(insight.score, 2);
 }
+
+#[test]
+fn 落位卡点名这次用到的公理() {
+    let card = place("初稿必冗余，因为遗漏可见、冗余不可见。");
+    for id in ["domain-before-cell", "one-place", "template-scope"] {
+        assert!(
+            card.axioms.iter().any(|axiom| axiom == id),
+            "落位卡应点到 {id}：{:?}",
+            card.axioms
+        );
+    }
+    assert!(!card.axioms.iter().any(|axiom| axiom == "no-fit"));
+}
+
+#[test]
+fn 指了域才点_text_only_与两种搬法() {
+    let card = judge("小说第三章的文风要改，这是我要的效果。", &contract());
+    assert_eq!(card.verdict, Verdict::Move);
+    for id in ["text-only", "archive-vs-transfer"] {
+        assert!(
+            card.axioms.iter().any(|axiom| axiom == id),
+            "指了域就该点到 {id}：{:?}",
+            card.axioms
+        );
+    }
+    let local = place("初稿必冗余，因为遗漏可见、冗余不可见。");
+    assert!(!local.axioms.iter().any(|axiom| axiom == "text-only"));
+}
+
+#[test]
+fn 不收时点_no_fit_不点_one_place() {
+    let card = judge("天气不错。", &contract());
+    assert_eq!(card.verdict, Verdict::Reject);
+    assert!(card.axioms.iter().any(|axiom| axiom == "no-fit"));
+    assert!(!card.axioms.iter().any(|axiom| axiom == "one-place"));
+}
+
+#[test]
+fn 契约里删掉的公理不上卡() {
+    let mut contract = contract();
+    contract.axiom.retain(|axiom| axiom.id != "template-scope");
+    let card = judge("初稿必冗余，因为遗漏可见、冗余不可见。", &contract);
+    assert_eq!(card.verdict, Verdict::Place);
+    assert!(!card.axioms.iter().any(|axiom| axiom == "template-scope"));
+}
