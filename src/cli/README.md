@@ -21,7 +21,7 @@ cargo test
 | `qtfounder think` | 认知：`load` 从会话库看消耗落在哪，`reflect` 按 CBT 那套记一条并到点回填，`model` 看当前模型。用法见 [docs/user-guide/think.md](docs/user-guide/think.md) |
 | `qtfounder meta` | 归位：`classify` 给一段内容一张落位卡——域、格、档、写法；判不了只问一句，套不上就不收。用法见 [docs/user-guide/meta.md](docs/user-guide/meta.md) |
 | `qtfounder agent` | Agent：`skill` 一组——`list`／`check` 看装到哪一步，`install` 装到系统位置 `~/.agents/skills`，`lint` 查名字、说明与正文合不合标准。用法见 [docs/user-guide/agent.md](docs/user-guide/agent.md) |
-| `qtfounder git` | Git：`hook` 一组——`install`／`status`／`uninstall` 管主仓与子模块的 `core.hooksPath`，只改配置不碰脚本。用法见 [docs/user-guide/git.md](docs/user-guide/git.md) |
+| `qtfounder git` | Git：`hook` 一组——`install`／`status`／`uninstall` 管主仓与子模块的 `core.hooksPath`，`run` 执行钩子；`submodule check` 查指针与推送状态。用法见 [docs/user-guide/git.md](docs/user-guide/git.md) |
 | `qtfounder audit` | 文字体检：合并 `language` 与 `docs`，按「一个词、一条规则」归堆，每期只报一处。用法见 [docs/user-guide/audit.md](docs/user-guide/audit.md) |
 
 ## 添加新功能

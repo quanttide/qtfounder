@@ -5,6 +5,9 @@
 ### Added
 
 - `qtfounder git hook`：`install`／`status`／`uninstall` 管主仓与各层子模块的 `core.hooksPath`；只改配置，不动脚本，指向别处默认不覆盖
+- `qtfounder git hook run`：钩子脚本的执行入口；`pre-commit` 只拦新引入的用词错误，`post-merge` 与 `post-checkout` 对齐子模块指针
+- `qtfounder git submodule check`：查子模块的指针、未提交改动与推送状态；`--pushed` 只查会挡推送的几项
+- `pre-push` 钩子：推父仓前跑 `submodule check --pushed`，挡住不在远端的子模块指针
 
 ## [0.0.16] - 2026-10-25
 

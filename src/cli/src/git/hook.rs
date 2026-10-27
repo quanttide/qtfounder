@@ -1,16 +1,17 @@
-//! `qtfounder git hook`：装、查、卸工作区的 Git 钩子。
+//! `qtfounder git hook`：装、查、卸工作区的 Git 钩子，以及执行钩子。
 //!
 //! 钩子目录固定在 `<root>/.githooks`，主仓与各层子模块共用同一份。
-//! 只改 Git 配置，不改钩子内容；脚本缺失或不可执行只报不改。
+//! 装、查、卸只改 Git 配置，不改钩子内容；`run` 交给 `super::run`。
 
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-/// 钩子目录的固定名字。
-const HOOKS_DIR: &str = ".githooks";
+use super::common::{
+    HOOKS_DIR, Repo, configured_path, display_name, non_executable, repos, resolve_root, same_path,
+};
+use super::run::{self, RunArgs};
 
 /// `git hook` 下的子命令。
 #[derive(Subcommand, Debug)]
@@ -21,6 +22,8 @@ pub enum HookCommand {
     Status(StatusArgs),
     /// 取消指向本仓 .githooks 的 core.hooksPath
     Uninstall(UninstallArgs),
+    /// 执行一个钩子；由 .githooks 里的脚本调用
+    Run(RunArgs),
 }
 
 #[derive(Args, Debug)]
@@ -67,15 +70,8 @@ pub fn run(args: &HookArgs) -> Result<i32, String> {
         HookCommand::Install(args) => install(args),
         HookCommand::Status(args) => status(args),
         HookCommand::Uninstall(args) => uninstall(args),
+        HookCommand::Run(args) => run::run(args),
     }
-}
-
-/// 一个要处理的仓：根自己，或某个子模块。
-#[derive(Debug, Clone)]
-pub(super) struct Repo {
-    pub(super) dir: PathBuf,
-    pub(super) label: String,
-    pub(super) initialized: bool,
 }
 
 /// 一个仓的钩子配置处在哪一步。
@@ -117,181 +113,6 @@ impl State {
     }
 }
 
-fn resolve_root(root: Option<&Path>) -> Result<PathBuf, String> {
-    let dir = root.unwrap_or(Path::new("."));
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(dir)
-        .args(["rev-parse", "--show-toplevel"])
-        .output()
-        .map_err(|error| format!("跑不了 git：{error}"))?;
-    if !output.status.success() {
-        let message = String::from_utf8_lossy(&output.stderr).trim().to_string();
-        return Err(format!("{} 不在 Git 仓里：{message}", dir.display()));
-    }
-    let top = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    std::fs::canonicalize(&top).map_err(|error| format!("读不到 {}：{error}", top))
-}
-
-fn git(dir: &Path, args: &[&str]) -> Result<String, String> {
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(dir)
-        .args(args)
-        .output()
-        .map_err(|error| format!("跑不了 git：{error}"))?;
-    if !output.status.success() {
-        return Err(String::from_utf8_lossy(&output.stderr).trim().to_string());
-    }
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
-}
-
-/// 根仓自己，加上各层子模块。
-fn repos(root: &Path) -> Result<Vec<Repo>, String> {
-    let mut repos = vec![Repo {
-        dir: root.to_path_buf(),
-        label: ".".to_string(),
-        initialized: true,
-    }];
-    let listing = git(
-        root,
-        &[
-            "-c",
-            "core.quotePath=false",
-            "submodule",
-            "status",
-            "--recursive",
-        ],
-    )?;
-    for line in listing.lines() {
-        if let Some(repo) = parse_submodule_line(root, line) {
-            repos.push(repo);
-        }
-    }
-    Ok(repos)
-}
-
-/// 解析 `git submodule status` 的一行：状态符、提交、路径、可选的描述。
-pub(super) fn parse_submodule_line(root: &Path, line: &str) -> Option<Repo> {
-    let line = line.trim_end();
-    let mut chars = line.chars();
-    let flag = chars.next()?;
-    if !matches!(flag, ' ' | '+' | '-' | 'U') {
-        return None;
-    }
-    let rest = &line[flag.len_utf8()..];
-    let space = rest.find(' ')?;
-    let path = &rest[space + 1..];
-    let path = match path.rfind(" (") {
-        Some(cut) => &path[..cut],
-        None => path,
-    };
-    if path.is_empty() {
-        return None;
-    }
-    Some(Repo {
-        dir: root.join(path),
-        label: path.to_string(),
-        initialized: flag != '-',
-    })
-}
-
-fn hooks_path(repo: &Path) -> Result<Option<String>, String> {
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(repo)
-        .args(["config", "--get", "core.hooksPath"])
-        .output()
-        .map_err(|error| format!("跑不了 git：{error}"))?;
-    if output.status.success() {
-        return Ok(Some(
-            String::from_utf8_lossy(&output.stdout).trim().to_string(),
-        ));
-    }
-    if output.status.code() == Some(1) {
-        return Ok(None);
-    }
-    Err(String::from_utf8_lossy(&output.stderr).trim().to_string())
-}
-
-fn set_hooks_path(repo: &Path, value: &Path) -> Result<(), String> {
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(repo)
-        .args(["config", "core.hooksPath"])
-        .arg(value)
-        .output()
-        .map_err(|error| format!("跑不了 git：{error}"))?;
-    if output.status.success() {
-        Ok(())
-    } else {
-        Err(String::from_utf8_lossy(&output.stderr).trim().to_string())
-    }
-}
-
-fn unset_hooks_path(repo: &Path) -> Result<(), String> {
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(repo)
-        .args(["config", "--unset-all", "core.hooksPath"])
-        .output()
-        .map_err(|error| format!("跑不了 git：{error}"))?;
-    match output.status.code() {
-        // 5：原本就没有这个键，等于已经卸下。
-        Some(0) | Some(5) => Ok(()),
-        _ => Err(String::from_utf8_lossy(&output.stderr).trim().to_string()),
-    }
-}
-
-fn configured_path(value: &str, repo: &Path) -> PathBuf {
-    let path = PathBuf::from(value);
-    if path.is_absolute() {
-        path
-    } else {
-        repo.join(path)
-    }
-}
-
-fn same_path(left: &Path, right: &Path) -> bool {
-    match (std::fs::canonicalize(left), std::fs::canonicalize(right)) {
-        (Ok(left), Ok(right)) => left == right,
-        _ => left == right,
-    }
-}
-
-/// `.githooks` 里除日志外的文件都应当是脚本，且可执行。
-#[cfg(unix)]
-fn non_executable(dir: &Path) -> Vec<String> {
-    use std::os::unix::fs::PermissionsExt;
-
-    let mut found = Vec::new();
-    let Ok(entries) = std::fs::read_dir(dir) else {
-        return found;
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if !path.is_file() {
-            continue;
-        }
-        if path.extension().is_some_and(|extension| extension == "log") {
-            continue;
-        }
-        let Ok(metadata) = entry.metadata() else {
-            continue;
-        };
-        if metadata.permissions().mode() & 0o111 == 0 {
-            found.push(entry.file_name().to_string_lossy().into_owned());
-        }
-    }
-    found.sort();
-    found
-}
-
-#[cfg(not(unix))]
-fn non_executable(_dir: &Path) -> Vec<String> {
-    Vec::new()
-}
-
 fn inspect(repo: &Repo, managed: &Path, managed_exists: bool) -> Result<State, String> {
     if !repo.initialized {
         return Ok(State::Uninitialized);
@@ -314,11 +135,50 @@ fn inspect(repo: &Repo, managed: &Path, managed_exists: bool) -> Result<State, S
     }
 }
 
-fn display_name(label: &str) -> String {
-    if label == "." {
-        "主仓".to_string()
+fn hooks_path(repo: &Path) -> Result<Option<String>, String> {
+    let output = std::process::Command::new("git")
+        .arg("-C")
+        .arg(repo)
+        .args(["config", "--get", "core.hooksPath"])
+        .output()
+        .map_err(|error| format!("跑不了 git：{error}"))?;
+    if output.status.success() {
+        return Ok(Some(
+            String::from_utf8_lossy(&output.stdout).trim().to_string(),
+        ));
+    }
+    if output.status.code() == Some(1) {
+        return Ok(None);
+    }
+    Err(String::from_utf8_lossy(&output.stderr).trim().to_string())
+}
+
+fn set_hooks_path(repo: &Path, value: &Path) -> Result<(), String> {
+    let output = std::process::Command::new("git")
+        .arg("-C")
+        .arg(repo)
+        .args(["config", "core.hooksPath"])
+        .arg(value)
+        .output()
+        .map_err(|error| format!("跑不了 git：{error}"))?;
+    if output.status.success() {
+        Ok(())
     } else {
-        label.to_string()
+        Err(String::from_utf8_lossy(&output.stderr).trim().to_string())
+    }
+}
+
+fn unset_hooks_path(repo: &Path) -> Result<(), String> {
+    let output = std::process::Command::new("git")
+        .arg("-C")
+        .arg(repo)
+        .args(["config", "--unset-all", "core.hooksPath"])
+        .output()
+        .map_err(|error| format!("跑不了 git：{error}"))?;
+    match output.status.code() {
+        // 5：原本就没有这个键，等于已经卸下。
+        Some(0) | Some(5) => Ok(()),
+        _ => Err(String::from_utf8_lossy(&output.stderr).trim().to_string()),
     }
 }
 
