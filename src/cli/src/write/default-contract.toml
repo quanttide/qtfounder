@@ -82,14 +82,9 @@ name = "用法"
 any_of = ["用法", "安装", "使用", "快速开始"]
 
 [genre.insight]
-description = "洞察：成篇写能被推翻的判断"
+description = "洞察：写能被推翻的判断，不规定章节"
 path_hints = ["insight"]
-min_h2 = 3
 forbid = ["工期", "排期", "里程碑"]
-
-[[genre.insight.required]]
-name = "判断"
-any_of = ["判断", "机制", "结论"]
 
 [genre.review]
 description = "评审：先给理解，再给问题与结论"

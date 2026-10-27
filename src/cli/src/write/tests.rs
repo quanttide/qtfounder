@@ -88,8 +88,8 @@ fn design_genre_requires_sections() {
 }
 
 #[test]
-fn insight_genre_accepts_article_sections() {
-    let text = "# 标题\n\n## 1. 背景与问题\n\n为什么要写。\n\n## 2. 判断\n\n一句判断。\n\n## 3. 机制\n\n因为如此。\n\n## 4. 边界\n\n什么时候不成立。\n\n## 5. 结论\n\n一句收束。\n";
+fn insight_genre_does_not_require_sections() {
+    let text = "# 标题\n\n这一段是一条能被推翻的判断，因为甲，否则乙。\n";
     let selection = Selection {
         genre: Some("insight".to_string()),
         ..Selection::default()
