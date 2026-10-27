@@ -79,10 +79,30 @@ qtfounder meta classify notes.md --rules ./my-contract.toml
 
 ## 八、relation：看归位边
 
+`classify` 给一张卡，`relation` 补它和邻居的关系。
+
 ```bash
-qtfounder meta relation              # 全部迁移与分辨句
-qtfounder meta relation insight      # 只看这一格的进出与对端
-qtfounder meta relation --json
+qtfounder meta relation            # 3 条迁移、14 条分辨句
+qtfounder meta relation insight    # 只看这一格
 ```
 
-迁移分迁出与迁入两个方向；分辨句按对端列出。只读契约，不重新判内容。
+```text
+insight  Insight 洞察
+  迁出：
+    → essay  推不翻也改不了做法，适合进论文，不进洞察。
+  迁入：
+    （无）
+  分辨：
+    ↔ roadmap
+      这句话在解释为什么必须这样排（因为…否则…），还是现在就要做哪一步？前者进洞察，后者进路线图。
+    ↔ profile
+      ...
+```
+
+用途：
+
+- 判完一条，想知道它以后会往哪走，看迁出；迁入回答「谁会降到这一格」。
+- 两格打平，`classify` 只给一句问话；`relation` 把这一格的所有对端一次列全，方便对照。
+- 一格没有任何边（如 `brochure`），说明契约里它是终点，不必在它身上找分流。
+
+只读契约，不重新判内容，也不替你选格。

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.21] - 2026-10-27
+
+### Changed
+
+- Agent 契约的 `cli_scopes` 补齐 `asset`、`git`、`product`，去掉不是命令组的 `skill`；`agent relation` 的覆盖统计随之准确
+
 ## [0.0.20] - 2026-10-27
 
 ### Added

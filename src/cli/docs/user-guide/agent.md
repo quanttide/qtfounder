@@ -86,4 +86,23 @@ qtfounder agent relation meta-classify      # 只看一条
 qtfounder agent relation --json
 ```
 
-命令从 Skill 正文里的 `qtfounder <组> <动词>` 读出来；对照契约的 `cli_scopes`，列出还没有 Skill 引用的命令组。只读，不跑命令，也不改 Skill。
+当前六条 Skill 的引用：
+
+```text
+language-govern
+  qtfounder audit
+  qtfounder language
+  qtfounder docs
+meta-classify
+  qtfounder meta classify
+...
+未覆盖的命令组：agent、asset、code、git
+```
+
+用途：
+
+- 新增一个命令组后，看有没有 Skill 接住它；`未覆盖` 就是缺口。
+- 改 Skill 正文后，确认它引用的命令与实际命令一致。
+- 给某个 Skill 补说明时，先看它现在引用了哪些命令，避免重复或漏写。
+
+命令从 Skill 正文里的 `qtfounder <组> <动词>` 读出来，写进散文也算引用；这一层不执行命令，也不校验命令是否存在。覆盖对照的是 Agent 契约的 `cli_scopes`，新增命令组时先把它写进契约。

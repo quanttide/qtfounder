@@ -18,7 +18,7 @@ fn kinds(findings: &[Finding]) -> Vec<&str> {
     findings.iter().map(|finding| finding.kind).collect()
 }
 
-const GOOD: &str = "---\nname: git-commit\ndescription: 规范提交。当用户要提交时使用。\n---\n\n# git-commit\n\n按约定提交。\n";
+const GOOD: &str = "---\nname: git-commit\ndescription: 规范提交。当用户要提交时使用。\n---\n\n# git-commit\n\n按约定提交：`qtfounder git commit`。\n";
 
 #[test]
 fn 合口径的没有命中() {
@@ -28,8 +28,8 @@ fn 合口径的没有命中() {
 
 #[test]
 fn 名词化后缀报错() {
-    let text = GOOD.replace("git-commit", "product-management");
-    let findings = run("product-management", &text);
+    let text = GOOD.replace("git-commit", "devops-management");
+    let findings = run("devops-management", &text);
     assert_eq!(kinds(&findings), vec!["verb"]);
     assert!(findings[0].message.contains("ment"));
 }
@@ -73,14 +73,14 @@ fn 没登记过的范围当嫌疑() {
 
 #[test]
 fn 缺说明报错() {
-    let text = "---\nname: git-commit\n---\n\n# git-commit\n";
+    let text = "---\nname: git-commit\n---\n\n# git-commit\n\n跑 qtfounder git commit。\n";
     let findings = run("git-commit", text);
     assert_eq!(kinds(&findings), vec!["description"]);
 }
 
 #[test]
 fn 说明没写触发时机当嫌疑() {
-    let text = "---\nname: git-commit\ndescription: 规范提交。\n---\n\n# git-commit\n";
+    let text = "---\nname: git-commit\ndescription: 规范提交。\n---\n\n# git-commit\n\n跑 qtfounder git commit。\n";
     let findings = run("git-commit", text);
     assert_eq!(kinds(&findings), vec!["description"]);
     assert_eq!(findings[0].severity, Severity::Suspect);
@@ -127,7 +127,7 @@ fn 重名报错() {
 
 #[test]
 fn 多行说明也会读全() {
-    let text = "---\nname: git-commit\ndescription: >\n  规范提交。\n  当用户要提交时使用。\n---\n\n# git-commit\n";
+    let text = "---\nname: git-commit\ndescription: >\n  规范提交。\n  当用户要提交时使用。\n---\n\n# git-commit\n\n跑 qtfounder git commit。\n";
     let findings = run("git-commit", text);
     assert!(findings.is_empty(), "{findings:?}");
 }

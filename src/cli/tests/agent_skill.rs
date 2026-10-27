@@ -22,7 +22,7 @@ const PUBLISHED: [&str; 6] = [
     "write-express",
 ];
 
-const GOOD_SKILL: &str = "---\nname: git-commit\ndescription: 规范提交。当用户要提交时使用。\n---\n\n# git-commit\n\n按约定提交。\n";
+const GOOD_SKILL: &str = "---\nname: git-commit\ndescription: 规范提交。当用户要提交时使用。\n---\n\n# git-commit\n\n按约定提交：`qtfounder git commit`。\n";
 
 /// 一个用完就删的临时目录。
 struct TempRoot {
