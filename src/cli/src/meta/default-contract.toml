@@ -24,49 +24,6 @@ question_fallback = "它说的是世界怎么运转，还是你下一步要做�
 # 一次判一篇，各条的线索会互相干扰，宁可让拆开再判。
 max_paragraphs = 5
 
-# ---------------- 维护 ----------------
-# asset maintain 的规则源：每类资产共用的维护做法。
-# 边界与写法仍在 [[category]]，这里只管「怎么把它维护下去」。
-
-[maintain]
-description = "资产维护的共同做法。边界与写法看 asset contract，在不在看 asset catalog。"
-
-[[maintain.rule]]
-name = "目录"
-description = "内容只放在契约给的 path；同一份内容不跨类复制。"
-
-[[maintain.rule]]
-name = "索引"
-description = "新增内容同步 README 或 index.md，入口不留空。"
-
-[[maintain.rule]]
-name = "变更记录"
-description = "CHANGELOG 分新增、变更与移除；未发布段攒批，发布时定版。"
-
-[[maintain.rule]]
-name = "版本"
-description = "semver；标签与 CHANGELOG 段同名，已发布的段不回改。"
-
-[[maintain.rule]]
-name = "发布"
-description = "先推资产仓，再回主仓更新子模块指针，指针提交写清版本。"
-
-[[maintain.rule]]
-name = "提交"
-description = "Conventional Commits；迁移时源侧与目标侧各自提交。"
-
-[[maintain.rule]]
-name = "迁移"
-description = "归档只移动不改写；移交按目标侧体例改写。"
-
-[[maintain.rule]]
-name = "闸门"
-description = "提交前跑 language、docs 与 write；旧文本被拦不顺手改写。"
-
-[[maintain.rule]]
-name = "只读"
-description = "contract、catalog、relation 与 maintain 都不改文件。"
-
 # ---------------- 资产 ----------------
 # 20 种：context（入口）、18 类长期记忆、archive（出口）。
 # context 与 archive 是「领域 / 资产」，长期记忆是「资产 / 领域」。

@@ -23,10 +23,6 @@ const CONTRACT_RELATIVE: [&str; 3] = [
 pub struct Contract {
     #[serde(default)]
     pub verdict: Verdict,
-    /// 维护规则：每类资产共用的做法。
-    #[serde(default)]
-    #[allow(dead_code)]
-    pub maintain: Maintain,
     /// 资产：入口、长期记忆与归档，共 20 种。
     #[serde(default)]
     pub asset: Vec<Asset>,
@@ -84,22 +80,6 @@ impl Default for Verdict {
             question_fallback: "它说的是世界怎么运转，还是你下一步要做什么？".to_string(),
         }
     }
-}
-
-#[derive(Debug, Clone, Deserialize, Default)]
-#[allow(dead_code)]
-pub struct Maintain {
-    #[serde(default)]
-    pub description: String,
-    #[serde(default)]
-    pub rule: Vec<MaintainRule>,
-}
-
-#[derive(Debug, Clone, Deserialize, Default)]
-#[allow(dead_code)]
-pub struct MaintainRule {
-    pub name: String,
-    pub description: String,
 }
 
 /// 资产：一个可维护的仓库。入口、长期记忆与归档共用这一形状。
