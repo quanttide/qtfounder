@@ -245,6 +245,13 @@ impl Contract {
             if !axiom_ids.insert(axiom.id.as_str()) {
                 return Err(format!("契约 {origin} 的公理 id 重复：{}", axiom.id));
             }
+            if axiom.statement.trim().is_empty() {
+                return Err(format!("契约 {origin} 的公理没有 statement：{}", axiom.id));
+            }
+            // 只有结论的公理是口号：why 记不住当初的失败，后来的人就无从判断它还算不算前提。
+            if axiom.why.trim().is_empty() {
+                return Err(format!("契约 {origin} 的公理没有 why：{}", axiom.id));
+            }
         }
         if bundled && contract.domain.is_empty() {
             return Err(format!(
@@ -273,6 +280,47 @@ impl Contract {
 }
 
 /// 找契约：环境变量 → 当前目录往上找 → 用户级目录 → 都没有就报错。刻意不内置兜底。
+#[cfg(test)]
+mod tests {
+    use super::Contract;
+
+    const CELL: &str = r#"
+[[cell]]
+key = "insight"
+name = "洞察"
+path = "data/insight"
+"#;
+
+    fn parse(extra: &str) -> Result<Contract, String> {
+        Contract::parse(&format!("{CELL}{extra}"), "测试", false)
+    }
+
+    #[test]
+    fn 公理缺_why_在读契约时被拦下() {
+        let error =
+            parse("\n[[axiom]]\nid = \"one-place\"\nstatement = \"一份内容只有一个正确去处。\"\n")
+                .unwrap_err();
+        assert!(error.contains("没有 why"), "{error}");
+    }
+
+    #[test]
+    fn 公理缺_statement_在读契约时被拦下() {
+        let error =
+            parse("\n[[axiom]]\nid = \"one-place\"\nstatement = \"\"\nwhy = \"放错格的代价是没人找得到它。\"\n")
+                .unwrap_err();
+        assert!(error.contains("没有 statement"), "{error}");
+    }
+
+    #[test]
+    fn 公理_id_重复在读契约时被拦下() {
+        let error = parse(
+            "\n[[axiom]]\nid = \"one-place\"\nstatement = \"甲\"\nwhy = \"乙\"\n\n[[axiom]]\nid = \"one-place\"\nstatement = \"丙\"\nwhy = \"丁\"\n",
+        )
+        .unwrap_err();
+        assert!(error.contains("公理 id 重复"), "{error}");
+    }
+}
+
 fn find_contract() -> Result<PathBuf, String> {
     if let Ok(from_env) = std::env::var(CONTRACT_ENV)
         && !from_env.is_empty()
