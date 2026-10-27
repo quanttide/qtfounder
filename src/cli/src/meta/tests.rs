@@ -272,7 +272,9 @@ fn 不收时点_no_fit_不点_one_place() {
 #[test]
 fn 契约里删掉的公理不上卡() {
     let mut contract = contract();
-    contract.axiom.retain(|axiom| axiom.id != "template-scope");
+    contract
+        .axiom
+        .retain(|axiom| axiom.name != "template-scope");
     let card = judge("初稿必冗余，因为遗漏可见、冗余不可见。", &contract);
     assert_eq!(card.verdict, Verdict::Place);
     assert!(!card.axioms.iter().any(|axiom| axiom == "template-scope"));

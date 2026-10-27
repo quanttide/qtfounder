@@ -39,18 +39,18 @@ pub fn run(args: &AxiomArgs) -> Result<i32, String> {
     Ok(0)
 }
 
-fn axiom_of<'a>(contract: &'a Contract, id: &str) -> Result<&'a Axiom, String> {
+fn axiom_of<'a>(contract: &'a Contract, name: &str) -> Result<&'a Axiom, String> {
     contract
         .axiom
         .iter()
-        .find(|axiom| axiom.id == id)
+        .find(|axiom| axiom.name == name)
         .ok_or_else(|| {
-            let ids: Vec<&str> = contract
+            let names: Vec<&str> = contract
                 .axiom
                 .iter()
-                .map(|axiom| axiom.id.as_str())
+                .map(|axiom| axiom.name.as_str())
                 .collect();
-            format!("没有这条公理：{id}；可选：{}", ids.join("、"))
+            format!("没有这条公理：{name}；可选：{}", names.join("、"))
         })
 }
 
@@ -61,7 +61,7 @@ fn print_text(axioms: &[&Axiom]) {
         }
         println!(
             "{}  {}  {}",
-            axiom.id,
+            axiom.name,
             axiom.status_label(),
             axiom.statement
         );
@@ -76,7 +76,7 @@ fn print_json(axioms: &[&Axiom]) {
         .iter()
         .map(|axiom| {
             json!({
-                "id": axiom.id,
+                "name": axiom.name,
                 "statement": axiom.statement,
                 "why": axiom.why,
                 "status": axiom.status_key(),
@@ -99,16 +99,16 @@ mod tests {
         let contract = Contract::bundled();
         assert!(!contract.axiom.is_empty());
         for axiom in &contract.axiom {
-            assert!(!axiom.id.is_empty());
-            assert!(!axiom.statement.is_empty(), "{} 缺 statement", axiom.id);
-            assert!(!axiom.why.is_empty(), "{} 缺 why", axiom.id);
+            assert!(!axiom.name.is_empty());
+            assert!(!axiom.statement.is_empty(), "{} 缺 statement", axiom.name);
+            assert!(!axiom.why.is_empty(), "{} 缺 why", axiom.name);
         }
     }
 
     #[test]
     fn 公理缺省按怀疑算() {
         let axiom = Axiom {
-            id: "x".to_string(),
+            name: "x".to_string(),
             statement: "甲".to_string(),
             why: "乙".to_string(),
             status: String::new(),

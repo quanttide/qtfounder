@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.27] - 2026-10-27
+
+### Changed
+
+- 公理的 `id` 改为 `name`：uuid 留给 id，name 做机器可读标识。`[[axiom]]` 字段、`meta axiom` 的 JSON 键（`id` → `name`）、报错文字与文档口径一并改；读旧契约会在解析时报缺 `name`
+
 ## [0.0.26] - 2026-10-27
 
 ### Added

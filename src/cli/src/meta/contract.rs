@@ -164,7 +164,8 @@ pub struct Axis {
 /// 公理：归位时不重新论证的前提。
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct Axiom {
-    pub id: String,
+    /// 机器可读的标识；uuid 留给 id 字段。
+    pub name: String,
     pub statement: String,
     #[serde(default)]
     pub why: String,
@@ -258,26 +259,29 @@ impl Contract {
                 }
             }
         }
-        let mut axiom_ids = HashSet::new();
+        let mut axiom_names = HashSet::new();
         for axiom in &contract.axiom {
-            if axiom.id.trim().is_empty() {
-                return Err(format!("契约 {origin} 的公理缺 id"));
+            if axiom.name.trim().is_empty() {
+                return Err(format!("契约 {origin} 的公理缺 name"));
             }
-            if !axiom_ids.insert(axiom.id.as_str()) {
-                return Err(format!("契约 {origin} 的公理 id 重复：{}", axiom.id));
+            if !axiom_names.insert(axiom.name.as_str()) {
+                return Err(format!("契约 {origin} 的公理 name 重复：{}", axiom.name));
             }
             if axiom.statement.trim().is_empty() {
-                return Err(format!("契约 {origin} 的公理没有 statement：{}", axiom.id));
+                return Err(format!(
+                    "契约 {origin} 的公理没有 statement：{}",
+                    axiom.name
+                ));
             }
             // 只有结论的公理是口号：why 记不住当初的失败，后来的人就无从判断它还算不算前提。
             if axiom.why.trim().is_empty() {
-                return Err(format!("契约 {origin} 的公理没有 why：{}", axiom.id));
+                return Err(format!("契约 {origin} 的公理没有 why：{}", axiom.name));
             }
             let status = axiom.status.trim();
             if !status.is_empty() && status != "confirmed" && status != "suspected" {
                 return Err(format!(
                     "契约 {origin} 的公理 status 只能写 confirmed 或 suspected：{}",
-                    axiom.id
+                    axiom.name
                 ));
             }
         }
@@ -325,16 +329,17 @@ path = "data/insight"
 
     #[test]
     fn 公理缺_why_在读契约时被拦下() {
-        let error =
-            parse("\n[[axiom]]\nid = \"one-place\"\nstatement = \"一份内容只有一个正确去处。\"\n")
-                .unwrap_err();
+        let error = parse(
+            "\n[[axiom]]\nname = \"one-place\"\nstatement = \"一份内容只有一个正确去处。\"\n",
+        )
+        .unwrap_err();
         assert!(error.contains("没有 why"), "{error}");
     }
 
     #[test]
     fn 公理缺_statement_在读契约时被拦下() {
         let error =
-            parse("\n[[axiom]]\nid = \"one-place\"\nstatement = \"\"\nwhy = \"放错格的代价是没人找得到它。\"\n")
+            parse("\n[[axiom]]\nname = \"one-place\"\nstatement = \"\"\nwhy = \"放错格的代价是没人找得到它。\"\n")
                 .unwrap_err();
         assert!(error.contains("没有 statement"), "{error}");
     }
@@ -342,19 +347,19 @@ path = "data/insight"
     #[test]
     fn 公理状态只能是确认或怀疑() {
         let error = parse(
-            "\n[[axiom]]\nid = \"x\"\nstatement = \"甲\"\nwhy = \"乙\"\nstatus = \"maybe\"\n",
+            "\n[[axiom]]\nname = \"x\"\nstatement = \"甲\"\nwhy = \"乙\"\nstatus = \"maybe\"\n",
         )
         .unwrap_err();
         assert!(error.contains("status"), "{error}");
     }
 
     #[test]
-    fn 公理_id_重复在读契约时被拦下() {
+    fn 公理_name_重复在读契约时被拦下() {
         let error = parse(
-            "\n[[axiom]]\nid = \"one-place\"\nstatement = \"甲\"\nwhy = \"乙\"\n\n[[axiom]]\nid = \"one-place\"\nstatement = \"丙\"\nwhy = \"丁\"\n",
+            "\n[[axiom]]\nname = \"one-place\"\nstatement = \"甲\"\nwhy = \"乙\"\n\n[[axiom]]\nname = \"one-place\"\nstatement = \"丙\"\nwhy = \"丁\"\n",
         )
         .unwrap_err();
-        assert!(error.contains("公理 id 重复"), "{error}");
+        assert!(error.contains("公理 name 重复"), "{error}");
     }
 }
 

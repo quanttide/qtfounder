@@ -75,7 +75,7 @@ pub struct Card {
     pub question: Option<String>,
     pub candidates: Vec<Candidate>,
     pub reason: Option<String>,
-    /// 这次判定用到的公理 id：只留出处，不参与算分。
+    /// 这次判断用到的公理名字：只留出处，不参与算分。
     pub axioms: Vec<String>,
 }
 
@@ -266,24 +266,24 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
 ///
 /// 公理不参与算分，只留一行出处，事后能对账：前提被改了还是判定被改了。
 fn cited(contract: &Contract, verdict: Verdict, has_domain: bool) -> Vec<String> {
-    let mut ids = vec!["domain-before-cell"];
+    let mut names = vec!["domain-before-cell"];
     if has_domain {
-        ids.push("text-only");
-        ids.push("archive-vs-transfer");
+        names.push("text-only");
+        names.push("archive-vs-transfer");
     }
     match verdict {
-        Verdict::Reject => ids.push("no-fit"),
+        Verdict::Reject => names.push("no-fit"),
         Verdict::Place | Verdict::Move => {
-            ids.push("one-place");
-            ids.push("template-scope");
+            names.push("one-place");
+            names.push("template-scope");
         }
         Verdict::Undecided => {}
     }
     contract
         .axiom
         .iter()
-        .filter(|axiom| ids.contains(&axiom.id.as_str()))
-        .map(|axiom| axiom.id.clone())
+        .filter(|axiom| names.contains(&axiom.name.as_str()))
+        .map(|axiom| axiom.name.clone())
         .collect()
 }
 
