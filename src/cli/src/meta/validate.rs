@@ -34,8 +34,9 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
     let mut problems = Vec::new();
     problems.extend(check_axioms(&contract, &args.docs));
     problems.extend(check_properties(&contract, &args.docs));
-    problems.extend(check_domains(&contract, &args.docs));
+    problems.extend(check_homes(&contract, &args.docs));
     problems.extend(check_categories(&contract, &args.docs));
+    problems.extend(check_models(&contract, &args.docs));
     problems.extend(check_paradigms(&contract, &args.docs));
 
     if args.json {
@@ -44,7 +45,8 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
             serde_json::to_string_pretty(&json!({
                 "axioms": contract.axiom.len(),
                 "properties": contract.property.len(),
-                "domains": contract.domain.len(),
+                "domain": contract.domain,
+                "homes": contract.home.len(),
                 "categories": contract.category.len(),
                 "paradigms": contract.paradigm.len(),
                 "problems": problems,
@@ -52,7 +54,7 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
             .unwrap_or_else(|_| "{}".to_string())
         );
     } else if problems.is_empty() {
-        println!("对得上：公理、属性、领域、范畴与范式都一致");
+        println!("对得上：公理、属性、去处、范畴与范式都一致");
     } else {
         println!("对不上 {} 处：", problems.len());
         for problem in &problems {
@@ -151,30 +153,30 @@ fn check_properties(contract: &Contract, docs: &Path) -> Vec<String> {
     problems
 }
 
-fn check_domains(contract: &Contract, docs: &Path) -> Vec<String> {
-    let path = docs.join("domain.md");
+fn check_homes(contract: &Contract, docs: &Path) -> Vec<String> {
+    let path = docs.join("home.md");
     let Some(text) = read(&path) else {
         return vec![format!("读不到 {}", path.display())];
     };
     let doc = headings(&text, "## ");
     let mut problems = Vec::new();
-    for domain in &contract.domain {
-        match doc.get(&domain.name) {
-            None => problems.push(format!("domain.md：契约里有 {}，文档没写", domain.name)),
+    for home in &contract.home {
+        match doc.get(&home.name) {
+            None => problems.push(format!("home.md：契约里有 {}，文档没写", home.name)),
             Some(key) => {
-                if *key != domain.status_key() {
+                if *key != home.status_key() {
                     problems.push(status_problem(
-                        "domain.md",
-                        &domain.name,
+                        "home.md",
+                        &home.name,
                         key,
-                        domain.status_label(),
+                        home.status_label(),
                     ));
                 }
             }
         }
     }
-    problems.extend(extra("domain.md", &doc, |name| {
-        contract.domain.iter().any(|domain| domain.name == name)
+    problems.extend(extra("home.md", &doc, |name| {
+        contract.home.iter().any(|home| home.name == name)
     }));
     problems
 }
@@ -473,6 +475,76 @@ fn edges(value: &str) -> Vec<String> {
             None => edge,
         })
         .collect()
+}
+
+/// 模型是范畴作为点的读法：轴与族取自契约，类目名单取自 `[[category]]`。
+/// `category.md` 的族标题下写 `- 轴：名（值、值）`，与契约逐条比。
+fn check_models(contract: &Contract, docs: &Path) -> Vec<String> {
+    let path = docs.join("category.md");
+    let Some(text) = read(&path) else {
+        return vec![format!("读不到 {}", path.display())];
+    };
+    let families: Vec<&str> = contract
+        .model
+        .family
+        .iter()
+        .map(|family| family.name.as_str())
+        .collect();
+    let doc = parse_axes(&text, &families);
+    let mut problems = Vec::new();
+    for family in &contract.model.family {
+        match doc.get(&family.name) {
+            None => problems.push(format!(
+                "category.md：模型里有 {}，文档没写它的轴",
+                family.name
+            )),
+            Some(axes) => {
+                let expected: Vec<(String, Vec<String>)> = family
+                    .axis
+                    .iter()
+                    .map(|axis| (axis.name.clone(), axis.values.clone()))
+                    .collect();
+                if axes != &expected {
+                    problems.push(format!(
+                        "category.md：{} 的轴不一致——文档 {:?}，契约 {:?}",
+                        family.name, axes, expected
+                    ));
+                }
+            }
+        }
+    }
+    problems
+}
+
+fn parse_axes(text: &str, families: &[&str]) -> BTreeMap<String, Vec<(String, Vec<String>)>> {
+    let mut doc: BTreeMap<String, Vec<(String, Vec<String>)>> = BTreeMap::new();
+    let mut current: Option<String> = None;
+    for line in text.lines() {
+        if let Some(heading) = line.strip_prefix("## ") {
+            let name = heading.trim().to_string();
+            current = if families.contains(&name.as_str()) {
+                doc.insert(name.clone(), Vec::new());
+                Some(name)
+            } else {
+                None
+            };
+            continue;
+        }
+        let Some(item) = line.strip_prefix("- 轴：") else {
+            continue;
+        };
+        let Some(family) = current.as_ref() else {
+            continue;
+        };
+        let Some((name, rest)) = item.split_once('（') else {
+            continue;
+        };
+        let values = list(rest.trim_end_matches('）'), '、');
+        if let Some(axes) = doc.get_mut(family) {
+            axes.push((name.trim().to_string(), values));
+        }
+    }
+    doc
 }
 
 /// 取带标记的标题：`### name（确认）`。

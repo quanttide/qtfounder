@@ -1,18 +1,17 @@
-//! `meta domain`：看登记的领域——内容搬出本仓的去处。
+//! `meta domain`：看本体论根——这个域里有什么、能说什么、认哪些前提。
 //!
-//! 只读契约。`classify` 判域时用同一份名单；这里只看名单本身。
+//! 一个域由三样组成：范畴（有哪些类目）、属性（每个类目上有什么字段）、公理（哪些前提不再论证）。
+//! 这是本体论视角；同一批类目的结构视角看 `meta paradigm`，`model` 则是范畴作为点的读法。
 
 use std::path::PathBuf;
 
 use clap::Args;
 use serde_json::json;
 
-use super::contract::{Contract, Domain};
+use super::contract::Contract;
 
 #[derive(Args, Debug)]
 pub struct DomainArgs {
-    /// 只看一个领域
-    pub name: Option<String>,
     /// 契约路径（缺省按 src/meta/default-contract.toml 逐级往上找）
     #[arg(long)]
     pub rules: Option<PathBuf>,
@@ -23,77 +22,76 @@ pub struct DomainArgs {
 
 pub fn run(args: &DomainArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;
-    if contract.domain.is_empty() {
-        return Err("契约里没有领域：在 [[domain]] 里补".to_string());
+    if contract.domain.trim().is_empty() {
+        return Err("契约里没有域：在 [domain] 里写上这份契约属于哪个域".to_string());
     }
-    let domains: Vec<&Domain> = match &args.name {
-        Some(name) => vec![domain_of(&contract, name)?],
-        None => ordered(&contract),
-    };
+    let groups = property_groups(&contract);
+    let confirmed = contract
+        .axiom
+        .iter()
+        .filter(|axiom| axiom.status_key() == "confirmed")
+        .count();
+
     if args.json {
-        print_json(&domains);
-    } else {
-        print_text(&domains);
+        let value = json!({
+            "domain": contract.domain,
+            "categories": contract.category.iter().map(|category| category.name.clone()).collect::<Vec<_>>(),
+            "properties": groups
+                .iter()
+                .map(|(group, count)| json!({"group": group, "count": count}))
+                .collect::<Vec<_>>(),
+            "axioms": {
+                "total": contract.axiom.len(),
+                "confirmed": confirmed,
+                "suspected": contract.axiom.len() - confirmed,
+            },
+        });
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&value).unwrap_or_else(|_| "{}".to_string())
+        );
+        return Ok(0);
     }
+
+    println!("域：{}", contract.domain);
+    println!();
+    println!("范畴（{}）", contract.category.len());
+    println!(
+        "  {}",
+        contract
+            .category
+            .iter()
+            .map(|category| category.name.as_str())
+            .collect::<Vec<_>>()
+            .join("、")
+    );
+    println!();
+    println!("属性（{}）", contract.property.len());
+    for (group, count) in &groups {
+        println!("  {group} {count}");
+    }
+    println!();
+    println!("公理（{}）", contract.axiom.len());
+    println!(
+        "  确认 {confirmed}，怀疑 {}",
+        contract.axiom.len() - confirmed
+    );
     Ok(0)
 }
 
-/// 领域按状态排：确认的在前，同组内保持契约顺序。
-pub fn ordered(contract: &Contract) -> Vec<&Domain> {
-    let mut domains: Vec<&Domain> = contract.domain.iter().collect();
-    domains.sort_by_key(|domain| domain.status_key() != "confirmed");
-    domains
-}
-
-pub fn domain_of<'a>(contract: &'a Contract, name: &str) -> Result<&'a Domain, String> {
-    contract
-        .domain
-        .iter()
-        .find(|domain| domain.name == name)
-        .ok_or_else(|| {
-            let names: Vec<&str> = contract
-                .domain
-                .iter()
-                .map(|domain| domain.name.as_str())
-                .collect();
-            format!("没有这个领域：{name}；可选：{}", names.join("、"))
-        })
-}
-
-fn print_text(domains: &[&Domain]) {
-    for (index, domain) in domains.iter().enumerate() {
-        if index > 0 {
-            println!();
-        }
-        println!(
-            "{}  {}  {}",
-            domain.name,
-            domain.label(),
-            domain.status_label()
-        );
-        if !domain.cues.is_empty() {
-            println!("  线索：{}", domain.cues.join("、"));
+/// 属性按组计数，组的先后照契约。
+fn property_groups(contract: &Contract) -> Vec<(String, usize)> {
+    let mut groups: Vec<(String, usize)> = Vec::new();
+    for property in &contract.property {
+        match groups
+            .iter_mut()
+            .find(|(group, _)| *group == property.group)
+        {
+            Some((_, count)) => *count += 1,
+            None => groups.push((property.group.clone(), 1)),
         }
     }
-}
-
-fn print_json(domains: &[&Domain]) {
-    let items: Vec<serde_json::Value> = domains
-        .iter()
-        .map(|domain| {
-            json!({
-                "name": domain.name,
-                "label": domain.label(),
-                "cues": domain.cues,
-                "status": domain.status_key(),
-                "status_label": domain.status_label(),
-            })
-        })
-        .collect();
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&items).unwrap_or_else(|_| "[]".to_string())
-    );
+    groups
 }
 
 #[cfg(test)]
@@ -101,24 +99,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn 六个领域且确认的在前() {
+    fn 元契约的域是_meta() {
         let contract = Contract::bundled();
-        let domains = ordered(&contract);
-        assert_eq!(domains.len(), 6);
-        let mut seen_suspected = false;
-        for domain in domains {
-            if domain.status_key() == "confirmed" {
-                assert!(!seen_suspected, "{} 排在怀疑后面", domain.name);
-            } else {
-                seen_suspected = true;
-            }
-        }
+        assert_eq!(contract.domain, "meta");
     }
 
     #[test]
-    fn 未知领域会报可选项() {
+    fn 属性分组按契约顺序() {
         let contract = Contract::bundled();
-        let error = domain_of(&contract, "nope").unwrap_err();
-        assert!(error.contains("quanttide-write"), "{error}");
+        let groups = property_groups(&contract);
+        assert_eq!(
+            groups.first().map(|(group, _)| group.as_str()),
+            Some("标识")
+        );
+        assert_eq!(groups.iter().map(|(_, count)| count).sum::<usize>(), 19);
     }
 }

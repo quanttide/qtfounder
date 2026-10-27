@@ -1,3 +1,5 @@
+domain = "code"
+
 # 代码语用的默认契约：四层验收标准的阈值与词表。
 #
 # 这是本工具自带的契约（software engineering contract）：它规定「什么样的代码算合格」。

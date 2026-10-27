@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use clap::Args;
 use serde::Serialize;
 
-use super::contract::{Axiom, Category, Contract, Domain};
+use super::contract::{Axiom, Category, Contract, Home};
 
 #[derive(Args, Debug)]
 pub struct ClassifyArgs {
@@ -66,9 +66,9 @@ pub struct Candidate {
 #[derive(Debug, Clone)]
 pub struct Card {
     pub verdict: Verdict,
-    pub domain: Option<Domain>,
-    pub domain_form: Option<&'static str>,
-    pub domain_reason: Option<String>,
+    pub home: Option<Home>,
+    pub home_form: Option<&'static str>,
+    pub home_reason: Option<String>,
     pub category: Option<Category>,
     pub grade: Option<String>,
     pub rule: Option<String>,
@@ -119,9 +119,9 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
     if paragraphs > contract.verdict.max_paragraphs {
         return Card {
             verdict: Verdict::Undecided,
-            domain: None,
-            domain_form: None,
-            domain_reason: None,
+            home: None,
+            home_form: None,
+            home_reason: None,
             category: None,
             grade: None,
             rule: None,
@@ -151,9 +151,9 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
         })
         .collect();
 
-    let domain = call_domain(text, contract);
-    let (domain, domain_form, domain_reason) = match domain {
-        Some((domain, matched)) => {
+    let home = call_home(text, contract);
+    let (home, home_form, home_reason) = match home {
+        Some((home, matched)) => {
             let form = if hits(text, &contract.verdict.archive_cues) > 0 {
                 "归档"
             } else {
@@ -163,40 +163,40 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
                 "正文在讲{}；判域只看正文，不看它现在住在哪。",
                 matched.join("、")
             );
-            (Some(domain), Some(form), Some(reason))
+            (Some(home), Some(form), Some(reason))
         }
         None => (None, None, None),
     };
-    let has_domain = domain.is_some();
+    let has_home = home.is_some();
 
     let Some((top_score, _, top)) = scored.first() else {
         return Card {
             verdict: Verdict::Reject,
-            domain,
-            domain_form,
-            domain_reason,
+            home,
+            home_form,
+            home_reason,
             category: None,
             grade: None,
             rule: None,
             question: None,
             candidates,
             reason: Some("一格都没命中——一句都套不上，留在日志里等它重复。".to_string()),
-            axioms: cited(&contract, Verdict::Reject, has_domain),
+            axioms: cited(&contract, Verdict::Reject, has_home),
         };
     };
     if *top_score < contract.verdict.min_hits {
         return Card {
             verdict: Verdict::Reject,
-            domain,
-            domain_form,
-            domain_reason,
+            home,
+            home_form,
+            home_reason,
             category: None,
             grade: None,
             rule: None,
             question: None,
             candidates,
             reason: Some("命中太弱——一句都套不上，留在日志里等它重复。".to_string()),
-            axioms: cited(&contract, Verdict::Reject, has_domain),
+            axioms: cited(&contract, Verdict::Reject, has_home),
         };
     }
 
@@ -205,9 +205,9 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
     {
         return Card {
             verdict: Verdict::Undecided,
-            domain,
-            domain_form,
-            domain_reason,
+            home,
+            home_form,
+            home_reason,
             category: None,
             grade: None,
             rule: None,
@@ -219,7 +219,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
                 second.label,
                 top_score - second_score
             )),
-            axioms: cited(&contract, Verdict::Undecided, has_domain),
+            axioms: cited(&contract, Verdict::Undecided, has_home),
         };
     }
 
@@ -242,23 +242,23 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
     };
     let grade = pick_grade(text, &category);
     let rule = rule.unwrap_or_else(|| category.description.clone());
-    let verdict = if has_domain {
+    let verdict = if has_home {
         Verdict::Move
     } else {
         Verdict::Place
     };
     Card {
         verdict,
-        domain,
-        domain_form,
-        domain_reason,
+        home,
+        home_form,
+        home_reason,
         category: Some(category),
         grade,
         rule: Some(rule),
         question: None,
         candidates,
         reason: None,
-        axioms: cited(&contract, verdict, has_domain),
+        axioms: cited(&contract, verdict, has_home),
     }
 }
 
@@ -266,9 +266,9 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
 ///
 /// 确认过的排前面，同组内保持契约顺序。公理不参与算分，只留一行出处，事后能对账：
 /// 前提被改了还是规则被改了。
-fn cited(contract: &Contract, verdict: Verdict, has_domain: bool) -> Vec<String> {
-    let mut names = vec!["domain-before-category"];
-    if has_domain {
+fn cited(contract: &Contract, verdict: Verdict, has_home: bool) -> Vec<String> {
+    let mut names = vec!["home-before-category"];
+    if has_home {
         names.push("text-only");
         names.push("archive-vs-transfer");
     }
@@ -308,32 +308,32 @@ fn hits(text: &str, cues: &[String]) -> usize {
         .sum()
 }
 
-fn call_domain(text: &str, contract: &Contract) -> Option<(Domain, Vec<String>)> {
-    let threshold = contract.verdict.min_domain_hits.max(1);
-    let mut scored: Vec<(usize, &Domain, Vec<String>)> = contract
-        .domain
+fn call_home(text: &str, contract: &Contract) -> Option<(Home, Vec<String>)> {
+    let threshold = contract.verdict.min_home_hits.max(1);
+    let mut scored: Vec<(usize, &Home, Vec<String>)> = contract
+        .home
         .iter()
-        .map(|domain| {
-            let matched: Vec<String> = domain
+        .map(|home| {
+            let matched: Vec<String> = home
                 .cues
                 .iter()
                 .filter(|cue| !cue.is_empty() && text.contains(cue.as_str()))
                 .cloned()
                 .collect();
-            let score = hits(text, &domain.cues);
-            (score, domain, matched)
+            let score = hits(text, &home.cues);
+            (score, home, matched)
         })
         .filter(|(score, _, _)| *score >= threshold)
         .collect();
     scored.sort_by_key(|item| std::cmp::Reverse(item.0));
-    let (score, domain, matched) = scored.first()?;
+    let (score, home, matched) = scored.first()?;
     // 两个领域打平就不指路：猜错一个域要搬两趟。
     if let Some((next, _, _)) = scored.get(1)
         && next == score
     {
         return None;
     }
-    Some(((*domain).clone(), matched.clone()))
+    Some(((*home).clone(), matched.clone()))
 }
 
 fn pick_grade(text: &str, category: &Category) -> Option<String> {
@@ -350,14 +350,14 @@ fn pick_grade(text: &str, category: &Category) -> Option<String> {
 fn print_card(card: &Card, contract: &Contract) {
     println!("落位卡");
     println!();
-    match (&card.domain, card.domain_form) {
-        (Some(domain), Some(form)) => {
-            println!("域：去 {}（{}，{}）", domain.label(), domain.name, form);
-            if let Some(reason) = &card.domain_reason {
+    match (&card.home, card.home_form) {
+        (Some(home), Some(form)) => {
+            println!("去处：去 {}（{}，{}）", home.label(), home.name, form);
+            if let Some(reason) = &card.home_reason {
                 println!("理由：{reason}");
             }
         }
-        _ => println!("域：{}", contract.verdict.stay),
+        _ => println!("去处：{}", contract.verdict.stay),
     }
 
     match card.verdict {
@@ -402,7 +402,7 @@ fn print_card(card: &Card, contract: &Contract) {
             if let Some(reason) = &card.reason {
                 println!("理由：{reason}");
             }
-            if card.domain.is_some() {
+            if card.home.is_some() {
                 println!("本仓十八格都套不上，按 meta-classify 搬走。");
             }
             print_axioms(card, contract);
@@ -435,7 +435,7 @@ fn print_axioms(card: &Card, contract: &Contract) {
 struct JsonCard<'a> {
     verdict: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
-    domain: Option<JsonDomain<'a>>,
+    home: Option<JsonHome<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     category: Option<JsonCategory<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -451,7 +451,7 @@ struct JsonCard<'a> {
 }
 
 #[derive(Serialize)]
-struct JsonDomain<'a> {
+struct JsonHome<'a> {
     name: &'a str,
     label: &'a str,
     form: &'a str,
@@ -476,11 +476,11 @@ struct JsonCandidate<'a> {
 }
 
 fn print_json(card: &Card) -> Result<(), String> {
-    let domain = card.domain.as_ref().map(|domain| JsonDomain {
-        name: &domain.name,
-        label: domain.label(),
-        form: card.domain_form.unwrap_or("移交"),
-        reason: card.domain_reason.as_deref().unwrap_or(""),
+    let home = card.home.as_ref().map(|home| JsonHome {
+        name: &home.name,
+        label: home.label(),
+        form: card.home_form.unwrap_or("移交"),
+        reason: card.home_reason.as_deref().unwrap_or(""),
     });
     let category = card.category.as_ref().map(|category| JsonCategory {
         name: &category.name,
@@ -491,7 +491,7 @@ fn print_json(card: &Card) -> Result<(), String> {
     });
     let view = JsonCard {
         verdict: card.verdict.key(),
-        domain,
+        home,
         category,
         grade: card.grade.as_deref(),
         rule: card.rule.as_deref(),

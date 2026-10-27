@@ -24,7 +24,10 @@ pub struct Contract {
     #[serde(default)]
     pub verdict: Verdict,
     #[serde(default)]
-    pub domain: Vec<Domain>,
+    pub home: Vec<Home>,
+    /// 本体论根：这份契约属于哪个域。
+    #[serde(default)]
+    pub domain: String,
     #[serde(default)]
     pub category: Vec<Category>,
     #[serde(default)]
@@ -48,7 +51,7 @@ pub struct Verdict {
     #[serde(default)]
     pub min_hits: usize,
     #[serde(default)]
-    pub min_domain_hits: usize,
+    pub min_home_hits: usize,
     #[serde(default)]
     pub max_paragraphs: usize,
     #[serde(default)]
@@ -64,7 +67,7 @@ impl Default for Verdict {
         Self {
             min_margin: 1,
             min_hits: 1,
-            min_domain_hits: 1,
+            min_home_hits: 1,
             max_paragraphs: 5,
             stay: "留在这里".to_string(),
             archive_cues: Vec::new(),
@@ -74,7 +77,7 @@ impl Default for Verdict {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Domain {
+pub struct Home {
     pub name: String,
     #[serde(default)]
     pub label: String,
@@ -85,7 +88,7 @@ pub struct Domain {
     pub status: String,
 }
 
-impl Domain {
+impl Home {
     pub fn label(&self) -> &str {
         if self.label.is_empty() {
             &self.name
@@ -460,19 +463,19 @@ impl Contract {
                 ));
             }
         }
-        let mut domain_names = HashSet::new();
-        for domain in &contract.domain {
-            if domain.name.trim().is_empty() {
-                return Err(format!("契约 {origin} 的领域缺 name"));
+        let mut home_names = HashSet::new();
+        for home in &contract.home {
+            if home.name.trim().is_empty() {
+                return Err(format!("契约 {origin} 的去处缺 name"));
             }
-            if !domain_names.insert(domain.name.as_str()) {
-                return Err(format!("契约 {origin} 的领域 name 重复：{}", domain.name));
+            if !home_names.insert(home.name.as_str()) {
+                return Err(format!("契约 {origin} 的去处 name 重复：{}", home.name));
             }
-            let status = domain.status.trim();
+            let status = home.status.trim();
             if !status.is_empty() && status != "confirmed" && status != "suspected" {
                 return Err(format!(
-                    "契约 {origin} 的领域 status 只能写 confirmed 或 suspected：{}",
-                    domain.name
+                    "契约 {origin} 的去处 status 只能写 confirmed 或 suspected：{}",
+                    home.name
                 ));
             }
         }
@@ -539,9 +542,9 @@ impl Contract {
                 }
             }
         }
-        if bundled && contract.domain.is_empty() {
+        if bundled && contract.home.is_empty() {
             return Err(format!(
-                "契约 {origin} 没有领域：至少写清留在这里之外的去处"
+                "契约 {origin} 没有去处：至少写清留在这里之外的去处"
             ));
         }
         Ok(contract)

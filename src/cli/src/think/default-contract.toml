@@ -1,3 +1,5 @@
+domain = "think"
+
 # 认知模型：reflect 只认字段，不认内容。改模型改这份文件，不动判定代码。
 #
 # 查找顺序：--model → QTFOUNDER_THINK_MODEL → 从当前目录往上找 src/think/default-contract.toml

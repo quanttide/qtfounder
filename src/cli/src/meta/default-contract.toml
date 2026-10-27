@@ -1,6 +1,8 @@
+domain = "meta"
+
 # 归位的判定标准。一份内容只有一个正确去处。
 #
-# 判定顺序：先定域（留在这里，还是去领域仓），再定格（十八格之一），
+# 判定顺序：先定去处（留在这里，还是搬去别的仓），再定范畴（十八格之一），
 # 再看够不够格（升格、降格、不收），最后给写法。
 # 判定层只读这份文件：词表、界线、骨架都在这里，改规则改文件，不改代码。
 
@@ -9,8 +11,8 @@
 min_margin = 1
 # 一格都没命中，不收：一句都套不上的，留在日志里等它重复。
 min_hits = 1
-# 领域命中数低于它，不指路：一个顺带动词不该把整篇搬去别的领域。
-min_domain_hits = 2
+# 去处命中数低于它，不指路：一个顺带动词不该把整篇搬去别处。
+min_home_hits = 2
 # 留在这里的说法。
 stay = "留在这里"
 # 正文出现这些词，搬去领域侧时按归档处理：只移动文件，不改写内容。
@@ -22,41 +24,41 @@ question_fallback = "它说的是世界怎么运转，还是你下一步要做�
 # 一次判一篇，各条的线索会互相干扰，宁可让拆开再判。
 max_paragraphs = 5
 
-# ---------------- 域 ----------------
+# ---------------- 去处 ----------------
 # 判域只看正文，不看它现在住在哪。没命中任何领域，就是留在这里。
 # 名字与 domains/ 下的仓库一一对应；换领域改这里。
 
-[[domain]]
+[[home]]
 name = "quanttide-write"
 label = "write 领域"
 cues = ["小说", "章节", "文风", "叙事", "人物", "改稿"]
 status = "confirmed"
 
-[[domain]]
+[[home]]
 name = "quanttide-health"
 label = "health 领域"
 cues = ["健康", "睡眠", "心理", "情绪", "认知扭曲", "体检"]
 status = "confirmed"
 
-[[domain]]
+[[home]]
 name = "quanttide-finance"
 label = "finance 领域"
 cues = ["财务", "预算", "成本", "报销", "毛利", "现金流"]
 status = "confirmed"
 
-[[domain]]
+[[home]]
 name = "quanttide-code"
 label = "code 领域"
 cues = ["代码", "函数", "编译", "单元测试", "重构"]
 status = "confirmed"
 
-[[domain]]
+[[home]]
 name = "quanttide-learn"
 label = "learn 领域"
 cues = ["课程", "教学", "学员", "培训", "课堂"]
 status = "confirmed"
 
-[[domain]]
+[[home]]
 name = "quanttide-legal"
 label = "legal 领域"
 cues = ["法律", "合同", "诉讼", "知识产权", "合规"]
@@ -451,9 +453,9 @@ why = "放错格的代价不是难看，是下一轮没人找得到它。"
 status = "suspected"
 
 [[axiom]]
-name = "domain-before-category"
-description = "先定域，再定格，再过准入，最后给写法。"
-why = "顺序换了，域错时格越准，搬得越远。"
+name = "home-before-category"
+description = "先定去处，再定范畴，再过准入，最后给写法。"
+why = "顺序换了，去处错时范畴越准，搬得越远。"
 status = "suspected"
 
 [[axiom]]

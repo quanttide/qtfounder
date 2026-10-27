@@ -4,7 +4,7 @@
 
 `classify` 一次判一条线索：给一段内容，出一张落位卡。卡上四行——域、格、档、写法——加一个结论：收，还是收不了。
 
-## 十条命令
+## 十一条命令
 
 名词读本体，动词分三种：`classify` 把内容放进格，`validate` 看有没有漂，`compare` 比两个范式。
 
@@ -15,7 +15,8 @@
 | 公理 | `meta axiom` | 归位时不重新论证的前提 |
 | 属性 | `meta property` | 标准属性的字段名、组与定义 |
 | 范畴 | `meta category` | 十八格各收什么 |
-| 领域 | `meta domain` | 内容搬出本仓的去处 |
+| 去处 | `meta home` | 内容搬出本仓能去哪里 |
+| 域（本体论） | `meta domain` | 这个域里有哪些范畴、属性与公理 |
 | 范式 | `meta paradigm` | 每个范式的对象、态射与合成律 |
 | 范畴（动词） | `meta classify` | 给一条内容一张落位卡 |
 | 验证（动词） | `meta validate` | 文档镜像与契约是否还对得上 |
@@ -23,7 +24,7 @@
 
 ## 一、四步，顺序不能换
 
-先定域：留在这里，还是搬去领域仓。定域只看正文讲哪个领域，不看它现在住在哪。单个词命中不足以指路，免得一个顺带出现的领域词把整篇搬走。正文里有已废弃、旧版这类词，搬的时候按归档处理，只移动不改写；否则是移交，要按目标侧的体例重写。
+先定去处：留在这里，还是搬去别的仓。定去处只看正文讲哪个领域，不看它现在住在哪。单个词命中不足以指路，免得一个顺带出现的领域词把整篇搬走。正文里有已废弃、旧版这类词，搬的时候按归档处理，只移动不改写；否则是移交，要按目标侧的体例重写。
 
 再定格：十八格里的哪一格，对应哪个目录。陈述型先看时间（过去、现在、未来），再看类型（事件、语义、自我）；程序型先看约束力（宪法、法律、法理），再看写给谁用（人读、AI 解析、直接运行）。
 
@@ -36,11 +37,11 @@
 ```text
 落位卡
 
-域：留在这里
-格：Insight 洞察  data/insight/
+去处：留在这里
+范畴：Insight 洞察  data/insight/
 档：假说
 凭什么：一句话能被推翻，推翻之后做法会变；抽掉日期和当事人还成立。
-公理：template-scope（确认）、one-place（怀疑）、domain-before-category（怀疑）
+公理：template-scope（确认）、one-place（怀疑）、home-before-category（怀疑）
 
 写法：
 # 主题名
@@ -59,11 +60,11 @@
 ```text
 落位卡
 
-域：留在这里
+去处：留在这里
 待定
 候选：Insight 洞察 2、Roadmap 路线图 2
 问一句：这句话在解释为什么必须这样排（因为…否则…），还是现在就要做哪一步？前者进洞察，后者进路线图。
-公理：domain-before-category（怀疑）
+公理：home-before-category（怀疑）
 先别落。
 ```
 
@@ -79,7 +80,7 @@
 
 ## 五、它不做的事
 
-不改写、不落盘、不搬文件。跨域只给去处和形态，真正的迁移还是按 `meta-classify` 一步步走：先写目标、再删源、逐级更新指针。
+不改写、不落盘、不搬文件。跨仓只给去处和形态，真正的迁移还是按 `meta-classify` 一步步走：先写目标、再删源、逐级更新指针。
 
 ## 六、改规则改文件
 
@@ -172,7 +173,7 @@ qtfounder meta axiom no-fallback
 one-place  怀疑  一份内容只有一个正确去处。
   放错格的代价不是难看，是下一轮没人找得到它。
 
-domain-before-category  怀疑  先定域，再定格，再过准入，最后给写法。
+home-before-category  怀疑  先定去处，再定范畴，再过准入，最后给写法。
   顺序换了，域错时格越准，搬得越远。
 ...
 ```
@@ -191,34 +192,64 @@ domain-before-category  怀疑  先定域，再定格，再过准入，最后给
 
 公理不参与算分，只留一行出处。判完对不上时，先看这一行：前提改了，还是规则用错了。
 
-- 每张卡：`domain-before-category`
-- 指了域：`text-only`、`archive-vs-transfer`
+- 每张卡：`home-before-category`
+- 指了去处：`text-only`、`archive-vs-transfer`
 - 收了（落位或搬走）：`one-place`、`template-scope`
 - 不收：`no-fit`
 
 点名只点契约里还在的：把一条 `[[axiom]]` 删了，卡上就不会再出现它——沉默比报错早一步暴露改动。反过来，契约里加了新公理，卡也不会自动引用，要在 `classify` 的 `cited` 里写上它管哪一步。
 
-## 十一、domain：领域
+## 十一、home：去处
 
 ```bash
-qtfounder meta domain
-qtfounder meta domain quanttide-write
+qtfounder meta home
+qtfounder meta home quanttide-write
 ```
 
 ```text
-quanttide-write  write 领域  怀疑
+quanttide-write  write 领域  确认
   线索：小说、章节、文风、叙事、人物、改稿
 ...
 ```
 
-领域是内容搬出本仓的去处，与落进哪一格无关。领域写在契约的 `[[domain]]` 里，每条有 name、label、cues 与 status；`classify` 判域时读同一份名单。
+去处是内容搬出本仓能去的地方，与落进哪一格无关。去处写在契约的 `[[home]]` 里，每条有 name、label、cues 与 status；`classify` 定去处时读同一份名单。
 
 用途：
 
-- 加一个领域仓时，先在这里登记名字与线索；线索是认路的词，不是关键词清单。
-- 领域 name 重复、为空，或 status 写了别的值，读契约时就报。
+- 加一个去处时，先在这里登记仓名与线索；线索是认路的词，不是关键词清单。
+- 去处 name 重复、为空，或 status 写了别的值，读契约时就报。
 
-## 十二、property：标准属性
+## 十二、domain：域（本体论）
+
+```bash
+qtfounder meta domain
+qtfounder meta domain --json
+```
+
+```text
+域：meta
+
+范畴（18）
+  report、library、history、...
+
+属性（19）
+  标识 4
+  分类 2
+  ...
+
+公理（9）
+  确认 1，怀疑 8
+```
+
+域是本体论的根：一个域由范畴、属性与公理组成。本仓的域叫 meta，写在契约顶层的 `domain` 里；每个命令的契约都用同一行标明自己属于哪个域。
+
+用途：
+
+- 想知道本仓有哪些类目、字段与前提，跑这一条。
+- 域与去处是两回事：域回答「这份内容属于哪一类知识」，去处回答「它该落在哪个仓」。
+- 结构视角看同一批类目，跑 `meta paradigm`；类目作为点的读法，跑 `meta model`。
+
+## 十三、property：标准属性
 
 ```bash
 qtfounder meta property
@@ -240,7 +271,7 @@ qtfounder meta property --json
 - 加字段前先看这个名字有没有：有就照它的意思用，不另起一个。
 - 契约里 name 重复、缺 group、缺 description、status 写了别的值，读契约时就报。
 
-## 十三、category：十八格
+## 十四、category：十八格
 
 ```bash
 qtfounder meta category
@@ -258,7 +289,7 @@ qtfounder meta category insight
 
 `docs/gallery/meta/category.md` 是给人看的镜像，名字、族、目录与界线都与契约逐条对，跑 `meta validate` 能查出漂移。
 
-## 十四、validate：查漂移
+## 十五、validate：查漂移
 
 ```bash
 qtfounder meta validate
@@ -273,7 +304,7 @@ qtfounder meta validate --docs docs/gallery/meta
 
 它只对五份镜像——`axioms.md`、`property.md`、`domain.md`、`category.md` 与 `paradigm.md`；模型、关系两页还没纳入。改完契约或这五份文档，跑一遍再提交。
 
-## 十五、paradigm：把归位写成一个范式
+## 十六、paradigm：把归位写成一个范式
 
 ```bash
 qtfounder meta paradigm            # 有哪些范式，各自的点与边
@@ -282,7 +313,7 @@ qtfounder meta paradigm --check    # 查合成断没断、有没有互相可达
 ```
 
 ```text
-quanttide-founder  归位  确认  合成：部分  18 个对象 / 3 条态射
+quanttide-founder  归位  确认  合成：部分  共 18 个对象 / 3 条态射
   insight  Insight 洞察  出 1 入 0
   ...
   态射：
@@ -293,11 +324,11 @@ quanttide-founder  归位  确认  合成：部分  18 个对象 / 3 条态射
 
 `compose` 写三档：`transitive` 要求合成闭合，缺一处就退出码 1；`partial` 是条件不满足就不断言，缺了只报个数；`none` 当图看，不查。
 
-`--check` 另查一件事：两个对象互相可达。这类两个代表同在一个同构类里，按 `one-place` 该只留一个。它报的是嫌疑，不是结论。
+`--check` 另查一样：两个对象互相可达。这类两个代表同在一个同构类里，按 `one-place` 该只留一个。它报的是嫌疑，不是结论。
 
 `docs/gallery/meta/paradigm.md` 是给人看的镜像，名字、状态、来源、合成与对象数都与契约逐条对。
 
-## 十六、compare：比两个范式
+## 十七、compare：比两个范式
 
 ```bash
 qtfounder meta compare quanttide-founder aristotle

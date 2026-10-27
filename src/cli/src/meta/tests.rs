@@ -153,15 +153,15 @@ fn 两格打平只问一句() {
 #[test]
 fn 一个顺带动词不指路() {
     let card = judge("把过滤与失真做成纯函数，弹药才判得对错。", &contract());
-    assert!(card.domain.is_none(), "一个领域词不该把整篇搬走");
+    assert!(card.home.is_none(), "一个领域词不该把整篇搬走");
 }
 
 #[test]
 fn 正文讲什么领域就指哪个域() {
     let card = judge("小说第三章的文风还要再改。", &contract());
-    let domain = card.domain.expect("应指到 write 领域");
+    let domain = card.home.expect("应指到 write 领域");
     assert_eq!(domain.name, "quanttide-write");
-    assert_eq!(card.domain_form, Some("移交"));
+    assert_eq!(card.home_form, Some("移交"));
     assert_eq!(card.verdict, Verdict::Reject);
     assert!(card.reason.unwrap().contains("套不上"));
 }
@@ -171,13 +171,13 @@ fn 跨域且能落格时判搬走() {
     let card = judge("小说第三章的文风要改，这是我要的效果。", &contract());
     assert_eq!(card.verdict, Verdict::Move);
     assert_eq!(key_of(&card), "intention");
-    assert_eq!(card.domain_form, Some("移交"));
+    assert_eq!(card.home_form, Some("移交"));
 }
 
 #[test]
 fn 旧东西搬去归档只移动不改写() {
     let card = judge("旧版小说的文风作废。", &contract());
-    assert_eq!(card.domain_form, Some("归档"));
+    assert_eq!(card.home_form, Some("归档"));
 }
 
 #[test]
@@ -236,7 +236,7 @@ fn 一个口头禅只按两次算() {
 #[test]
 fn 落位卡点名这次用到的公理() {
     let card = place("初稿必冗余，因为遗漏可见、冗余不可见。");
-    for id in ["domain-before-category", "one-place", "template-scope"] {
+    for id in ["home-before-category", "one-place", "template-scope"] {
         assert!(
             card.axioms.iter().any(|axiom| axiom == id),
             "落位卡应点到 {id}：{:?}",
@@ -282,4 +282,24 @@ fn 契约里删掉的公理不上卡() {
     let card = judge("初稿必冗余，因为遗漏可见、冗余不可见。", &contract);
     assert_eq!(card.verdict, Verdict::Place);
     assert!(!card.axioms.iter().any(|axiom| axiom == "template-scope"));
+}
+
+#[test]
+fn 每份契约都标了自己属于哪个域() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    for name in [
+        "agent", "code", "docs", "language", "meta", "think", "write",
+    ] {
+        let path = root.join(name).join("default-contract.toml");
+        let text = std::fs::read_to_string(&path)
+            .unwrap_or_else(|error| panic!("读不了 {}：{error}", path.display()));
+        let value: toml::Value = toml::from_str(&text).unwrap();
+        assert!(
+            value
+                .get("domain")
+                .and_then(|domain| domain.as_str())
+                .is_some(),
+            "{name} 没写 domain"
+        );
+    }
 }

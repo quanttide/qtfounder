@@ -262,7 +262,7 @@ fn print_text(paradigms: &[ResolvedParadigm]) {
             println!();
         }
         println!(
-            "{}  {}  {}  合成：{}  {} 个对象 / {} 条态射",
+            "{}  {}  {}  合成：{}  共 {} 个对象 / {} 条态射",
             paradigm.name,
             paradigm.label(),
             paradigm.status_label(),

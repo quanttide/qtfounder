@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.0.37] - 2026-10-27
+
+### Added
+
+- `meta domain` 改为本体论视图：域 → 范畴、属性与公理；每个命令的契约顶层新增 `domain`，标明它属于哪个域
+- `meta home`：看去处——内容搬出本仓能去哪里
+- `meta validate` 纳入 `home.md` 与模型的轴（`category.md` 里的 `- 轴：`）
+
+### Changed
+
+- 契约的 `[[domain]]` 改为 `[[home]]`；卡片字段 `domain` 改为 `home`，`min_domain_hits` 改为 `min_home_hits`
+- 公理 `domain-before-category` 改为 `home-before-category`，表述改为「先定去处，再定范畴」
+- `docs/gallery/meta/domain.md` 改为本体论说明，原六个领域搬到 `home.md`
+
 ## [0.0.36] - 2026-10-27
 
 ### Changed

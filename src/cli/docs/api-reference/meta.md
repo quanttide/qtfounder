@@ -27,8 +27,8 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 ```text
 落位卡
 
-域：留在这里
-格：Roadmap 路线图  data/roadmap/
+去处：留在这里
+范畴：Roadmap 路线图  data/roadmap/
 档：已决策
 凭什么：回答「下一步干什么」，讲先后与取舍。只陈述认识、不排先后的，不是路线图。
 
@@ -41,8 +41,8 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 `--json` 给这些字段：
 
 - `verdict`：`place`／`move`／`reject`／`undecided`
-- `domain`：去的领域，含 `name`、`label`、`form`（`移交`／`归档`）与 `reason`；留在这里时没有这个字段
-- `category`：`key`、`name`、`path`、`family`、`skeleton`；不收或待定时没有这个字段
+- `home`：去的仓，含 `name`、`label`、`form`（`移交`／`归档`）与 `reason`；留在这里时没有这个字段
+- `category`：`name`、`label`、`path`、`family`、`skeleton`；不收或待定时没有这个字段
 - `grade`：档；没有分档的格不出现
 - `rule`：凭什么归这里，同人读那张卡
 - `question`：待定时那一个问题
@@ -78,14 +78,15 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 |----|------|------|
 | `[verdict]` | `min_margin` | 分差低于它判待定；打平就判不了 |
 | | `min_hits` | 最高分低于它判不收 |
-| | `min_domain_hits` | 领域命中数低于它不指路 |
+| | `min_home_hits` | 去处命中数低于它不指路 |
 | | `max_paragraphs` | 超过这个段数判「拆成一条再判」 |
 | | `stay` | 留在这里的说法 |
 | | `archive_cues` | 出现即按归档处理 |
 | | `question_fallback` | 没有现成分辨句时问那一句 |
-| `[[domain]]` | `name`／`label`／`cues` | 领域仓名、显示名与线索 |
-| `[[category]]` | `key`／`name`／`path`／`family` | 格的身份与目录 |
-| | `cues`／`boundary`／`skeleton` | 线索、理由、写法 |
+| `domain` | 字符串 | 这份契约属于哪个域 |
+| `[[home]]` | `name`／`label`／`cues`／`status` | 去处仓名、显示名、线索与确认状态 |
+| `[[category]]` | `name`／`label`／`path`／`family` | 范畴的身份与目录 |
+| | `cues`／`description`／`skeleton` | 线索、界线、写法 |
 | `[[category.grade]]` | `label`／`cues`／`fallback` | 档的顺序即展示顺序；`fallback` 兜底 |
 | `[[transition]]` | `from`／`to`／`require_any`／`lack_any`／`reason` | 准入不足时降格 |
 | `[[question]]` | `pair`／`ask` | 两格打平时问哪一句 |

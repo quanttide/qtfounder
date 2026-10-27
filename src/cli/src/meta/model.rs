@@ -1,6 +1,7 @@
 //! `meta model`：看两族九宫格的轴。
 //!
-//! 模型只描述本体，不参与判定。族的成员来自 `[[category]]` 的 `family`，
+//! 模型是范畴作为点的读法：族的成员来自 `[[category]]` 的 `family`，
+//! 轴写在契约的 `[model]` 里。模型不另存一份类目，只描述它们怎么被生成。不参与判定。
 //! 轴来自 `[[model.family.axis]]`；两处对不上时在契约加载阶段就报错。
 
 use std::path::PathBuf;
@@ -60,12 +61,12 @@ fn print_text(contract: &Contract) {
         println!("  九格：{}", categories.join("、"));
     }
     println!();
-    if contract.domain.is_empty() {
-        println!("领域：（未登记）");
+    if contract.home.is_empty() {
+        println!("去处：（未登记）");
     } else {
-        println!("领域（{}）", contract.domain.len());
-        for domain in &contract.domain {
-            println!("  {}  {}", domain.name, domain.label());
+        println!("去处（{}）", contract.home.len());
+        for home in &contract.home {
+            println!("  {}  {}", home.name, home.label());
         }
     }
 }
@@ -90,17 +91,17 @@ fn print_json(contract: &Contract) {
             })
         })
         .collect();
-    let domains: Vec<serde_json::Value> = contract
-        .domain
+    let homes: Vec<serde_json::Value> = contract
+        .home
         .iter()
-        .map(|domain| json!({"name": domain.name, "label": domain.label()}))
+        .map(|home| json!({"name": home.name, "label": home.label()}))
         .collect();
     println!(
         "{}",
         serde_json::to_string_pretty(&json!({
             "description": contract.model.description,
             "families": families,
-            "domains": domains,
+            "homes": homes,
         }))
         .unwrap_or_else(|_| "{}".to_string())
     );
@@ -135,8 +136,8 @@ mod tests {
     }
 
     #[test]
-    fn 领域也列进模型() {
+    fn 去处也列进模型() {
         let contract = Contract::bundled();
-        assert!(!contract.domain.is_empty());
+        assert!(!contract.home.is_empty());
     }
 }
