@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `qtfounder git hook`：`install`／`status`／`uninstall` 管主仓与各层子模块的 `core.hooksPath`；只改配置，不动脚本，指向别处默认不覆盖
+
 ## [0.0.16] - 2026-10-25
 
 自 0.0.13 起累积的变更；0.0.14 与 0.0.15 未单独发版。

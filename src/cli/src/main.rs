@@ -9,6 +9,7 @@ mod agent;
 mod audit;
 mod code;
 mod docs;
+mod git;
 mod language;
 mod meta;
 mod product;
@@ -43,6 +44,8 @@ enum CliCommand {
     Product(product::ProductArgs),
     /// Agent：装 Skill、查写法
     Agent(agent::AgentArgs),
+    /// Git：装钩子、查配置漂移
+    Git(git::GitArgs),
     /// 文字体检：合并文字与文档审计，每期只说一处
     Audit(audit::AuditArgs),
 }
@@ -98,6 +101,13 @@ fn main() {
             }
         }
         Some(CliCommand::Agent(args)) => match agent::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Git(args)) => match git::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

@@ -110,12 +110,12 @@ fn status_of<'a>(value: &'a serde_json::Value, id: &str) -> &'a str {
 // ---------- 命令面 ----------
 
 #[test]
-fn 顶层有九个命令且装skill并入agent() {
+fn 顶层有十个命令且装skill并入agent() {
     let temp = TempRoot::new("top-level");
     let output = run(temp.path(), &["--help"]);
     assert_eq!(output.code, 0, "{}", output.stderr);
     for name in [
-        "code", "language", "docs", "write", "think", "meta", "product", "agent", "audit",
+        "code", "language", "docs", "write", "think", "meta", "product", "agent", "git", "audit",
     ] {
         assert!(
             output.stdout.contains(name),
