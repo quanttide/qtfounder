@@ -190,6 +190,19 @@ fn 整篇材料先拆条再判() {
 }
 
 #[test]
+fn 洞察写法按成篇体例() {
+    let card = place("初稿必冗余，因为遗漏可见、冗余不可见。");
+    let skeleton = card.cell.expect("收了的要有格").skeleton;
+    assert!(skeleton.contains("背景与问题"));
+    assert!(skeleton.contains("判断"));
+    assert!(skeleton.contains("边界"));
+    assert!(
+        !skeleton.contains("## 已确认") && !skeleton.contains("## 假说"),
+        "洞察不再按已确认/假说分节"
+    );
+}
+
+#[test]
 fn 退出码分四档() {
     assert_eq!(place("今天上午见了客户。").verdict, Verdict::Place);
     assert_eq!(judge("天气不错。", &contract()).verdict, Verdict::Reject);

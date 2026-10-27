@@ -88,6 +88,16 @@ fn design_genre_requires_sections() {
 }
 
 #[test]
+fn insight_genre_accepts_article_sections() {
+    let text = "# 标题\n\n## 1. 背景与问题\n\n为什么要写。\n\n## 2. 判断\n\n一句判断。\n\n## 3. 机制\n\n因为如此。\n\n## 4. 边界\n\n什么时候不成立。\n\n## 5. 结论\n\n一句收束。\n";
+    let selection = Selection {
+        genre: Some("insight".to_string()),
+        ..Selection::default()
+    };
+    assert!(!kind_list_with(text, &selection).contains(&"genre"));
+}
+
+#[test]
 fn roadmap_genre_forbids_insight_words() {
     let text = "# 标题\n\n## 顺序\n\n达成标志。\n\n后置代价。\n\n假说。\n";
     let selection = Selection {
