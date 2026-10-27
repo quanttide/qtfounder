@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use clap::Args;
 use serde_json::json;
 
-use super::contract::{Cell, Contract};
+use super::contract::{Category, Contract};
 
 #[derive(Args, Debug)]
 pub struct CategoryArgs {
@@ -23,24 +23,24 @@ pub struct CategoryArgs {
 
 pub fn run(args: &CategoryArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;
-    let cells: Vec<&Cell> = match &args.name {
+    let categories: Vec<&Category> = match &args.name {
         Some(name) => vec![category_of(&contract, name)?],
-        None => contract.cell.iter().collect(),
+        None => contract.category.iter().collect(),
     };
     if args.json {
-        print_json(&cells);
+        print_json(&categories);
     } else {
-        print_text(&cells);
+        print_text(&categories);
     }
     Ok(0)
 }
 
-pub fn category_of<'a>(contract: &'a Contract, name: &str) -> Result<&'a Cell, String> {
-    contract.cell(name).ok_or_else(|| {
+pub fn category_of<'a>(contract: &'a Contract, name: &str) -> Result<&'a Category, String> {
+    contract.category(name).ok_or_else(|| {
         let names: Vec<&str> = contract
-            .cell
+            .category
             .iter()
-            .map(|cell| cell.name.as_str())
+            .map(|category| category.name.as_str())
             .collect();
         format!("没有这一格：{name}；可选：{}", names.join("、"))
     })
@@ -48,50 +48,50 @@ pub fn category_of<'a>(contract: &'a Contract, name: &str) -> Result<&'a Cell, S
 
 /// 按族分组，组的先后与格内顺序都照契约。
 #[cfg(test)]
-pub fn family_groups<'a>(contract: &'a Contract) -> Vec<(&'a str, Vec<&'a Cell>)> {
-    let mut groups: Vec<(&str, Vec<&Cell>)> = Vec::new();
-    for cell in &contract.cell {
-        let family = cell.family.as_str();
+pub fn family_groups<'a>(contract: &'a Contract) -> Vec<(&'a str, Vec<&'a Category>)> {
+    let mut groups: Vec<(&str, Vec<&Category>)> = Vec::new();
+    for category in &contract.category {
+        let family = category.family.as_str();
         match groups.iter_mut().find(|(name, _)| *name == family) {
-            Some((_, cells)) => cells.push(cell),
-            None => groups.push((family, vec![cell])),
+            Some((_, categories)) => categories.push(category),
+            None => groups.push((family, vec![category])),
         }
     }
     groups
 }
 
-fn print_text(cells: &[&Cell]) {
+fn print_text(categories: &[&Category]) {
     let mut last_family = String::new();
-    for (index, cell) in cells.iter().enumerate() {
-        if cell.family != last_family {
+    for (index, category) in categories.iter().enumerate() {
+        if category.family != last_family {
             if index > 0 {
                 println!();
             }
-            let label = if cell.family.is_empty() {
+            let label = if category.family.is_empty() {
                 "未分族"
             } else {
-                cell.family.as_str()
+                category.family.as_str()
             };
             println!("{label}");
-            last_family = cell.family.clone();
+            last_family = category.family.clone();
         }
-        println!("  {}  {}  {}", cell.name, cell.label, cell.path);
-        if !cell.description.is_empty() {
-            println!("    {}", cell.description);
+        println!("  {}  {}  {}", category.name, category.label, category.path);
+        if !category.description.is_empty() {
+            println!("    {}", category.description);
         }
     }
 }
 
-fn print_json(cells: &[&Cell]) {
-    let items: Vec<serde_json::Value> = cells
+fn print_json(categories: &[&Category]) {
+    let items: Vec<serde_json::Value> = categories
         .iter()
-        .map(|cell| {
+        .map(|category| {
             json!({
-                "name": cell.name,
-                "label": cell.label,
-                "path": cell.path,
-                "family": cell.family,
-                "description": cell.description,
+                "name": category.name,
+                "label": category.label,
+                "path": category.path,
+                "family": category.family,
+                "description": category.description,
             })
         })
         .collect();
@@ -110,8 +110,8 @@ mod tests {
         let contract = Contract::bundled();
         let groups = family_groups(&contract);
         assert_eq!(groups.len(), 2);
-        for (family, cells) in groups {
-            assert_eq!(cells.len(), 9, "{family}");
+        for (family, categories) in groups {
+            assert_eq!(categories.len(), 9, "{family}");
         }
     }
 

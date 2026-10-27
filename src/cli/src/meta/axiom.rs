@@ -1,6 +1,6 @@
 //! `meta axiom`：看归位时不重新论证的前提。
 //!
-//! 公理只描述系统已经成立的前提，不参与判定。判定仍看 `[[cell]]`、
+//! 公理只描述系统已经成立的前提，不参与判定。判定仍看 `[[category]]`、
 //! `[[transition]]` 与 `[[question]]`。
 
 use std::path::PathBuf;

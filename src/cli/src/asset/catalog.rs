@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use clap::Args;
 use serde_json::json;
 
-use crate::meta::contract::{Cell, Contract};
+use crate::meta::contract::{Category, Contract};
 
 #[derive(Args, Debug)]
 pub struct CatalogArgs {
@@ -24,22 +24,22 @@ pub struct CatalogArgs {
 
 pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
-    let rows: Vec<(&Cell, bool)> = contract
-        .cell
+    let rows: Vec<(&Category, bool)> = contract
+        .category
         .iter()
-        .map(|cell| (cell, args.root.join(&cell.path).exists()))
+        .map(|category| (category, args.root.join(&category.path).exists()))
         .filter(|(_, present)| !args.present || *present)
         .collect();
 
     if args.json {
         let assets: Vec<serde_json::Value> = rows
             .iter()
-            .map(|(cell, present)| {
+            .map(|(category, present)| {
                 json!({
-                    "name": cell.name,
-                    "label": cell.label,
-                    "path": cell.path,
-                    "family": cell.family,
+                    "name": category.name,
+                    "label": category.label,
+                    "path": category.path,
+                    "family": category.family,
                     "present": present,
                 })
             })
@@ -55,11 +55,11 @@ pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
         return Ok(0);
     }
 
-    let total = contract.cell.len();
+    let total = contract.category.len();
     let found = contract
-        .cell
+        .category
         .iter()
-        .filter(|cell| args.root.join(&cell.path).exists())
+        .filter(|category| args.root.join(&category.path).exists())
         .count();
     println!("根：{}", args.root.display());
     println!(
@@ -68,13 +68,13 @@ pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
         total - found
     );
     println!();
-    for (cell, present) in rows {
+    for (category, present) in rows {
         println!(
             "{}  {}  {}  {}  {}",
-            cell.name,
-            cell.label,
-            cell.path,
-            cell.family,
+            category.name,
+            category.label,
+            category.path,
+            category.family,
             if present { "有" } else { "缺" }
         );
     }
@@ -88,16 +88,16 @@ mod tests {
     fn rows(root: &Path) -> Vec<(String, bool)> {
         let contract = Contract::bundled();
         contract
-            .cell
+            .category
             .iter()
-            .map(|cell| (cell.name.clone(), root.join(&cell.path).exists()))
+            .map(|category| (category.name.clone(), root.join(&category.path).exists()))
             .collect()
     }
 
     #[test]
     fn 清单覆盖十八类资产() {
         let contract = Contract::bundled();
-        assert_eq!(contract.cell.len(), 18);
+        assert_eq!(contract.category.len(), 18);
     }
 
     #[test]

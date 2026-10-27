@@ -22,9 +22,9 @@ fn place(text: &str) -> super::classify::Card {
 }
 
 fn key_of(card: &super::classify::Card) -> &str {
-    card.cell
+    card.category
         .as_ref()
-        .map(|cell| cell.name.as_str())
+        .map(|category| category.name.as_str())
         .unwrap_or("")
 }
 
@@ -185,14 +185,14 @@ fn 整篇材料先拆条再判() {
     let text = "第一段说今天见了客户。\n\n第二段说其实有规律。\n\n第三段说先做这件事。\n\n第四段说章程要改。\n\n第五段说阈值待标定。\n\n第六段说那次改稿花了三小时。";
     let card = judge(text, &contract());
     assert_eq!(card.verdict, Verdict::Undecided);
-    assert!(card.cell.is_none(), "整篇材料不该直接落格");
+    assert!(card.category.is_none(), "整篇材料不该直接落格");
     assert!(card.reason.unwrap().contains("拆成一条"));
 }
 
 #[test]
 fn 洞察写法不固定章节() {
     let card = place("初稿必冗余，因为遗漏可见、冗余不可见。");
-    let skeleton = card.cell.expect("收了的要有格").skeleton;
+    let skeleton = card.category.expect("收了的要有格").skeleton;
     assert!(!skeleton.contains("## "), "洞察不应规定章节");
     assert!(skeleton.contains("推翻"));
 }
@@ -215,7 +215,7 @@ fn 每张落位卡都带写法() {
         "今天上午见了客户。",
     ] {
         let card = place(text);
-        let skeleton = card.cell.expect("收了的要有格").skeleton;
+        let skeleton = card.category.expect("收了的要有格").skeleton;
         assert!(!skeleton.trim().is_empty(), "{text} 缺写法");
     }
 }
@@ -236,7 +236,7 @@ fn 一个口头禅只按两次算() {
 #[test]
 fn 落位卡点名这次用到的公理() {
     let card = place("初稿必冗余，因为遗漏可见、冗余不可见。");
-    for id in ["domain-before-cell", "one-place", "template-scope"] {
+    for id in ["domain-before-category", "one-place", "template-scope"] {
         assert!(
             card.axioms.iter().any(|axiom| axiom == id),
             "落位卡应点到 {id}：{:?}",

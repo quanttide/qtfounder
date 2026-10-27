@@ -65,7 +65,7 @@ status = "confirmed"
 # ---------------- 陈述型：时间 × 类型 ----------------
 # 回答组织「知道什么」。时间看契约走到哪一步，类型看这条内容本身是什么。
 
-[[cell]]
+[[category]]
 name = "report"
 label = "Report 报告"
 path = "data/report/"
@@ -79,7 +79,7 @@ skeleton = '''# 标题
 ## 交付
 '''
 
-[[cell]]
+[[category]]
 name = "library"
 label = "Library 图书馆"
 path = "data/library/"
@@ -92,7 +92,7 @@ skeleton = '''# 主题
   出处：《书名》作者，页码或链接。
 '''
 
-[[cell]]
+[[category]]
 name = "history"
 label = "History 历史"
 path = "data/history/"
@@ -104,7 +104,7 @@ skeleton = '''# 主题
 按时间写发生了什么，一段一个阶段。
 '''
 
-[[cell]]
+[[category]]
 name = "journal"
 label = "Journal 日志"
 path = "data/journal/"
@@ -116,7 +116,7 @@ skeleton = '''# YYYY-MM-DD
 今天做了什么，结果如何，留一句当时的判断。
 '''
 
-[[cell]]
+[[category]]
 name = "profile"
 label = "Profile 档案"
 path = "data/profile/"
@@ -128,7 +128,7 @@ skeleton = '''# 主题
 - **特征**：一句话。证据：几次具体的事（YYYY-MM-DD）。
 '''
 
-[[cell]]
+[[category]]
 name = "brochure"
 label = "Brochure 宣传册"
 path = "data/brochure/"
@@ -140,7 +140,7 @@ skeleton = '''# 主题
 一段话讲清它是什么，再按对象分层说。
 '''
 
-[[cell]]
+[[category]]
 name = "roadmap"
 label = "Roadmap 路线图"
 path = "data/roadmap/"
@@ -155,20 +155,20 @@ skeleton = '''# 主题名
 
 这一节该产出什么。
 '''
-[[cell.grade]]
+[[category.grade]]
 label = "核心问题"
 cues = ["一直没解决", "反复", "卡住", "核心问题", "解不了"]
-[[cell.grade]]
+[[category.grade]]
 label = "元目标"
 cues = ["长期", "最终", "愿景", "元目标"]
-[[cell.grade]]
+[[category.grade]]
 label = "已决策"
 cues = ["已经", "决定", "定了", "先做", "开始做"]
-[[cell.grade]]
+[[category.grade]]
 label = "待决策候选"
 fallback = true
 
-[[cell]]
+[[category]]
 name = "insight"
 label = "Insight 洞察"
 path = "data/insight/"
@@ -179,14 +179,14 @@ skeleton = '''# 主题名
 
 不规定章节。开篇说清这条要回答什么、推翻什么；正文按论证需要组织；可信度与推翻条件写进论证；结尾落一句能据以行动的判断。
 '''
-[[cell.grade]]
+[[category.grade]]
 label = "已确认"
 cues = ["已经", "做了", "落地", "改成", "多次", "重复", "第二次"]
-[[cell.grade]]
+[[category.grade]]
 label = "假说"
 fallback = true
 
-[[cell]]
+[[category]]
 name = "intention"
 label = "Intention 愿景"
 path = "data/intention/"
@@ -201,7 +201,7 @@ skeleton = '''# 主题名
 # ---------------- 程序型：约束力 × 消费对象 ----------------
 # 回答组织「怎么做事」。约束力看管到多深，消费对象看写给谁用。
 
-[[cell]]
+[[category]]
 name = "bylaw"
 label = "Bylaw 章程"
 path = "docs/bylaw/"
@@ -217,7 +217,7 @@ skeleton = '''# 章程名
 谁定、谁执行、谁签字。
 '''
 
-[[cell]]
+[[category]]
 name = "specification"
 label = "Specification 工程标准"
 path = "docs/specification/"
@@ -235,7 +235,7 @@ skeleton = '''# 标准名
 怎么算通过、怎么算不通过。
 '''
 
-[[cell]]
+[[category]]
 name = "toolkit"
 label = "Toolkit 标准库"
 path = "packages/"
@@ -247,7 +247,7 @@ skeleton = '''# 包名
 一句话说它解决什么，再给安装与调用示例。
 '''
 
-[[cell]]
+[[category]]
 name = "handbook"
 label = "Handbook 手册"
 path = "docs/handbook/"
@@ -262,7 +262,7 @@ skeleton = '''# 主题
 2. 第二步
 '''
 
-[[cell]]
+[[category]]
 name = "gallery"
 label = "Gallery 案例"
 path = "docs/gallery/"
@@ -276,7 +276,7 @@ skeleton = '''# 案例名
 ## 留下来的
 '''
 
-[[cell]]
+[[category]]
 name = "platform"
 label = "Platform 平台"
 path = "apps/"
@@ -288,7 +288,7 @@ skeleton = '''# 平台名
 它承载什么，边界在哪，怎么部署。
 '''
 
-[[cell]]
+[[category]]
 name = "tutorial"
 label = "Tutorial 教程"
 path = "docs/tutorial/"
@@ -304,7 +304,7 @@ skeleton = '''# 教程名
 跟着做一遍。
 '''
 
-[[cell]]
+[[category]]
 name = "essay"
 label = "Essay 论文"
 path = "docs/essay/"
@@ -316,7 +316,7 @@ skeleton = '''# 标题
 提出一个问题，给出一种解释，说明它在什么条件下成立。
 '''
 
-[[cell]]
+[[category]]
 name = "laboratory"
 label = "Laboratory 实验室"
 path = "examples/"
@@ -413,7 +413,7 @@ ask = "概念定义稳定、阈值有数据吗？都有进规格，否则进论�
 
 # ---------------- 本体 ----------------
 # 模型描述两族九宫格的轴；公理是归位时不重新论证的前提。
-# 两者都不参与算分：模型只描述轴，公理只在落位卡上点名出处；判断仍看 [[cell]]、[[transition]] 与 [[question]]。
+# 两者都不参与算分：模型只描述轴，公理只在落位卡上点名出处；判断仍看 [[category]]、[[transition]] 与 [[question]]。
 
 [model]
 description = "一份内容只有一个正确去处。十八格分两族，各成九宫格。"
@@ -451,7 +451,7 @@ why = "放错格的代价不是难看，是下一轮没人找得到它。"
 status = "suspected"
 
 [[axiom]]
-name = "domain-before-cell"
+name = "domain-before-category"
 description = "先定域，再定格，再过准入，最后给写法。"
 why = "顺序换了，域错时格越准，搬得越远。"
 status = "suspected"
@@ -625,7 +625,7 @@ name = "quanttide-founder"
 label = "归位"
 description = "十八格按时间乘类型、约束力乘消费对象张开；降格是有条件的有向边。"
 status = "confirmed"
-source = "cells"
+source = "categories"
 compose = "partial"
 
 [[paradigm]]

@@ -386,7 +386,7 @@ mod tests {
         let founder = resolve_of(&contract, "quanttide-founder").unwrap();
         assert_eq!(founder.objects.len(), 18);
         assert_eq!(founder.morphisms.len(), 3);
-        assert_eq!(founder.source, "cells");
+        assert_eq!(founder.source, "categories");
     }
 
     #[test]

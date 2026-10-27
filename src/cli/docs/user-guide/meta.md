@@ -40,7 +40,7 @@
 格：Insight 洞察  data/insight/
 档：假说
 凭什么：一句话能被推翻，推翻之后做法会变；抽掉日期和当事人还成立。
-公理：template-scope（确认）、one-place（怀疑）、domain-before-cell（怀疑）
+公理：template-scope（确认）、one-place（怀疑）、domain-before-category（怀疑）
 
 写法：
 # 主题名
@@ -63,7 +63,7 @@
 待定
 候选：Insight 洞察 2、Roadmap 路线图 2
 问一句：这句话在解释为什么必须这样排（因为…否则…），还是现在就要做哪一步？前者进洞察，后者进路线图。
-公理：domain-before-cell（怀疑）
+公理：domain-before-category（怀疑）
 先别落。
 ```
 
@@ -172,7 +172,7 @@ qtfounder meta axiom no-fallback
 one-place  怀疑  一份内容只有一个正确去处。
   放错格的代价不是难看，是下一轮没人找得到它。
 
-domain-before-cell  怀疑  先定域，再定格，再过准入，最后给写法。
+domain-before-category  怀疑  先定域，再定格，再过准入，最后给写法。
   顺序换了，域错时格越准，搬得越远。
 ...
 ```
@@ -191,7 +191,7 @@ domain-before-cell  怀疑  先定域，再定格，再过准入，最后给写�
 
 公理不参与算分，只留一行出处。判完对不上时，先看这一行：前提改了，还是规则用错了。
 
-- 每张卡：`domain-before-cell`
+- 每张卡：`domain-before-category`
 - 指了域：`text-only`、`archive-vs-transfer`
 - 收了（落位或搬走）：`one-place`、`template-scope`
 - 不收：`no-fit`
@@ -289,7 +289,7 @@ quanttide-founder  归位  确认  合成：部分  18 个对象 / 3 条态射
     insight → essay  推不翻也改不了做法，适合进论文，不进洞察。
 ```
 
-一个范式就是一个范畴的写法：对象、态射、合成律。归位本身是其中一个，契约里写 `source = "cells"`，对象直接取 `[[cell]]`、态射取 `[[transition]]`，不另存一份。别的一并挂在 `[[paradigm]]` 下，只用于对比与吸收，不参与判域判格。
+一个范式就是一个范畴的写法：对象、态射、合成律。归位本身是其中一个，契约里写 `source = "categories"`，对象直接取 `[[category]]`、态射取 `[[transition]]`，不另存一份。别的一并挂在 `[[paradigm]]` 下，只用于对比与吸收，不参与判域判格。
 
 `compose` 写三档：`transitive` 要求合成闭合，缺一处就退出码 1；`partial` 是条件不满足就不断言，缺了只报个数；`none` 当图看，不查。
 

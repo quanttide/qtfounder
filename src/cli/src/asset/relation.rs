@@ -7,7 +7,7 @@ use std::path::Path;
 use clap::Args;
 use serde_json::json;
 
-use crate::meta::contract::{Cell, Contract};
+use crate::meta::contract::{Category, Contract};
 
 #[derive(Args, Debug)]
 pub struct RelationArgs {
@@ -24,67 +24,67 @@ pub fn root_of(path: &str) -> &str {
 }
 
 /// 按某个键分组，保留契约里的出现顺序。
-fn group<'a, F>(cells: &'a [Cell], key: F) -> Vec<(String, Vec<&'a Cell>)>
+fn group<'a, F>(categories: &'a [Category], key: F) -> Vec<(String, Vec<&'a Category>)>
 where
-    F: Fn(&Cell) -> String,
+    F: Fn(&Category) -> String,
 {
-    let mut groups: Vec<(String, Vec<&Cell>)> = Vec::new();
-    for cell in cells {
-        let name = key(cell);
+    let mut groups: Vec<(String, Vec<&Category>)> = Vec::new();
+    for category in categories {
+        let name = key(category);
         match groups.iter_mut().find(|(existing, _)| *existing == name) {
-            Some((_, items)) => items.push(cell),
-            None => groups.push((name, vec![cell])),
+            Some((_, items)) => items.push(category),
+            None => groups.push((name, vec![category])),
         }
     }
     groups
 }
 
-pub fn family_groups(cells: &[Cell]) -> Vec<(String, Vec<&Cell>)> {
-    group(cells, |cell| {
-        if cell.family.is_empty() {
+pub fn family_groups(categories: &[Category]) -> Vec<(String, Vec<&Category>)> {
+    group(categories, |category| {
+        if category.family.is_empty() {
             "未分家族".to_string()
         } else {
-            cell.family.clone()
+            category.family.clone()
         }
     })
 }
 
-pub fn root_groups(cells: &[Cell]) -> Vec<(String, Vec<&Cell>)> {
-    group(cells, |cell| root_of(&cell.path).to_string())
+pub fn root_groups(categories: &[Category]) -> Vec<(String, Vec<&Category>)> {
+    group(categories, |category| root_of(&category.path).to_string())
 }
 
 pub fn run(args: &RelationArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
     if let Some(name) = &args.name {
-        let cell = contract.cell(name).ok_or_else(|| {
+        let category = contract.category(name).ok_or_else(|| {
             let names: Vec<&str> = contract
-                .cell
+                .category
                 .iter()
-                .map(|cell| cell.name.as_str())
+                .map(|category| category.name.as_str())
                 .collect();
             format!("没有这类资产：{name}；可选：{}", names.join("、"))
         })?;
-        return show_one(cell, &contract, args.json);
+        return show_one(category, &contract, args.json);
     }
 
-    let families = family_groups(&contract.cell);
-    let roots = root_groups(&contract.cell);
+    let families = family_groups(&contract.category);
+    let roots = root_groups(&contract.category);
     if args.json {
         let families: Vec<serde_json::Value> = families
             .iter()
-            .map(|(name, cells)| {
+            .map(|(name, categories)| {
                 json!({
                     "name": name,
-                    "assets": cells.iter().map(|cell| &cell.name).collect::<Vec<_>>(),
+                    "assets": categories.iter().map(|category| &category.name).collect::<Vec<_>>(),
                 })
             })
             .collect();
         let roots: Vec<serde_json::Value> = roots
             .iter()
-            .map(|(name, cells)| {
+            .map(|(name, categories)| {
                 json!({
                     "name": name,
-                    "assets": cells.iter().map(|cell| &cell.name).collect::<Vec<_>>(),
+                    "assets": categories.iter().map(|category| &category.name).collect::<Vec<_>>(),
                 })
             })
             .collect();
@@ -99,36 +99,39 @@ pub fn run(args: &RelationArgs, rules: Option<&Path>) -> Result<i32, String> {
         return Ok(0);
     }
 
-    for (name, cells) in &families {
-        println!("{name}（{}）", cells.len());
-        for cell in cells {
-            println!("  {}  {}", cell.name, cell.path);
+    for (name, categories) in &families {
+        println!("{name}（{}）", categories.len());
+        for category in categories {
+            println!("  {}  {}", category.name, category.path);
         }
         println!();
     }
     println!("按目录");
-    for (name, cells) in &roots {
-        let names: Vec<&str> = cells.iter().map(|cell| cell.name.as_str()).collect();
+    for (name, categories) in &roots {
+        let names: Vec<&str> = categories
+            .iter()
+            .map(|category| category.name.as_str())
+            .collect();
         println!("  {name}/  {}", names.join("、"));
     }
     Ok(0)
 }
 
-fn show_one(cell: &Cell, contract: &Contract, json: bool) -> Result<i32, String> {
-    let root = root_of(&cell.path);
+fn show_one(category: &Category, contract: &Contract, json: bool) -> Result<i32, String> {
+    let root = root_of(&category.path);
     let siblings: Vec<&str> = contract
-        .cell
+        .category
         .iter()
-        .filter(|other| root_of(&other.path) == root && other.name != cell.name)
+        .filter(|other| root_of(&other.path) == root && other.name != category.name)
         .map(|other| other.name.as_str())
         .collect();
     if json {
         println!(
             "{}",
             serde_json::to_string_pretty(&json!({
-                "asset": cell.name,
-                "label": cell.label,
-                "family": cell.family,
+                "asset": category.name,
+                "label": category.label,
+                "family": category.family,
                 "root": root,
                 "siblings": siblings,
             }))
@@ -136,8 +139,8 @@ fn show_one(cell: &Cell, contract: &Contract, json: bool) -> Result<i32, String>
         );
         return Ok(0);
     }
-    println!("{}  {}", cell.name, cell.label);
-    println!("  家族：{}", cell.family);
+    println!("{}  {}", category.name, category.label);
+    println!("  家族：{}", category.family);
     println!("  目录：{root}/");
     println!("  同目录：{}", siblings.join("、"));
     Ok(0)
@@ -150,7 +153,7 @@ mod tests {
     #[test]
     fn 家族按契约分组() {
         let contract = Contract::bundled();
-        let families = family_groups(&contract.cell);
+        let families = family_groups(&contract.category);
         let names: Vec<&str> = families.iter().map(|(name, _)| name.as_str()).collect();
         assert!(names.contains(&"陈述型"));
         assert!(names.contains(&"程序型"));
@@ -166,9 +169,9 @@ mod tests {
     #[test]
     fn 同目录列出兄弟资产() {
         let contract = Contract::bundled();
-        let report = contract.cell("report").unwrap();
+        let report = contract.category("report").unwrap();
         let siblings: Vec<&str> = contract
-            .cell
+            .category
             .iter()
             .filter(|other| root_of(&other.path) == "data" && other.name != "report")
             .map(|other| other.name.as_str())

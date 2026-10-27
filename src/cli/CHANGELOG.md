@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.0.36] - 2026-10-27
+
+### Changed
+
+- 契约的 `[[cell]]` 改为 `[[category]]`，结构体 `Cell` 改为 `Category`；`paradigm.source` 取值由 `cells` 改为 `categories`
+- 公理 `domain-before-cell` 改名为 `domain-before-category`
+- `classify` 与 `relation` 的 JSON 字段 `cell` 改为 `category`
+
 ## [0.0.35] - 2026-10-27
 
 ### Added

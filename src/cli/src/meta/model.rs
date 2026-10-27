@@ -1,6 +1,6 @@
 //! `meta model`：看两族九宫格的轴。
 //!
-//! 模型只描述本体，不参与判定。族的成员来自 `[[cell]]` 的 `family`，
+//! 模型只描述本体，不参与判定。族的成员来自 `[[category]]` 的 `family`，
 //! 轴来自 `[[model.family.axis]]`；两处对不上时在契约加载阶段就报错。
 
 use std::path::PathBuf;
@@ -20,12 +20,12 @@ pub struct ModelArgs {
     pub json: bool,
 }
 
-pub fn cells_of<'a>(contract: &'a Contract, family: &str) -> Vec<&'a str> {
+pub fn categories_of<'a>(contract: &'a Contract, family: &str) -> Vec<&'a str> {
     contract
-        .cell
+        .category
         .iter()
-        .filter(|cell| cell.family == family)
-        .map(|cell| cell.name.as_str())
+        .filter(|category| category.family == family)
+        .map(|category| category.name.as_str())
         .collect()
 }
 
@@ -56,8 +56,8 @@ fn print_text(contract: &Contract) {
         for axis in &family.axis {
             println!("  {}：{}", axis.name, axis.values.join(" / "));
         }
-        let cells = cells_of(contract, &family.name);
-        println!("  九格：{}", cells.join("、"));
+        let categories = categories_of(contract, &family.name);
+        println!("  九格：{}", categories.join("、"));
     }
     println!();
     if contract.domain.is_empty() {
@@ -86,7 +86,7 @@ fn print_json(contract: &Contract) {
                 "question": family.question,
                 "description": family.description,
                 "axes": axes,
-                "cells": cells_of(contract, &family.name),
+                "categories": categories_of(contract, &family.name),
             })
         })
         .collect();
@@ -115,7 +115,7 @@ mod tests {
         let contract = Contract::bundled();
         for family in &contract.model.family {
             assert_eq!(
-                cells_of(&contract, &family.name).len(),
+                categories_of(&contract, &family.name).len(),
                 9,
                 "{}",
                 family.name

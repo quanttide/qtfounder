@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use clap::Args;
 use serde::Serialize;
 
-use super::contract::{Axiom, Cell, Contract, Domain};
+use super::contract::{Axiom, Category, Contract, Domain};
 
 #[derive(Args, Debug)]
 pub struct ClassifyArgs {
@@ -69,7 +69,7 @@ pub struct Card {
     pub domain: Option<Domain>,
     pub domain_form: Option<&'static str>,
     pub domain_reason: Option<String>,
-    pub cell: Option<Cell>,
+    pub category: Option<Category>,
     pub grade: Option<String>,
     pub rule: Option<String>,
     pub question: Option<String>,
@@ -122,7 +122,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
             domain: None,
             domain_form: None,
             domain_reason: None,
-            cell: None,
+            category: None,
             grade: None,
             rule: None,
             question: None,
@@ -134,19 +134,19 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
         };
     }
 
-    let mut scored: Vec<(usize, usize, &Cell)> = contract
-        .cell
+    let mut scored: Vec<(usize, usize, &Category)> = contract
+        .category
         .iter()
         .enumerate()
-        .map(|(index, cell)| (hits(text, &cell.cues), index, cell))
+        .map(|(index, category)| (hits(text, &category.cues), index, category))
         .filter(|(score, _, _)| *score > 0)
         .collect();
     scored.sort_by(|a, b| b.0.cmp(&a.0).then(a.1.cmp(&b.1)));
     let candidates: Vec<Candidate> = scored
         .iter()
-        .map(|(score, _, cell)| Candidate {
-            name: cell.name.clone(),
-            label: cell.label.clone(),
+        .map(|(score, _, category)| Candidate {
+            name: category.name.clone(),
+            label: category.label.clone(),
             score: *score,
         })
         .collect();
@@ -175,7 +175,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
             domain,
             domain_form,
             domain_reason,
-            cell: None,
+            category: None,
             grade: None,
             rule: None,
             question: None,
@@ -190,7 +190,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
             domain,
             domain_form,
             domain_reason,
-            cell: None,
+            category: None,
             grade: None,
             rule: None,
             question: None,
@@ -208,7 +208,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
             domain,
             domain_form,
             domain_reason,
-            cell: None,
+            category: None,
             grade: None,
             rule: None,
             question: Some(contract.question(&top.name, &second.name).to_string()),
@@ -225,7 +225,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
 
     // 准入：名义上进对了格、但过不了的，往下一格走。
     let top = *top;
-    let (cell, rule) = match contract.transition.iter().find(|transition| {
+    let (category, rule) = match contract.transition.iter().find(|transition| {
         transition.from == top.name
             && hits(text, &transition.require_any) > 0
             && hits(text, &transition.lack_any) == 0
@@ -233,15 +233,15 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
         Some(transition) => {
             let rule = transition.reason.clone();
             let target = contract
-                .cell(&transition.to)
+                .category(&transition.to)
                 .cloned()
                 .unwrap_or_else(|| top.clone());
             (target, Some(rule))
         }
         None => (top.clone(), None),
     };
-    let grade = pick_grade(text, &cell);
-    let rule = rule.unwrap_or_else(|| cell.description.clone());
+    let grade = pick_grade(text, &category);
+    let rule = rule.unwrap_or_else(|| category.description.clone());
     let verdict = if has_domain {
         Verdict::Move
     } else {
@@ -252,7 +252,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
         domain,
         domain_form,
         domain_reason,
-        cell: Some(cell),
+        category: Some(category),
         grade,
         rule: Some(rule),
         question: None,
@@ -267,7 +267,7 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
 /// 确认过的排前面，同组内保持契约顺序。公理不参与算分，只留一行出处，事后能对账：
 /// 前提被改了还是规则被改了。
 fn cited(contract: &Contract, verdict: Verdict, has_domain: bool) -> Vec<String> {
-    let mut names = vec!["domain-before-cell"];
+    let mut names = vec!["domain-before-category"];
     if has_domain {
         names.push("text-only");
         names.push("archive-vs-transfer");
@@ -336,12 +336,12 @@ fn call_domain(text: &str, contract: &Contract) -> Option<(Domain, Vec<String>)>
     Some(((*domain).clone(), matched.clone()))
 }
 
-fn pick_grade(text: &str, cell: &Cell) -> Option<String> {
-    let matched = cell
+fn pick_grade(text: &str, category: &Category) -> Option<String> {
+    let matched = category
         .grade
         .iter()
         .find(|grade| !grade.fallback && hits(text, &grade.cues) > 0);
-    let chosen = matched.or_else(|| cell.grade.iter().find(|grade| grade.fallback));
+    let chosen = matched.or_else(|| category.grade.iter().find(|grade| grade.fallback));
     chosen.map(|grade| grade.label.clone())
 }
 
@@ -362,8 +362,8 @@ fn print_card(card: &Card, contract: &Contract) {
 
     match card.verdict {
         Verdict::Place | Verdict::Move => {
-            if let Some(cell) = &card.cell {
-                println!("格：{}  {}", cell.label, cell.path);
+            if let Some(category) = &card.category {
+                println!("格：{}  {}", category.label, category.path);
                 println!("档：{}", card.grade.as_deref().unwrap_or("不分档"));
                 if let Some(rule) = &card.rule {
                     println!("凭什么：{rule}");
@@ -371,8 +371,8 @@ fn print_card(card: &Card, contract: &Contract) {
                 print_axioms(card, contract);
                 println!();
                 println!("写法：");
-                print!("{}", cell.skeleton);
-                if !cell.skeleton.ends_with('\n') {
+                print!("{}", category.skeleton);
+                if !category.skeleton.ends_with('\n') {
                     println!();
                 }
             }
@@ -437,7 +437,7 @@ struct JsonCard<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     domain: Option<JsonDomain<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    cell: Option<JsonCell<'a>>,
+    category: Option<JsonCategory<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     grade: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -459,7 +459,7 @@ struct JsonDomain<'a> {
 }
 
 #[derive(Serialize)]
-struct JsonCell<'a> {
+struct JsonCategory<'a> {
     name: &'a str,
     label: &'a str,
     path: &'a str,
@@ -482,17 +482,17 @@ fn print_json(card: &Card) -> Result<(), String> {
         form: card.domain_form.unwrap_or("移交"),
         reason: card.domain_reason.as_deref().unwrap_or(""),
     });
-    let cell = card.cell.as_ref().map(|cell| JsonCell {
-        name: &cell.name,
-        label: &cell.label,
-        path: &cell.path,
-        family: &cell.family,
-        skeleton: Some(&cell.skeleton),
+    let category = card.category.as_ref().map(|category| JsonCategory {
+        name: &category.name,
+        label: &category.label,
+        path: &category.path,
+        family: &category.family,
+        skeleton: Some(&category.skeleton),
     });
     let view = JsonCard {
         verdict: card.verdict.key(),
         domain,
-        cell,
+        category,
         grade: card.grade.as_deref(),
         rule: card.rule.as_deref(),
         question: card.question.as_deref(),

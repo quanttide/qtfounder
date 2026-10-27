@@ -45,7 +45,7 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
                 "axioms": contract.axiom.len(),
                 "properties": contract.property.len(),
                 "domains": contract.domain.len(),
-                "categories": contract.cell.len(),
+                "categories": contract.category.len(),
                 "paradigms": contract.paradigm.len(),
                 "problems": problems,
             }))
@@ -194,39 +194,39 @@ fn check_categories(contract: &Contract, docs: &Path) -> Vec<String> {
     };
     let doc = parse_categories(&text);
     let mut problems = Vec::new();
-    for cell in &contract.cell {
-        match doc.get(&cell.name) {
-            None => problems.push(format!("category.md：契约里有 {}，文档没写", cell.name)),
+    for category in &contract.category {
+        match doc.get(&category.name) {
+            None => problems.push(format!("category.md：契约里有 {}，文档没写", category.name)),
             Some(entry) => {
-                if entry.family != cell.family {
+                if entry.family != category.family {
                     problems.push(format!(
                         "category.md：{} 的族不一致——文档 {}，契约 {}",
-                        cell.name, entry.family, cell.family
+                        category.name, entry.family, category.family
                     ));
                 }
-                if entry.label != cell.label {
+                if entry.label != category.label {
                     problems.push(format!(
                         "category.md：{} 的称呼不一致——文档 {}，契约 {}",
-                        cell.name, entry.label, cell.label
+                        category.name, entry.label, category.label
                     ));
                 }
-                if entry.path != cell.path {
+                if entry.path != category.path {
                     problems.push(format!(
                         "category.md：{} 的目录不一致——文档 {}，契约 {}",
-                        cell.name, entry.path, cell.path
+                        category.name, entry.path, category.path
                     ));
                 }
-                if entry.description.trim() != cell.description.trim() {
+                if entry.description.trim() != category.description.trim() {
                     problems.push(format!(
                         "category.md：{} 的界线不一致——文档「{}」，契约「{}」",
-                        cell.name, entry.description, cell.description
+                        category.name, entry.description, category.description
                     ));
                 }
             }
         }
     }
     for name in doc.keys() {
-        if contract.cell(name).is_none() {
+        if contract.category(name).is_none() {
             problems.push(format!("category.md：文档写了 {name}，契约里没有"));
         }
     }

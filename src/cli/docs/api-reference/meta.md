@@ -42,7 +42,7 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 
 - `verdict`：`place`／`move`／`reject`／`undecided`
 - `domain`：去的领域，含 `name`、`label`、`form`（`移交`／`归档`）与 `reason`；留在这里时没有这个字段
-- `cell`：`key`、`name`、`path`、`family`、`skeleton`；不收或待定时没有这个字段
+- `category`：`key`、`name`、`path`、`family`、`skeleton`；不收或待定时没有这个字段
 - `grade`：档；没有分档的格不出现
 - `rule`：凭什么归这里，同人读那张卡
 - `question`：待定时那一个问题
@@ -84,9 +84,9 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 | | `archive_cues` | 出现即按归档处理 |
 | | `question_fallback` | 没有现成分辨句时问那一句 |
 | `[[domain]]` | `name`／`label`／`cues` | 领域仓名、显示名与线索 |
-| `[[cell]]` | `key`／`name`／`path`／`family` | 格的身份与目录 |
+| `[[category]]` | `key`／`name`／`path`／`family` | 格的身份与目录 |
 | | `cues`／`boundary`／`skeleton` | 线索、理由、写法 |
-| `[[cell.grade]]` | `label`／`cues`／`fallback` | 档的顺序即展示顺序；`fallback` 兜底 |
+| `[[category.grade]]` | `label`／`cues`／`fallback` | 档的顺序即展示顺序；`fallback` 兜底 |
 | `[[transition]]` | `from`／`to`／`require_any`／`lack_any`／`reason` | 准入不足时降格 |
 | `[[question]]` | `pair`／`ask` | 两格打平时问哪一句 |
 

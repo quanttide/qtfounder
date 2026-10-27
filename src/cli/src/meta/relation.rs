@@ -7,12 +7,12 @@ use std::path::PathBuf;
 use clap::Args;
 use serde_json::json;
 
-use super::contract::{Cell, Contract, Transition};
+use super::contract::{Category, Contract, Transition};
 
 #[derive(Args, Debug)]
 pub struct RelationArgs {
     /// 只看与这一格有关的迁移与分辨句
-    pub cell: Option<String>,
+    pub category: Option<String>,
     /// 契约路径（缺省按 src/meta/default-contract.toml 逐级往上找）
     #[arg(long)]
     pub rules: Option<PathBuf>,
@@ -63,20 +63,20 @@ pub fn edges<'a>(contract: &'a Contract, key: &str) -> Edges<'a> {
 
 pub fn run(args: &RelationArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;
-    match &args.cell {
+    match &args.category {
         Some(key) => {
-            let cell = contract.cell(key).ok_or_else(|| {
+            let category = contract.category(key).ok_or_else(|| {
                 let names: Vec<&str> = contract
-                    .cell
+                    .category
                     .iter()
-                    .map(|cell| cell.name.as_str())
+                    .map(|category| category.name.as_str())
                     .collect();
                 format!("没有这一格：{key}；可选：{}", names.join("、"))
             })?;
             if args.json {
-                print_one_json(cell, &contract);
+                print_one_json(category, &contract);
             } else {
-                print_one(cell, &contract);
+                print_one(category, &contract);
             }
         }
         None => {
@@ -108,9 +108,9 @@ fn print_all(contract: &Contract) {
     }
 }
 
-fn print_one(cell: &Cell, contract: &Contract) {
-    let edges = edges(contract, &cell.name);
-    println!("{}  {}", cell.name, cell.label);
+fn print_one(category: &Category, contract: &Contract) {
+    let edges = edges(contract, &category.name);
+    println!("{}  {}", category.name, category.label);
     println!("  迁出：");
     if edges.outgoing.is_empty() {
         println!("    （无）");
@@ -168,8 +168,8 @@ fn print_all_json(contract: &Contract) {
     );
 }
 
-fn print_one_json(cell: &Cell, contract: &Contract) {
-    let edges = edges(contract, &cell.name);
+fn print_one_json(category: &Category, contract: &Contract) {
+    let edges = edges(contract, &category.name);
     let outgoing: Vec<serde_json::Value> = edges
         .outgoing
         .iter()
@@ -188,7 +188,7 @@ fn print_one_json(cell: &Cell, contract: &Contract) {
     println!(
         "{}",
         serde_json::to_string_pretty(&json!({
-            "cell": cell.name,
+            "category": category.name,
             "outgoing": outgoing,
             "incoming": incoming,
             "questions": questions,

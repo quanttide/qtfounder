@@ -26,7 +26,7 @@ pub struct Contract {
     #[serde(default)]
     pub domain: Vec<Domain>,
     #[serde(default)]
-    pub cell: Vec<Cell>,
+    pub category: Vec<Category>,
     #[serde(default)]
     pub transition: Vec<Transition>,
     #[serde(default)]
@@ -104,7 +104,7 @@ impl Domain {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Cell {
+pub struct Category {
     /// 机器可读的标识。
     pub name: String,
     /// 给人看的称呼。
@@ -234,7 +234,7 @@ pub struct Paradigm {
     /// `confirmed` 或 `suspected`，缺省按怀疑算。
     #[serde(default)]
     pub status: String,
-    /// `cells` 表示对象取 `[[cell]]`、态射取 `[[transition]]`；其余按 inline 读。
+    /// `categories` 表示对象取 `[[category]]`、态射取 `[[transition]]`；其余按 inline 读。
     #[serde(default)]
     pub source: String,
     /// `transitive`、`partial` 或 `none`，缺省 partial。
@@ -355,14 +355,14 @@ impl Contract {
     fn parse(text: &str, origin: &str, bundled: bool) -> Result<Self, String> {
         let contract: Contract =
             toml::from_str(text).map_err(|error| format!("契约 {origin} 格式不对：{error}"))?;
-        if contract.cell.is_empty() {
+        if contract.category.is_empty() {
             return Err(format!("契约 {origin} 没有一格：十八格至少得写进来"));
         }
         // 降格目标与分辨句里的格必须是真格，写错了会在判定后才暴露，宁可在读契约时拦下。
         let known: Vec<&str> = contract
-            .cell
+            .category
             .iter()
-            .map(|cell| cell.name.as_str())
+            .map(|category| category.name.as_str())
             .collect();
         for transition in &contract.transition {
             for key in [&transition.from, &transition.to] {
@@ -388,13 +388,20 @@ impl Contract {
                 .iter()
                 .map(|family| family.name.as_str())
                 .collect();
-            for cell in &contract.cell {
-                if !families.contains(&cell.family.as_str()) {
-                    return Err(format!("契约 {origin} 的模型没有这一族：{}", cell.family));
+            for category in &contract.category {
+                if !families.contains(&category.family.as_str()) {
+                    return Err(format!(
+                        "契约 {origin} 的模型没有这一族：{}",
+                        category.family
+                    ));
                 }
             }
             for family in &contract.model.family {
-                if !contract.cell.iter().any(|cell| cell.family == family.name) {
+                if !contract
+                    .category
+                    .iter()
+                    .any(|category| category.family == family.name)
+                {
                     return Err(format!(
                         "契约 {origin} 的模型家族没有对应的格：{}",
                         family.name
@@ -485,9 +492,9 @@ impl Contract {
                 ));
             }
             let source = paradigm.source.trim();
-            if !source.is_empty() && source != "cells" && source != "inline" {
+            if !source.is_empty() && source != "categories" && source != "inline" {
                 return Err(format!(
-                    "契约 {origin} 的范式 source 只能写 cells 或 inline：{}",
+                    "契约 {origin} 的范式 source 只能写 categories 或 inline：{}",
                     paradigm.name
                 ));
             }
@@ -540,30 +547,30 @@ impl Contract {
         Ok(contract)
     }
 
-    pub fn cell(&self, name: &str) -> Option<&Cell> {
-        self.cell.iter().find(|cell| cell.name == name)
+    pub fn category(&self, name: &str) -> Option<&Category> {
+        self.category.iter().find(|category| category.name == name)
     }
 
     pub fn paradigm_of(&self, name: &str) -> Option<&Paradigm> {
         self.paradigm.iter().find(|paradigm| paradigm.name == name)
     }
 
-    /// 把范式展开成对象与态射：`source = "cells"` 时取格与降格，否则取 inline。
+    /// 把范式展开成对象与态射：`source = "categories"` 时取格与降格，否则取 inline。
     pub fn resolve(&self, paradigm: &Paradigm) -> ResolvedParadigm {
-        let cells = paradigm.source.trim() == "cells";
-        let objects = if cells {
-            self.cell
+        let categories = paradigm.source.trim() == "categories";
+        let objects = if categories {
+            self.category
                 .iter()
-                .map(|cell| ParadigmObject {
-                    name: cell.name.clone(),
-                    label: cell.label.clone(),
-                    description: cell.description.clone(),
+                .map(|category| ParadigmObject {
+                    name: category.name.clone(),
+                    label: category.label.clone(),
+                    description: category.description.clone(),
                 })
                 .collect()
         } else {
             paradigm.object.clone()
         };
-        let morphisms = if cells {
+        let morphisms = if categories {
             self.transition
                 .iter()
                 .map(|transition| ParadigmMorphism {
@@ -580,8 +587,8 @@ impl Contract {
             label: paradigm.label.clone(),
             description: paradigm.description.clone(),
             status: paradigm.status.clone(),
-            source: if cells {
-                "cells".to_string()
+            source: if categories {
+                "categories".to_string()
             } else {
                 "inline".to_string()
             },
@@ -611,7 +618,7 @@ mod tests {
     use super::Contract;
 
     const CELL: &str = r#"
-[[cell]]
+[[category]]
 name = "insight"
 label = "洞察"
 path = "data/insight"
