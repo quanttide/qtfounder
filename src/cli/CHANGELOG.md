@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.0.32] - 2026-10-27
+
+### Added
+
+- `meta domain`：看登记的领域——名字、称呼、线索与确认状态，确认的排前；契约的 `[[domain]]` 新增 `status`
+- `meta validate` 纳入 `domain.md`：名字与状态不一致都报
+
 ## [0.0.31] - 2026-10-27
 
 ### Added

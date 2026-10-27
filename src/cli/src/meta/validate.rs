@@ -1,6 +1,7 @@
 //! `meta validate`：查文档镜像与契约是否还对得上。
 //!
-//! 只比对，不改写。公理看标题，属性看列表项；名字、状态、分组、定义任一处不一致都算漂移。
+//! 只比对，不改写。公理与领域看二级、三级标题，属性看列表项；
+//! 名字、状态、分组、定义任一处不一致都算漂移。
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -33,6 +34,7 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
     let mut problems = Vec::new();
     problems.extend(check_axioms(&contract, &args.docs));
     problems.extend(check_properties(&contract, &args.docs));
+    problems.extend(check_domains(&contract, &args.docs));
 
     if args.json {
         println!(
@@ -40,12 +42,13 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
             serde_json::to_string_pretty(&json!({
                 "axioms": contract.axiom.len(),
                 "properties": contract.property.len(),
+                "domains": contract.domain.len(),
                 "problems": problems,
             }))
             .unwrap_or_else(|_| "{}".to_string())
         );
     } else if problems.is_empty() {
-        println!("对得上：公理与属性都一致");
+        println!("对得上：公理、属性与领域都一致");
     } else {
         println!("对不上 {} 处：", problems.len());
         for problem in &problems {
@@ -60,36 +63,26 @@ fn check_axioms(contract: &Contract, docs: &Path) -> Vec<String> {
     let Some(text) = read(&path) else {
         return vec![format!("读不到 {}", path.display())];
     };
-    let mut doc: BTreeMap<String, &str> = BTreeMap::new();
-    for line in text.lines() {
-        let Some(rest) = line.strip_prefix("### ") else {
-            continue;
-        };
-        if let Some((name, key)) = marked(rest.trim()) {
-            doc.insert(name, key);
-        }
-    }
+    let doc = headings(&text, "### ");
     let mut problems = Vec::new();
     for axiom in &contract.axiom {
         match doc.get(&axiom.name) {
             None => problems.push(format!("axioms.md：契约里有 {}，文档没写", axiom.name)),
             Some(key) => {
                 if *key != axiom.status_key() {
-                    problems.push(format!(
-                        "axioms.md：{} 的状态不一致——文档 {}，契约 {}",
-                        axiom.name,
-                        status_label(key),
-                        axiom.status_label()
+                    problems.push(status_problem(
+                        "axioms.md",
+                        &axiom.name,
+                        key,
+                        axiom.status_label(),
                     ));
                 }
             }
         }
     }
-    for name in doc.keys() {
-        if !contract.axiom.iter().any(|axiom| &axiom.name == name) {
-            problems.push(format!("axioms.md：文档写了 {name}，契约里没有"));
-        }
-    }
+    problems.extend(extra("axioms.md", &doc, |name| {
+        contract.axiom.iter().any(|axiom| axiom.name == name)
+    }));
     problems
 }
 
@@ -118,19 +111,19 @@ fn check_properties(contract: &Contract, docs: &Path) -> Vec<String> {
     for property in &contract.property {
         match doc.get(&property.name) {
             None => problems.push(format!("property.md：契约里有 {}，文档没写", property.name)),
-            Some((group, key, description)) => {
-                if *group != property.group {
+            Some((doc_group, key, description)) => {
+                if *doc_group != property.group {
                     problems.push(format!(
                         "property.md：{} 的分组不一致——文档 {}，契约 {}",
-                        property.name, group, property.group
+                        property.name, doc_group, property.group
                     ));
                 }
                 if *key != property.status_key() {
-                    problems.push(format!(
-                        "property.md：{} 的状态不一致——文档 {}，契约 {}",
-                        property.name,
-                        status_label(key),
-                        property.status_label()
+                    problems.push(status_problem(
+                        "property.md",
+                        &property.name,
+                        key,
+                        property.status_label(),
                     ));
                 }
                 if description.trim() != property.description.trim() {
@@ -152,6 +145,67 @@ fn check_properties(contract: &Contract, docs: &Path) -> Vec<String> {
         }
     }
     problems
+}
+
+fn check_domains(contract: &Contract, docs: &Path) -> Vec<String> {
+    let path = docs.join("domain.md");
+    let Some(text) = read(&path) else {
+        return vec![format!("读不到 {}", path.display())];
+    };
+    let doc = headings(&text, "## ");
+    let mut problems = Vec::new();
+    for domain in &contract.domain {
+        match doc.get(&domain.name) {
+            None => problems.push(format!("domain.md：契约里有 {}，文档没写", domain.name)),
+            Some(key) => {
+                if *key != domain.status_key() {
+                    problems.push(status_problem(
+                        "domain.md",
+                        &domain.name,
+                        key,
+                        domain.status_label(),
+                    ));
+                }
+            }
+        }
+    }
+    problems.extend(extra("domain.md", &doc, |name| {
+        contract.domain.iter().any(|domain| domain.name == name)
+    }));
+    problems
+}
+
+/// 取带标记的标题：`### name（确认）`。
+fn headings(text: &str, prefix: &str) -> BTreeMap<String, &'static str> {
+    let mut found = BTreeMap::new();
+    for line in text.lines() {
+        let Some(rest) = line.strip_prefix(prefix) else {
+            continue;
+        };
+        if let Some((name, key)) = marked(rest.trim()) {
+            found.insert(name, key);
+        }
+    }
+    found
+}
+
+/// 文档里有、契约里没有的名字。
+fn extra(
+    file: &str,
+    doc: &BTreeMap<String, &'static str>,
+    exists: impl Fn(&str) -> bool,
+) -> Vec<String> {
+    doc.keys()
+        .filter(|name| !exists(name))
+        .map(|name| format!("{file}：文档写了 {name}，契约里没有"))
+        .collect()
+}
+
+fn status_problem(file: &str, name: &str, doc_key: &str, contract_label: &str) -> String {
+    format!(
+        "{file}：{name} 的状态不一致——文档 {}，契约 {contract_label}",
+        status_label(doc_key)
+    )
 }
 
 /// `name（确认）` → (name, confirmed)。

@@ -4,7 +4,7 @@
 
 `classify` 一次判一条线索：给一段内容，出一张落位卡。卡上四行——域、格、档、写法——加一个结论：收，还是收不了。
 
-## 七条命令
+## 八条命令
 
 名词读本体，动词分两种：`classify` 把内容放进格，`validate` 看有没有漂。
 
@@ -15,6 +15,7 @@
 | 公理 | `meta axiom` | 归位时不重新论证的前提 |
 | 属性 | `meta property` | 标准属性的字段名、组与定义 |
 | 范畴 | `meta category` | 十八格各收什么 |
+| 领域 | `meta domain` | 内容搬出本仓的去处 |
 | 范畴（动词） | `meta classify` | 给一条内容一张落位卡 |
 | 验证（动词） | `meta validate` | 文档镜像与契约是否还对得上 |
 
@@ -195,7 +196,27 @@ domain-before-cell  怀疑  先定域，再定格，再过准入，最后给写�
 
 点名只点契约里还在的：把一条 `[[axiom]]` 删了，卡上就不会再出现它——沉默比报错早一步暴露改动。反过来，契约里加了新公理，卡也不会自动引用，要在 `classify` 的 `cited` 里写上它管哪一步。
 
-## 十一、property：标准属性
+## 十一、domain：领域
+
+```bash
+qtfounder meta domain
+qtfounder meta domain quanttide-write
+```
+
+```text
+quanttide-write  write 领域  怀疑
+  线索：小说、章节、文风、叙事、人物、改稿
+...
+```
+
+领域是内容搬出本仓的去处，与落进哪一格无关。领域写在契约的 `[[domain]]` 里，每条有 name、label、cues 与 status；`classify` 判域时读同一份名单。
+
+用途：
+
+- 加一个领域仓时，先在这里登记名字与线索；线索是认路的词，不是关键词清单。
+- 领域 name 重复、为空，或 status 写了别的值，读契约时就报。
+
+## 十二、property：标准属性
 
 ```bash
 qtfounder meta property
@@ -217,7 +238,7 @@ qtfounder meta property --json
 - 加字段前先看这个名字有没有：有就照它的意思用，不另起一个。
 - 契约里 name 重复、缺 group、缺 description、status 写了别的值，读契约时就报。
 
-## 十二、category：十八格
+## 十三、category：十八格
 
 ```bash
 qtfounder meta category
@@ -233,7 +254,7 @@ qtfounder meta category insight
 
 `category` 是名词，看格有哪些、各收什么、落在哪个目录；`classify` 是动词，把一条内容放进某一格。要写法与分档看 `asset contract`。
 
-## 十三、validate：查漂移
+## 十四、validate：查漂移
 
 ```bash
 qtfounder meta validate
@@ -246,4 +267,4 @@ qtfounder meta validate --docs docs/gallery/meta
 
 对不上时退出码 1，逐条列出：文档多写了谁、少写了谁、状态不一致、分组不一致、定义文字不一致。文档目录不在就直接报错，不猜。
 
-它只对两份镜像——`axioms.md` 与 `property.md`；模型、关系两页还没纳入。改完契约或这两份文档，跑一遍再提交。
+它只对三份镜像——`axioms.md`、`property.md` 与 `domain.md`；模型、关系两页还没纳入。改完契约或这三份文档，跑一遍再提交。

@@ -78,6 +78,9 @@ pub struct Domain {
     pub label: String,
     #[serde(default)]
     pub cues: Vec<String>,
+    /// `confirmed` 或 `suspected`，缺省按怀疑算。
+    #[serde(default)]
+    pub status: String,
 }
 
 impl Domain {
@@ -87,6 +90,14 @@ impl Domain {
         } else {
             &self.label
         }
+    }
+
+    pub fn status_key(&self) -> &'static str {
+        status_key(&self.status)
+    }
+
+    pub fn status_label(&self) -> &'static str {
+        status_label(&self.status)
     }
 }
 
@@ -346,6 +357,22 @@ impl Contract {
                 return Err(format!(
                     "契约 {origin} 的属性 status 只能写 confirmed 或 suspected：{}",
                     property.name
+                ));
+            }
+        }
+        let mut domain_names = HashSet::new();
+        for domain in &contract.domain {
+            if domain.name.trim().is_empty() {
+                return Err(format!("契约 {origin} 的领域缺 name"));
+            }
+            if !domain_names.insert(domain.name.as_str()) {
+                return Err(format!("契约 {origin} 的领域 name 重复：{}", domain.name));
+            }
+            let status = domain.status.trim();
+            if !status.is_empty() && status != "confirmed" && status != "suspected" {
+                return Err(format!(
+                    "契约 {origin} 的领域 status 只能写 confirmed 或 suspected：{}",
+                    domain.name
                 ));
             }
         }
