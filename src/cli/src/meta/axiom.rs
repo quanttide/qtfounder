@@ -59,7 +59,12 @@ fn print_text(axioms: &[&Axiom]) {
         if index > 0 {
             println!();
         }
-        println!("{}  {}", axiom.id, axiom.statement);
+        println!(
+            "{}  {}  {}",
+            axiom.id,
+            axiom.status_label(),
+            axiom.statement
+        );
         if !axiom.why.is_empty() {
             println!("  {}", axiom.why);
         }
@@ -74,6 +79,8 @@ fn print_json(axioms: &[&Axiom]) {
                 "id": axiom.id,
                 "statement": axiom.statement,
                 "why": axiom.why,
+                "status": axiom.status_key(),
+                "status_label": axiom.status_label(),
             })
         })
         .collect();
@@ -96,6 +103,18 @@ mod tests {
             assert!(!axiom.statement.is_empty(), "{} 缺 statement", axiom.id);
             assert!(!axiom.why.is_empty(), "{} 缺 why", axiom.id);
         }
+    }
+
+    #[test]
+    fn 公理缺省按怀疑算() {
+        let axiom = Axiom {
+            id: "x".to_string(),
+            statement: "甲".to_string(),
+            why: "乙".to_string(),
+            status: String::new(),
+        };
+        assert_eq!(axiom.status_key(), "suspected");
+        assert_eq!(axiom.status_label(), "怀疑");
     }
 
     #[test]

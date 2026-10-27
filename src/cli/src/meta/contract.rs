@@ -168,6 +168,27 @@ pub struct Axiom {
     pub statement: String,
     #[serde(default)]
     pub why: String,
+    /// `confirmed` 或 `suspected`，缺省按怀疑算。
+    #[serde(default)]
+    pub status: String,
+}
+
+impl Axiom {
+    pub fn status_key(&self) -> &'static str {
+        if self.status.trim() == "confirmed" {
+            "confirmed"
+        } else {
+            "suspected"
+        }
+    }
+
+    pub fn status_label(&self) -> &'static str {
+        if self.status_key() == "confirmed" {
+            "确认"
+        } else {
+            "怀疑"
+        }
+    }
 }
 
 impl Contract {
@@ -252,6 +273,13 @@ impl Contract {
             if axiom.why.trim().is_empty() {
                 return Err(format!("契约 {origin} 的公理没有 why：{}", axiom.id));
             }
+            let status = axiom.status.trim();
+            if !status.is_empty() && status != "confirmed" && status != "suspected" {
+                return Err(format!(
+                    "契约 {origin} 的公理 status 只能写 confirmed 或 suspected：{}",
+                    axiom.id
+                ));
+            }
         }
         if bundled && contract.domain.is_empty() {
             return Err(format!(
@@ -309,6 +337,15 @@ path = "data/insight"
             parse("\n[[axiom]]\nid = \"one-place\"\nstatement = \"\"\nwhy = \"放错格的代价是没人找得到它。\"\n")
                 .unwrap_err();
         assert!(error.contains("没有 statement"), "{error}");
+    }
+
+    #[test]
+    fn 公理状态只能是确认或怀疑() {
+        let error = parse(
+            "\n[[axiom]]\nid = \"x\"\nstatement = \"甲\"\nwhy = \"乙\"\nstatus = \"maybe\"\n",
+        )
+        .unwrap_err();
+        assert!(error.contains("status"), "{error}");
     }
 
     #[test]

@@ -163,13 +163,15 @@ qtfounder meta axiom no-fallback
 ```
 
 ```text
-one-place  一份内容只有一个正确去处。
+one-place  怀疑  一份内容只有一个正确去处。
   放错格的代价不是难看，是下一轮没人找得到它。
 
-domain-before-cell  先定域，再定格，再过准入，最后给写法。
+domain-before-cell  怀疑  先定域，再定格，再过准入，最后给写法。
   顺序换了，域错时格越准，搬得越远。
 ...
 ```
+
+id 后面跟一个标记：确认是自己验过的，怀疑是还没验过。没写 `status` 的一律当怀疑——没验过就不当前提用。
 
 用途：
 
@@ -177,17 +179,15 @@ domain-before-cell  先定域，再定格，再过准入，最后给写法。
 - 迁移或归档前，`target-then-source` 与 `archive-vs-transfer` 是操作边界。
 - 写模板前，`template-scope` 说明有固定结构才有模板：手册、规格与按日期落的日志可以有，结构随内容走的不设固定写法。
 
-公理在契约里是 `[[axiom]]`，每条写清 id、statement 与 why。id 为空、statement 为空、why 为空、id 重复，都会在读契约时被拦下：只有结论的公理是口号，记不住当初的失败，后来的人就无从判断它还算不算前提。
+公理在契约里是 `[[axiom]]`，每条写清 id、statement 与 why；`status` 写 `confirmed` 或 `suspected`，缺省怀疑。id 为空、statement 为空、why 为空、id 重复、status 写了别的值，都会在读契约时被拦下。只有结论的公理是口号：记不住当初的失败，后来的人就无从判断它还算不算前提。
 
 ### 卡上点哪几条
 
 公理不参与算分，只留一行出处。判完对不上时，先看这一行：前提改了，还是规则用错了。
 
-| 什么时候 | 点到的公理 |
-|---|---|
-| 每张卡 | `domain-before-cell` |
-| 指了域 | `text-only`、`archive-vs-transfer` |
-| 收了（落位或搬走） | `one-place`、`template-scope` |
-| 不收 | `no-fit` |
+- 每张卡：`domain-before-cell`
+- 指了域：`text-only`、`archive-vs-transfer`
+- 收了（落位或搬走）：`one-place`、`template-scope`
+- 不收：`no-fit`
 
 点名只点契约里还在的：把一条 `[[axiom]]` 删了，卡上就不会再出现它——沉默比报错早一步暴露改动。反过来，契约里加了新公理，卡也不会自动引用，要在 `classify` 的 `cited` 里写上它管哪一步。

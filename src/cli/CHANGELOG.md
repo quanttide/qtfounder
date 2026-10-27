@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.26] - 2026-10-27
+
+### Added
+
+- 公理多了 `status`：`confirmed` 或 `suspected`，缺省按怀疑算。`meta axiom` 在 id 后打「确认」或「怀疑」，JSON 带 `status` 与 `status_label`，写了别的值在读契约时拦下。现只有 `template-scope` 标确认，其余八条标怀疑
+
 ## [0.0.25] - 2026-10-27
 
 ### Changed
