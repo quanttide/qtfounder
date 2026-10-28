@@ -11,6 +11,7 @@
 
 ### Changed
 
+- `docs/dev-guide/roadmap.md` 迁至路线图仓 `data/roadmap/qtfounder/roadmap.md`：方向文档统一归路线图仓，仓内只留开发指南；新增「qtcloud 组织验证」一节（探底噪、真实交付对照、漏率刻度三步，先记顺序不实现）。`docs/index.md`、`dev-guide/index.md` 与 `myst.yml` 目录同步摘除
 - `docs` 的 `--kind`／`--rules`／`--top`／`--json`／`--stats` 改为全局参数：`qtfounder docs format docs --json` 这样写在子命令后也认
 - `--kind` 报错提示补上 `journal`：七个取值本来就含它，提示里却漏了
 

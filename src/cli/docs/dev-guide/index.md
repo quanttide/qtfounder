@@ -7,7 +7,8 @@
 - [架构](architecture.md)：五段流水，为什么 `code` 要 IR 而 `language` 不要。
 - [加一条验收标准](adding-a-check.md)：一条检查住在四处，另加三种不该加的验收标准。
 - [测试](testing.md)：真样本、反样本、契约可变，以及并行测试的临时文件坑。
-- [路线图](roadmap.md)。
+
+路线图已迁至路线图仓 `data/roadmap/qtfounder/roadmap.md`。
 
 ## 文档审计
 
