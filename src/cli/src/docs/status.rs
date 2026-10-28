@@ -41,7 +41,7 @@ pub struct Status {
 }
 
 impl Status {
-    /// 格式元素总数，口径照章程第四条：标题、表格、列表、加粗、分割线、块引用、代码块各算一处。
+    /// 格式元素总数，这七类怎么算照章程第四条：标题、表格、列表、加粗、分割线、块引用、代码块各算一处。
     pub fn elements(&self) -> usize {
         self.headings
             + self.tables
