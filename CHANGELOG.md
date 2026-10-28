@@ -2,13 +2,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- studio：新增 `lib/asset/` 资产抽查模块（参考 recaller 思路，bloc 架构）：扫描 quanttide-founder 的文档与代码，批次卡片流决策保留或删除，删除的移入仓库根 `.trash/`（保留相对路径，已入 `.gitignore`）；入口是首页「资产抽查」卡片，仓库根可用 `--dart-define=QTFOUNDER_ROOT` 指定
+
 ### Changed
 
 - CHANGELOG 拆分：`cli/v0.0.1` 至 `cli/v0.0.3` 三个版本段移至 `src/cli/CHANGELOG.md`，与 `src/site/CHANGELOG.md` 的模块化约定一致；本文件只留仓库级版本，模块版本按 `<模块>/CHANGELOG.md` 维护
 - studio 文档按当前结构重写：README 与 ROADMAP 改为骨架 + review_tool 的现状；归档 models/screens 的设计合并到 `doc/data-sources.md` 与 `doc/planned-ui.md`
 - 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
 
-## Removed
+### Removed
 
 - studio review 代码清空：`packages/review_tool/`、`lib/review/`、`test/review_tool_smoke_test.dart`、`doc/review.md` 移除，`pubspec.yaml` 去掉 `review_tool` 依赖；`src/studio` 只保留入口 `lib/main.dart`，README、ROADMAP 与 `doc/` 同步为骨架现状，等待重新设计
 - Studio 业务代码（`src/studio/lib/bloc`、`models`、`repositories`、`screens`、`services`、`config.dart`）与测试归档至 `data/archive/platform/qtfounder/studio/`；`src/studio` 仅保留入口 `lib/main.dart` 与最小骨架

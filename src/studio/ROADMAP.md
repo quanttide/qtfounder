@@ -3,7 +3,7 @@
 ## 当前状态
 
 - [x] 骨架与入口 `lib/main.dart`（业务代码已归档，见 CHANGELOG）
-- [x] review 代码清空（`packages/review_tool`、`lib/review/`、相关测试与文档），等待重新设计
+- [x] `lib/asset/` 资产抽查：扫描、批次卡片流、保留/删除、移入 `.trash/`、结果清单
 
 ## 下一步
 
@@ -17,3 +17,4 @@
 ## 已知偏差
 
 - 契约仍用 `memory` 命名，父仓当前数据目录是 `data/context`，重建数据层时统一
+- 资产抽查的删除是移入 `.trash/`，不进版本控制；真正清理需手动删 `.trash/`
