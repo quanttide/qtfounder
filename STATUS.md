@@ -12,7 +12,7 @@
 | 模块 | 说明 | 版本 | 状态 |
 |------|------|------|------|
 | `src/site/` | 创始人官网（React + Vite） | v0.1.0-beta.1 | ✅ 从"作品集"转向"创作现场"（时间线/矩阵/改稿轨迹） |
-| `src/studio/` | 创始人工作台（Flutter） | 1.0.0+1 | 🔶 重建中：已落地 `lib/asset/` 资产抽查（扫描/bloc 卡片流/保留/删除移入 `.trash/`）；其余页面按模块重建 |
+| `src/studio/` | 创始人工作台（Flutter） | v0.0.1 | 🔶 重建中：已落地 `lib/asset/` 资产抽查（扫描/bloc 卡片流/保留/删除移入 `.trash/`）；其余页面按模块重建 |
 | `src/provider/` | 创作数据 API（Go） | v0.1.0 | ✅ chapters/memory/health 三 API，真实数据源测试通过 |
 | `src/cli/` | CLI 工具（Rust） | — | 🔶 三个子命令已落地：`code`（代码四层）、`language`（文字七层，与原 `qfl` 对等）、`health`（消耗归因＋责任环节，读 Hermes 会话库）；journal／submodule／release 见路线图 |
 
