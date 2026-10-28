@@ -9,6 +9,7 @@ mod agent;
 mod asset;
 mod audit;
 mod code;
+mod design;
 mod docs;
 mod git;
 mod language;
@@ -51,6 +52,8 @@ enum CliCommand {
     Git(git::GitArgs),
     /// 文字体检：合并文字与文档审计，每期只说一处
     Audit(audit::AuditArgs),
+    /// 交互设计：review 数 HTML 的字号与主按钮，principles 摊开十二条原则
+    Design(design::DesignArgs),
 }
 
 fn main() {
@@ -125,6 +128,13 @@ fn main() {
             }
         },
         Some(CliCommand::Audit(args)) => match audit::run_audit(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        },
+        Some(CliCommand::Design(args)) => match design::run_design(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

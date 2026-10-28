@@ -7,7 +7,7 @@
 pub mod contract;
 mod install;
 mod lint;
-mod registry;
+pub(crate) mod registry;
 mod relation;
 mod skill;
 

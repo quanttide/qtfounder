@@ -12,8 +12,9 @@ const CONTRACT: &str = concat!(
     "/src/agent/default-contract.toml"
 );
 
-/// 随二进制发布的七条，与 `registry` 的单元测试同一份名单。
-const PUBLISHED: [&str; 7] = [
+/// 随二进制发布的八条，与 `registry` 的单元测试同一份名单。
+const PUBLISHED: [&str; 8] = [
+    "design-review",
     "docs-format",
     "language-govern",
     "meta-classify",
@@ -111,12 +112,13 @@ fn status_of<'a>(value: &'a serde_json::Value, id: &str) -> &'a str {
 // ---------- 命令面 ----------
 
 #[test]
-fn 顶层有十个命令且装skill并入agent() {
+fn 顶层有十一个命令且装skill并入agent() {
     let temp = TempRoot::new("top-level");
     let output = run(temp.path(), &["--help"]);
     assert_eq!(output.code, 0, "{}", output.stderr);
     for name in [
         "code", "language", "docs", "write", "think", "meta", "product", "agent", "git", "audit",
+        "design",
     ] {
         assert!(
             output.stdout.contains(name),
@@ -163,7 +165,7 @@ fn 版本号与包一致() {
 // ---------- list / check ----------
 
 #[test]
-fn 列出的七条都未装且不建目录() {
+fn 列出的八条都未装且不建目录() {
     let temp = TempRoot::new("list-missing");
     let root = temp.path().join("repo");
     let output = run(
@@ -224,7 +226,7 @@ fn 装完之后检查通过() {
         &["agent", "skill", "install", "--root", root_arg],
     );
     assert_eq!(install.code, 0, "{}", install.stderr);
-    assert!(install.stdout.contains("装了 7 个"), "{}", install.stdout);
+    assert!(install.stdout.contains("装了 8 个"), "{}", install.stdout);
     for id in PUBLISHED {
         assert!(
             root.join(".agents/skills")
@@ -283,6 +285,7 @@ fn 只装一条时其余仍未装() {
     let value = json(&list);
     assert_eq!(status_of(&value, "language-govern"), "current");
     for id in [
+        "design-review",
         "meta-classify",
         "product-collect",
         "product-organize",

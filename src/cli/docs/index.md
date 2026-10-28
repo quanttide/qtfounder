@@ -1,6 +1,6 @@
 # qtfounder CLI 文档
 
-命令行工具，十一个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知，`meta` 判归位，`asset` 看资产契约、清单、关系与维护规则，`product` 记需求差，`agent` 装 Skill 并查写法，`git` 管钩子配置，`audit` 出体检报告。
+命令行工具，十二个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知，`meta` 判归位，`asset` 看资产契约、清单、关系与维护规则，`product` 记需求差，`agent` 装 Skill 并查写法，`git` 管钩子配置，`audit` 出体检报告，`design` 走查界面交付物。
 
 ## 用户指南
 
@@ -14,6 +14,7 @@
 - [`product`](user-guide/product.md)：需求与澄清，`clarify` 记一次「不对劲」，`requirement` 看攒出了什么。
 - [`agent`](user-guide/agent.md)：装 Skill（`list`、`install`、`check`）并查写法（`lint`）。
 - [`audit`](user-guide/audit.md)：文字体检，合并两套审计，每期只说一处。
+- [`design`](user-guide/design.md)：交互设计走查，数 HTML 交付物的字号与主按钮；`design principles` 摊开十二条原则。
 
 ## 开发指南
 

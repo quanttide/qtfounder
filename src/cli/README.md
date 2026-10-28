@@ -1,6 +1,6 @@
 # qtfounder-cli
 
-量潮创始人 CLI 工具。十一个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知（含负载诊断与反思记录），`meta` 判归位与看归位边，`asset` 看资产契约、清单、关系与维护规则，`product` 记需求差，`agent` 装 Skill、查写法与看命令关系，`git` 管钩子配置，`audit` 出体检报告。
+量潮创始人 CLI 工具。十二个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知（含负载诊断与反思记录），`meta` 判归位与看归位边，`asset` 看资产契约、清单、关系与维护规则，`product` 记需求差，`agent` 装 Skill、查写法与看命令关系，`git` 管钩子配置，`audit` 出体检报告，`design` 走查界面交付物的字号与主按钮。
 
 ## 开发
 
@@ -23,7 +23,8 @@ cargo test
 | `qtfounder asset` | 资产：`contract` 看每类资产的边界、分档与写法，`catalog` 看二十种资产在不在，`relation` 看角色与迁入边，`maintain` 整理 context 并搬进长期记忆仓。用法见 [docs/user-guide/asset.md](docs/user-guide/asset.md) |
 | `qtfounder agent` | Agent：`skill` 一组——`list`／`check` 看装到哪一步，`install` 装到系统位置 `~/.agents/skills`，`lint` 查名字、说明与正文合不合标准；`relation` 看 Skill 引用了哪些命令、哪些命令组还没 Skill。用法见 [docs/user-guide/agent.md](docs/user-guide/agent.md) |
 | `qtfounder git` | Git：`hook` 一组——`install`／`status`／`uninstall` 管主仓与子模块的 `core.hooksPath`，`run` 执行钩子；`submodule check` 查指针与推送状态。用法见 [docs/user-guide/git.md](docs/user-guide/git.md) |
-| `qtfounder audit` | 文字体检：合并 `language` 与 `docs`，按「一个词、一条规则」归堆，每期只报一处。用法见 [docs/user-guide/audit.md](docs/user-guide/audit.md) |
+| `qtfounder audit` | 文字体检：合并 `language` 与 `docs`，按「一个词、一条规则」归堆，每期只说一处。用法见 [docs/user-guide/audit.md](docs/user-guide/audit.md) |
+| `qtfounder design` | 交互设计走查：数 HTML 交付物的字号（第九条中文微排版）与主按钮（第五条主行动唯一），`design principles` 摊开十二条原则。用法见 [docs/user-guide/design.md](docs/user-guide/design.md) |
 
 ## 添加新功能
 

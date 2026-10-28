@@ -46,7 +46,7 @@ mod tests {
     }
 
     #[test]
-    fn 嵌入清单只有七条() {
+    fn 嵌入清单只有八条() {
         let ids: Vec<&str> = super::all().iter().map(|entry| entry.id).collect();
         if ids.is_empty() {
             return;
@@ -54,6 +54,7 @@ mod tests {
         assert_eq!(
             ids,
             vec![
+                "design-review",
                 "docs-format",
                 "language-govern",
                 "meta-classify",
@@ -62,7 +63,7 @@ mod tests {
                 "think-reflect",
                 "write-express",
             ],
-            "随 CLI 发布的 Skill 应当只有这七条"
+            "随 CLI 发布的 Skill 应当只有这八条"
         );
     }
 }
