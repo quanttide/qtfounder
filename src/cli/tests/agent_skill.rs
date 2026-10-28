@@ -12,8 +12,9 @@ const CONTRACT: &str = concat!(
     "/src/agent/default-contract.toml"
 );
 
-/// 随二进制发布的六条，与 `registry` 的单元测试同一份名单。
-const PUBLISHED: [&str; 6] = [
+/// 随二进制发布的七条，与 `registry` 的单元测试同一份名单。
+const PUBLISHED: [&str; 7] = [
+    "docs-format",
     "language-govern",
     "meta-classify",
     "product-collect",
@@ -162,7 +163,7 @@ fn 版本号与包一致() {
 // ---------- list / check ----------
 
 #[test]
-fn 列出的六条都未装且不建目录() {
+fn 列出的七条都未装且不建目录() {
     let temp = TempRoot::new("list-missing");
     let root = temp.path().join("repo");
     let output = run(
@@ -223,7 +224,7 @@ fn 装完之后检查通过() {
         &["agent", "skill", "install", "--root", root_arg],
     );
     assert_eq!(install.code, 0, "{}", install.stderr);
-    assert!(install.stdout.contains("装了 6 个"), "{}", install.stdout);
+    assert!(install.stdout.contains("装了 7 个"), "{}", install.stdout);
     for id in PUBLISHED {
         assert!(
             root.join(".agents/skills")
