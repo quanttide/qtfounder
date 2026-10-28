@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/asset_cubit.dart';
+import '../states/asset_cubit.dart';
 
 /// 结果页：成功与失败的清单，失败的逐条列出。
 class ResultPage extends StatelessWidget {

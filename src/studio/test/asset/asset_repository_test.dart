@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
-import 'package:qtfounder_studio/asset/data/asset_repository.dart';
-import 'package:qtfounder_studio/asset/model/asset_file.dart';
+import 'package:qtfounder_studio/asset/repos/asset_repository.dart';
+import 'package:qtfounder_studio/asset/models/asset_file.dart';
 
 void main() {
   late Directory root;

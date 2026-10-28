@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/asset_cubit.dart';
-import '../model/asset_file.dart';
+import '../states/asset_cubit.dart';
+import '../models/asset_file.dart';
 
 /// 卡片流：只渲染栈顶一个资产，左右滑动或点按钮决策。
 class BatchPage extends StatelessWidget {

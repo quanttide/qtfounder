@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/asset_cubit.dart';
-import '../data/asset_repository.dart';
+import '../states/asset_cubit.dart';
+import '../repos/asset_repository.dart';
 import 'batch_page.dart';
 import 'confirm_page.dart';
 import 'result_page.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/asset_cubit.dart';
-import '../model/asset_file.dart';
+import '../states/asset_cubit.dart';
+import '../models/asset_file.dart';
 
 /// 确认页：列出所有标记删除的资产，最后一次确认。
 class ConfirmPage extends StatelessWidget {

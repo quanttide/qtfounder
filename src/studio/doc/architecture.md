@@ -5,10 +5,10 @@
 ```text
 lib/main.dart                   入口与首页
 lib/asset/                     资产抽查模块
-  model/asset_file.dart        AssetFile、AssetKind、Decision
-  data/asset_repository.dart   仓库根解析、扫描、预览、移入回收目录
-  bloc/asset_cubit.dart        批次状态机
-  ui/                          卡片流、确认页、结果页、状态分发
+  models/asset_file.dart       AssetFile、AssetKind、Decision
+  repos/asset_repository.dart  仓库根解析、扫描、预览、移入回收目录
+  states/asset_cubit.dart      批次状态机
+  screens/                     卡片流、确认页、结果页、状态分发
 assets/contracts/              数据契约
 ```
 
@@ -17,11 +17,11 @@ assets/contracts/              数据契约
 ## 依赖方向
 
 ```text
-main -> asset/ui (AssetAuditPage)
-asset/ui -> asset/bloc -> asset/data -> asset/model
+main -> asset/screens (AssetAuditPage)
+asset/screens -> asset/states -> asset/repos -> asset/models
 ```
 
-上层依赖下层，`model` 不依赖任何层。`AssetRepository` 只依赖 Dart 与 `path`，不碰平台分支；当前是桌面/Web 都可用的纯文件操作，未来接 Provider 时只替换 `data` 层两端。
+上层依赖下层，`models` 不依赖任何层。`AssetRepository` 只依赖 Dart 与 `path`，不碰平台分支；当前是桌面/Web 都可用的纯文件操作，未来接 Provider 时只替换 `repos` 层两端。
 
 ## 数据契约
 
@@ -33,4 +33,4 @@ asset/ui -> asset/bloc -> asset/data -> asset/model
 
 ## 重建约束
 
-重建时在 `lib/` 下按模块分层添加（model / data / bloc / ui），与 `lib/asset/` 的结构一致；先恢复数据层，再做页面，不把归档代码整块搬回。
+重建时在 `lib/` 下按模块分层添加（models / repos / states / screens），与 `lib/asset/` 的结构一致；先恢复数据层，再做页面，不把归档代码整块搬回。

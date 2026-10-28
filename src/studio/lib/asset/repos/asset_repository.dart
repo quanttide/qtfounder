@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../model/asset_file.dart';
+import '../models/asset_file.dart';
 
 /// 扫描仓库根的文档与代码，把删除的资产移入回收目录。
 class AssetRepository {

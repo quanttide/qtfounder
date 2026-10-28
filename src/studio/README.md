@@ -17,10 +17,10 @@ src/studio/
 ├── lib/
 │   ├── main.dart                 入口与首页
 │   └── asset/                    资产抽查模块
-│       ├── model/asset_file.dart
-│       ├── data/asset_repository.dart
-│       ├── bloc/asset_cubit.dart
-│       └── ui/
+│       ├── models/asset_file.dart
+│       ├── repos/asset_repository.dart
+│       ├── states/asset_cubit.dart
+│       └── screens/
 ├── assets/contracts/
 ├── test/asset/
 ├── doc/

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'asset/ui/asset_shell.dart';
+import 'asset/screens/asset_shell.dart';
 
 void main() {
   runApp(const FounderApp());

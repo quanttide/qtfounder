@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/asset_repository.dart';
-import '../model/asset_file.dart';
+import '../repos/asset_repository.dart';
+import '../models/asset_file.dart';
 
 /// 批次状态。卡片流走 AssetReady，栈空进 AssetConfirm，提交进
 /// AssetSubmitting，提交完进 AssetDone。
