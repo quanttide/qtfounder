@@ -33,7 +33,7 @@ enum CliCommand {
     Code(code::CodeArgs),
     /// 语言检查：落点、术语、数字、句法、语用六层
     Language(language::LanguageArgs),
-    /// 文档审计：表格、列表与密度三层
+    /// 文档审计：表格、列表与密度三层；format 数格式元素，check 比对技能索引
     Docs(docs::DocsArgs),
     /// 表达审计：空话、口号、指路与结构四层
     Write(write::WriteArgs),

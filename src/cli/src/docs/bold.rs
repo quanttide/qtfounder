@@ -86,7 +86,7 @@ pub(super) fn check_bold(rel: &str, text: &str, contract: &Contract) -> Vec<Find
 }
 
 /// 一行里的加粗片段。先摘掉行内代码，反引号里的 `**` 不是加粗。
-fn bold_spans(line: &str) -> Vec<String> {
+pub(super) fn bold_spans(line: &str) -> Vec<String> {
     let mut plain = String::with_capacity(line.len());
     let mut in_code = false;
     for ch in line.chars() {

@@ -84,6 +84,11 @@ pub(super) fn check_list(rel: &str, text: &str, contract: &Contract) -> Vec<Find
     out
 }
 
+/// 这一行是不是列表项。格式状态按同一处识别数项数。
+pub(super) fn is_item(raw: &str) -> bool {
+    ITEM.is_match(raw)
+}
+
 fn flush(block: &mut Option<Block>, config: &ListConfig, rel: &str, out: &mut Vec<Finding>) {
     let Some(block) = block.take() else {
         return;

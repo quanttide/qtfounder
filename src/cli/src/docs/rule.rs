@@ -13,6 +13,44 @@ pub(super) fn check_rule(rel: &str, text: &str, contract: &Contract) -> Vec<Find
         return Vec::new();
     }
     let lines: Vec<&str> = text.lines().collect();
+    let positions = rule_lines(text);
+
+    let mut out = Vec::new();
+    if config.max > 0 && positions.len() > config.max {
+        let line = positions[config.max];
+        out.push(Finding::new(
+            Kind::Rule,
+            Severity::Error,
+            rel,
+            line,
+            excerpt_of(lines[line - 1].trim()),
+            format!(
+                "分割线 {} 处（上限 {}）：用标题分章，横线不承担结构",
+                positions.len(),
+                config.max
+            ),
+        ));
+    }
+    if config.flag_between_sections {
+        for line in &positions {
+            if touches_heading(&lines, line - 1) {
+                out.push(Finding::new(
+                    Kind::Rule,
+                    Severity::Suspect,
+                    rel,
+                    *line,
+                    excerpt_of(lines[line - 1].trim()),
+                    "分割线紧挨标题，只是装饰：删掉，靠标题层级分章".to_string(),
+                ));
+            }
+        }
+    }
+    out
+}
+
+/// 全文分割线所在行号（1 起）。格式状态与审计共用这一处识别，免得两边数出来的条数不一样。
+pub(super) fn rule_lines(text: &str) -> Vec<usize> {
+    let lines: Vec<&str> = text.lines().collect();
     let mut positions = Vec::new();
     let mut in_code = false;
     let mut in_frontmatter = false;
@@ -49,38 +87,7 @@ pub(super) fn check_rule(rel: &str, text: &str, contract: &Contract) -> Vec<Find
         }
         positions.push(index + 1);
     }
-
-    let mut out = Vec::new();
-    if config.max > 0 && positions.len() > config.max {
-        let line = positions[config.max];
-        out.push(Finding::new(
-            Kind::Rule,
-            Severity::Error,
-            rel,
-            line,
-            excerpt_of(lines[line - 1].trim()),
-            format!(
-                "分割线 {} 处（上限 {}）：用标题分章，横线不承担结构",
-                positions.len(),
-                config.max
-            ),
-        ));
-    }
-    if config.flag_between_sections {
-        for line in &positions {
-            if touches_heading(&lines, line - 1) {
-                out.push(Finding::new(
-                    Kind::Rule,
-                    Severity::Suspect,
-                    rel,
-                    *line,
-                    excerpt_of(lines[line - 1].trim()),
-                    "分割线紧挨标题，只是装饰：删掉，靠标题层级分章".to_string(),
-                ));
-            }
-        }
-    }
-    out
+    positions
 }
 
 fn is_rule(trimmed: &str) -> bool {

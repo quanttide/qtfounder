@@ -44,24 +44,42 @@ cargo run -- docs docs --kind journal  # 只看日志模板
 cargo run -- docs docs --kind bold     # 只看加粗
 cargo run -- docs docs --stats         # 只打密度数字，不下结论
 cargo run -- docs docs --json
+cargo run -- docs format docs/user-guide/docs.md  # 单篇的格式状态
+cargo run -- docs format docs --top 10            # 一目录：按格式元素数排序
 cargo run -- docs check                # 技能索引与目录比对
 ```
 
 退出码：**0 无命中 / 1 有命中 / 2 契约或文件读不了**。
 
-## 三、密度观测
+## 三、格式状态（`docs format`）
+
+数的是格式元素，判的还是同一套审计：先给数，再给命中——有没有滥用格式先看数，该改哪一处再看审计。
+
+```bash
+cargo run -- docs format docs/user-guide/docs.md   # 单篇：逐项列出
+cargo run -- docs format docs --top 10             # 一目录：按元素数从多到少
+cargo run -- docs format docs --json               # 数字给机器读
+```
+
+单篇逐项列出：正文字数，标题（另标一级个数与最深层级）、表格张数与行数、列表块数与项数、加粗处数、分割线条数、块引用段数、代码块个数，最后一行是格式元素合计。目录模式每个文件一行，按元素数从多到少排，最多列 `--top` 个，末尾给合计。
+
+元素 = 标题 + 表格 + 列表 + 加粗 + 分割线 + 块引用 + 代码块，这七类怎么算照《量潮科技文档格式章程》第四条。
+
+状态与审计共用同一处识别：状态说两条分割线，审计认的就是这两条；`--kind` 只过滤审计那一段，状态永远全数——数错了就没法拿数下结论。
+
+## 四、密度观测
 
 阈值还没标定，`[density]` 两个上限默认是 0，也就是只观测不判断。加 `--stats` 会按块占比从高到低列出每篇的字数、结构块数与两个比例，用来给语料标定取值。标定不靠拍脑袋：跑两组已知来源的文档，看分布再回填，方法见开发指南的[文档审计路线图](../dev-guide/docs/roadmap.md)。
 
-## 四、`docs check`
+## 五、`docs check`
 
 比对 `.agents/skills/` 下实际存在的技能与 `AGENTS.md`、`CONTRIBUTING.md` 里引用的名字，报两类：目录里有但索引没写、索引写了但目录里没有。从子目录跑也能找到仓根的技能目录。
 
-## 五、契约在哪
+## 六、契约在哪
 
 `src/cli/src/docs/default-contract.toml`，查找顺序与 `language` 那份一样，也不内置兜底。装到本地时把契约放到 `~/.config/qtfounder/docs/default-contract.toml`。
 
-## 六、已知边界
+## 七、已知边界
 
 **清单体文档会被列表层命中。** 规格、教程本来就该用列表写，三段式也常见。这类误报靠目录排除解决，不靠放宽阈值——阈值一松，说明文里的滥用就漏了。
 
@@ -70,3 +88,5 @@ cargo run -- docs check                # 技能索引与目录比对
 **待办项按普通列表项算。** `- [ ] 做某事` 会被当成一条，过长的照样报。
 
 **代码块里的表格、列表与横线不参与。** 教程里贴的样例不检查，规则只对正文生效。
+
+**状态只数七类元素。** 链接与引号不数：链接是内容不是形状，引号数出来噪音大（代码与 URL 里的引号分不开）。setext 标题（`标题` 下面划 `---`）按正文行算，既不算标题也不算分割线。

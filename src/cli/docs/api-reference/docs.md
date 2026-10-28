@@ -4,18 +4,23 @@
 
 ```
 qtfounder docs [ROOT] [--kind KIND] [--rules PATH] [--top N] [--json] [--stats]
+qtfounder docs format [ROOT] [--kind KIND] [--rules PATH] [--top N] [--json] [--stats]
 qtfounder docs check [ROOT]
 ```
 
 **ROOT**：目录或单文件，缺省当前目录。递归找 `.md`。
 
-**`--kind`**：`table`／`list`／`density`／`bold`／`rule`／`frontmatter`／`journal`，只报一层。
+上面五个选项是全局的：写在 `format`／`check` 前后都认，例如 `qtfounder docs format docs --json`。
+
+**`--kind`**：`table`／`list`／`density`／`bold`／`rule`／`frontmatter`／`journal`，只报一层。`format` 模式下只过滤审计，状态始终全数。
 
 **`--rules PATH`**：指定契约。缺省按 `QTFOUNDER_DOCS_CONTRACT`、再往上找 `src/docs/default-contract.toml`、最后退到 `~/.config/qtfounder/docs/`。
 
 **`--top N`**：最多列几个文件，缺省 15。`--stats` 时也用它限制行数。
 
 **`--stats`**：打印密度数字，不产生命中。阈值标定前用它看分布。
+
+**`docs format [ROOT]`**：先出格式状态（每篇的格式元素计数），再出同一套审计。目录模式按 `elements` 从多到少排，`--top` 限行。
 
 **`docs check [ROOT]`**：比对 `.agents/skills/` 实际目录与 `AGENTS.md`、`CONTRIBUTING.md` 里的引用，不扫正文。
 
@@ -43,6 +48,35 @@ qtfounder docs check [ROOT]
 
 `severity` 只有 `error` 与 `suspect` 两值：表格、列表、加粗、分割线命中是 `error`，密度、加粗密度与日志模板是 `suspect`。`excerpt` 最多七十字符，用来定位，不要拿来做断言。
 
+`docs format --json` 多一组 `files`，每篇一行计数，`findings` 与上面同构：
+
+```json
+{
+  "scanned_files": 16,
+  "files": [
+    {
+      "path": "user-guide/docs.md",
+      "chars": 1800,
+      "headings": 7,
+      "h1": 1,
+      "deepest": 2,
+      "tables": 0,
+      "table_rows": 0,
+      "lists": 0,
+      "list_items": 0,
+      "bold": 12,
+      "rules": 0,
+      "quotes": 0,
+      "code_blocks": 2,
+      "elements": 21
+    }
+  ],
+  "findings": []
+}
+```
+
+**字段怎么算**：`chars` 是 frontmatter 与代码块之外的非空行字数（含标题与表格行）；`headings` 只数 ATX 标题（`#` 到 `######`），`deepest` 为 0 表示没有标题；`tables` 只数连续两行以上 `|` 的块，`table_rows` 是这些表的总行数；`lists` 把只隔空行的松散列表算同一块；`bold` 不含表头加粗；`rules` 不含 frontmatter、代码块与 setext 下划线；`quotes` 按连续 `>` 行算段；`elements` = `headings + tables + lists + bold + rules + quotes + code_blocks`，这七类怎么算照《量潮科技文档格式章程》第四条。计数与审计共用同一处识别，状态与命中的数字不会对不上。
+
 ## 四、契约字段
 
 `[table]` 沿用原 `language` 的表格层：`max_columns`、`max_cell_chars`、`max_rows`、`require_header`、`flag_two_column`、`min_rows`、`sparse_ratio`、`layout_headers`。
@@ -65,4 +99,4 @@ qtfounder docs check [ROOT]
 
 `[journal]` 的字段：`enabled`（开关）、`paths`（路径里出现这些片段即按日志处理）、`title_must_be_date`（写了标题就必须是 `# YYYY-MM-DD`，不写放行）。日志目录通常在 `[scope] exclude` 里，这一层单独跑，不受排除影响；说明文件（README、CONTRIBUTING、CHANGELOG、index）不按模板查。
 
-`kind` 的七个取值（`table`、`list`、`density`、`bold`、`rule`、`frontmatter`、`journal`）与 `severity` 的两个取值不变；`excerpt`、`advice` 的措辞会变，别做断言。新增一层算小版本，删改取值算大版本。
+`kind` 的七个取值（`table`、`list`、`density`、`bold`、`rule`、`frontmatter`、`journal`）与 `severity` 的两个取值不变；`excerpt`、`advice` 的措辞会变，别做断言。新增一层算小版本，删改取值算大版本。`files` 只在 `format --json` 里出现，是新增不是改动；`files` 的字段只增不改名。

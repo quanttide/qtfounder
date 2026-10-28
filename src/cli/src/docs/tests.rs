@@ -7,6 +7,7 @@ use super::journal::{check_journal, is_journal};
 use super::list::check_list;
 use super::model::Kind;
 use super::rule::check_rule;
+use super::status;
 use super::table::check_table;
 
 fn contract() -> Contract {
@@ -266,4 +267,87 @@ fn excluded_journal_entry_is_still_checked() {
     let (findings, _, _) = super::scan::scan(&dir, &contract());
     assert!(findings.iter().any(|finding| finding.kind == Kind::Journal));
     let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn status_counts_every_format_element() {
+    let text = "---\ntitle: 样本\n---\n\n# 标题\n\n正文一段话。\n\n- 甲\n- 乙\n\n| 名称 | 说明 |\n| :-- | :-- |\n| 甲 | 乙 |\n\n---\n\n> 引用一段。\n\n```text\ncode\n```\n";
+    let one = status::count(text);
+    assert_eq!(one.headings, 1);
+    assert_eq!(one.h1, 1);
+    assert_eq!(one.deepest, 1);
+    assert_eq!(one.tables, 1);
+    assert_eq!(one.table_rows, 3);
+    assert_eq!(one.lists, 1);
+    assert_eq!(one.list_items, 2);
+    assert_eq!(one.rules, 1);
+    assert_eq!(one.quotes, 1);
+    assert_eq!(one.code_blocks, 1);
+    assert_eq!(one.bold, 0);
+    assert!(one.chars > 0);
+    assert_eq!(
+        one.elements(),
+        one.headings + one.tables + one.lists + one.bold + one.rules + one.quotes + one.code_blocks
+    );
+}
+
+#[test]
+fn status_ignores_format_elements_inside_code_blocks() {
+    let text =
+        "```markdown\n# 标题\n- 条目\n| 甲 | 乙 |\n| :-- | :-- |\n---\n> 引用\n**加粗**\n```\n";
+    let one = status::count(text);
+    assert_eq!(one.code_blocks, 1);
+    assert_eq!(one.headings, 0);
+    assert_eq!(one.lists, 0);
+    assert_eq!(one.tables, 0);
+    assert_eq!(one.rules, 0);
+    assert_eq!(one.quotes, 0);
+    assert_eq!(one.bold, 0);
+}
+
+#[test]
+fn loose_list_is_one_block() {
+    let one = status::count("- 甲\n\n- 乙\n\n- 丙\n");
+    assert_eq!(one.lists, 1);
+    assert_eq!(one.list_items, 3);
+}
+
+#[test]
+fn heading_levels_are_visible() {
+    let one = status::count("# 一\n\n## 二\n\n### 三\n\n#### 四\n");
+    assert_eq!(one.headings, 4);
+    assert_eq!(one.h1, 1);
+    assert_eq!(one.deepest, 4);
+}
+
+#[test]
+fn table_header_bold_and_setext_rules_are_not_counted() {
+    let table = status::count("| **甲** | **乙** |\n| :-- | :-- |\n| 一 | 二 |\n");
+    assert_eq!(table.tables, 1);
+    assert_eq!(table.bold, 0);
+
+    let setext = status::count("甲\n---\n乙\n---\n");
+    assert_eq!(setext.rules, 0);
+}
+
+#[test]
+fn stray_table_line_is_not_a_table() {
+    let one = status::count("| 只有一行 |\n");
+    assert_eq!(one.tables, 0);
+    assert_eq!(one.table_rows, 0);
+}
+
+#[test]
+fn quote_segments_split_by_text_are_counted_separately() {
+    let one = status::count("> 甲\n> 乙\n\n正文。\n\n> 丙\n");
+    assert_eq!(one.quotes, 2);
+}
+
+#[test]
+fn status_rule_count_agrees_with_audit() {
+    let text = "段落。\n\n---\n\n段落。\n\n---\n\n段落。\n";
+    let one = status::count(text);
+    // 两处都在上限内：状态按处数数，审计只在超限时报
+    assert_eq!(one.rules, 2);
+    assert!(check_rule("sample.md", text, &contract()).is_empty());
 }

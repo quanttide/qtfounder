@@ -18,6 +18,7 @@ use super::journal::{check_journal, is_journal};
 use super::list::check_list;
 use super::model::Finding;
 use super::rule::check_rule;
+use super::status;
 use super::table::check_table;
 
 fn rel_of(path: &Path, root: Option<&Path>) -> String {
@@ -128,6 +129,19 @@ pub fn stats(root: &Path, contract: &Contract) -> Vec<(String, density::Measures
         };
         let measures = density::measure(&text, contract.density.min_paragraph_chars);
         out.push((rel_of(&path, base), measures));
+    }
+    out
+}
+
+/// 格式状态：每篇一行数字，不产生命中。文件集合与审计一致（日志单独跑，不在这儿数）。
+pub fn statuses(root: &Path, contract: &Contract) -> Vec<(String, status::Status)> {
+    let base = if root.is_dir() { Some(root) } else { None };
+    let mut out = Vec::new();
+    for path in markdown_files(root, contract) {
+        let Ok(text) = fs::read_to_string(&path) else {
+            continue;
+        };
+        out.push((rel_of(&path, base), status::count(&text)));
     }
     out
 }
