@@ -45,10 +45,6 @@ dependencies:
   intl: ^0.19.0
   http: ^1.6.0
 
-  # 审阅抽样
-  review_tool:
-    path: packages/review_tool
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
