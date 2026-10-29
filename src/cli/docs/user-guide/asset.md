@@ -111,12 +111,12 @@ insight  Insight 洞察  长期记忆
 
 只读契约，不推断资产之间的引用或依赖。
 
-## 四、axiom：离不开物理形态的前提
+## 四、axiom：领域怎么运转的前提
 
-公理分两层。`asset axiom` 打资产层——那些离开 estate 的物理形态（子模块、目录名、仓库边界）就说不出口的前提；本体论层走 `meta axiom`。两层怎么分、已知别扭点（如 `no-fallback` 是工程前提）与工具守的三道防线，见 [meta 用户指南「分层的边界是判断题」](meta.md#分层的边界是判断题)。
+公理按领域归两面。`asset axiom` 打资产领域——管这个领域具体怎么运转的前提（子模块、目录、迁移、归档）；管建模与跨领域一致性的走 `meta axiom`。两个领域怎么分、将来出现第三个领域怎么加，见 [meta 用户指南「两个领域的边界」](meta.md#两个领域的边界)。
 
 ```bash
-qtfounder asset axiom                 # 全部资产层公理
+qtfounder asset axiom                 # 全部资产领域公理
 qtfounder asset axiom context-first   # 只看一条
 qtfounder asset axiom --json          # 给脚本读
 ```

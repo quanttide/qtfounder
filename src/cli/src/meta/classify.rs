@@ -264,9 +264,9 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
 
 /// 落位卡可能点名的公理全集：任何一步判断最多引用这些。
 ///
-/// 这是条硬不变量的另一边——被分类消费的公理必须是本体论层（`domain = "meta"`）。
+/// 这是条硬不变量的另一边——被分类消费的公理必须归元模型领域（`domain = "meta"`）。
 /// `meta axiom` 的测试拿它逐条对 domain，`meta validate` 运行时也查；破了这条，
-/// 一条资产层公理就会混进落位卡，两层边界名存实亡。
+/// 一条资产领域的公理就会混进落位卡，域界名存实亡。
 pub const CITED_AXIOMS: [&str; 6] = [
     "home-before-category",
     "text-only",

@@ -264,9 +264,10 @@ pub struct Axis {
 
 /// 公理：归位时不重新论证的前提。
 ///
-/// `domain` 分两层：`meta` 是本体论假设（拆了子模块照样成立），`asset`
-/// 是资产层的具体前提（离不开 estate 的物理形态）。`meta axiom` 与
-/// `asset axiom` 各打一面；`meta classify` 点名时不看 domain，按名字取。
+/// `domain` 按领域归。meta 的定位特殊：它是元模型，观察总结其他领域的建模，
+/// 不解决具体问题，只给其他领域提供一致性。所以 `meta` 收管建模与一致性的前提，
+/// `asset` 收管资产领域怎么运转的前提。`meta axiom` 与 `asset axiom` 各打一面；
+/// `meta classify` 点名时不看 domain，按名字取。
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct Axiom {
     /// 机器可读的标识；uuid 留给 id 字段。
@@ -277,7 +278,7 @@ pub struct Axiom {
     /// `confirmed` 或 `suspected`，缺省按怀疑算。
     #[serde(default)]
     pub status: String,
-    /// `meta`（本体论假设）或 `asset`（资产层前提）；缺省 meta。
+    /// `meta`（管建模与一致性）或 `asset`（管领域运转）；缺省 meta。
     #[serde(default = "default_axiom_domain")]
     pub domain: String,
 }
@@ -295,12 +296,12 @@ impl Axiom {
         status_label(&self.status)
     }
 
-    /// 本体论假设层。怎么分：把 estate 的物理形态全改了，这条还成立。
+    /// meta 领域的前提。怎么分：管建模与跨领域一致性。
     pub fn is_meta(&self) -> bool {
         self.domain.trim() != "asset"
     }
 
-    /// 资产层前提。怎么分：离开 estate 的物理形态就说不出口。
+    /// asset 领域的前提。怎么分：管这个领域具体怎么运转。
     pub fn is_asset(&self) -> bool {
         !self.is_meta()
     }
@@ -540,7 +541,7 @@ impl Contract {
                 ));
             }
             // 第一档边界：domain 只认 meta / asset。抓拼写错，不判判断错——
-            // 抽象层是道判断题，留给写契约的人，见 user-guide/meta.md「分层的边界是判断题」。
+            // domain 归域是道判断题，留给写契约的人，见 user-guide/meta.md「两个领域的边界」。
             let domain = axiom.domain.trim();
             if domain != "meta" && domain != "asset" {
                 return Err(format!(

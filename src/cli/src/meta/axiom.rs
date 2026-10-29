@@ -24,13 +24,13 @@ pub struct AxiomArgs {
 
 pub fn run(args: &AxiomArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;
-    print_layer(&contract, true, args.name.as_deref(), args.json)
+    print_domain(&contract, true, args.name.as_deref(), args.json)
 }
 
-/// 按层打公理：`want_meta` 选本体论层，否则资产层。
+/// 按领域打公理：`want_meta` 选元模型领域，否则资产领域。
 ///
-/// 分两层的理由与已知别扭点见 user-guide/meta.md「分层的边界是判断题」。
-pub fn print_layer(
+/// 两个领域怎么分与新增领域的规矩，见 user-guide/meta.md「两个领域的边界」。
+pub fn print_domain(
     contract: &Contract,
     want_meta: bool,
     name: Option<&str>,
@@ -42,7 +42,7 @@ pub fn print_layer(
         .filter(|axiom| axiom.is_meta() == want_meta)
         .collect();
     if layer.is_empty() {
-        let which = if want_meta { "本体论层" } else { "资产层" };
+        let which = if want_meta { "元模型领域" } else { "资产领域" };
         return Err(format!("契约里没有{which}的公理：在 [[axiom]] 里补 domain = \"{}\"", if want_meta { "meta" } else { "asset" }));
     }
     let axioms: Vec<&Axiom> = match name {
@@ -115,7 +115,7 @@ fn print_json(axioms: &[&Axiom]) {
 mod tests {
     use super::*;
 
-    fn meta_layer(contract: &Contract) -> Vec<&Axiom> {
+    fn meta_domain(contract: &Contract) -> Vec<&Axiom> {
         contract
             .axiom
             .iter()
@@ -155,7 +155,7 @@ mod tests {
     #[test]
     fn 确认的公理排在前面() {
         let contract = Contract::bundled();
-        let axioms = ordered(&meta_layer(&contract));
+        let axioms = ordered(&meta_domain(&contract));
         assert_eq!(axioms.first().unwrap().name, "template-scope");
         assert_eq!(axioms.first().unwrap().status_key(), "confirmed");
         assert!(
@@ -168,29 +168,29 @@ mod tests {
     #[test]
     fn 未知公理会报可选项() {
         let contract = Contract::bundled();
-        let error = axiom_of(&meta_layer(&contract), "nope").unwrap_err();
+        let error = axiom_of(&meta_domain(&contract), "nope").unwrap_err();
         assert!(error.contains("one-place"));
     }
 
     #[test]
-    fn 公理分两层且都非空() {
+    fn 公理按领域归且两域都非空() {
         let contract = Contract::bundled();
-        let meta: Vec<&Axiom> = meta_layer(&contract);
+        let meta: Vec<&Axiom> = meta_domain(&contract);
         let asset: Vec<&Axiom> = contract
             .axiom
             .iter()
             .filter(|axiom| axiom.is_asset())
             .collect();
-        assert!(!meta.is_empty(), "本体论层不该空");
-        assert!(!asset.is_empty(), "资产层不该空");
-        // 两层不重叠、合起来是全集。
+        assert!(!meta.is_empty(), "元模型领域不该空");
+        assert!(!asset.is_empty(), "资产领域不该空");
+        // 两域不重叠、合起来是全集。
         assert_eq!(meta.len() + asset.len(), contract.axiom.len());
     }
 
     #[test]
-    fn 落位卡点名的公理都在本体论层() {
-        // 第二档硬不变量：被分类消费的公理必须是 meta。破了这条，
-        // 一条资产层公理就会混进落位卡，边界名存实亡。
+    fn 落位卡点名的公理都在元模型领域() {
+        // 硬不变量：被分类消费的公理必须是 meta 的。破了这条，
+        // 一条资产领域的公理就会混进落位卡，域界名存实亡。
         let contract = Contract::bundled();
         for name in crate::meta::classify::cited_axiom_names() {
             let axiom = contract
@@ -200,7 +200,7 @@ mod tests {
                 .unwrap_or_else(|| panic!("classify 点名了契约里没有的公理：{name}"));
             assert!(
                 axiom.is_meta(),
-                "classify 点名的 {name} 是资产层公理：要么改 domain，要么别在落位卡上点它"
+                "classify 点名的 {name} 归了资产领域：要么改 domain，要么别在落位卡上点它"
             );
         }
     }

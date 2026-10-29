@@ -30,7 +30,7 @@ pub enum AssetCommand {
     Catalog(catalog::CatalogArgs),
     /// 看资产关系：家族与目录分组
     Relation(relation::RelationArgs),
-    /// 看资产层公理：离不开 estate 物理形态的前提
+    /// 看资产领域的公理：管这个领域怎么运转的前提
     Axiom(axiom::AxiomArgs),
     /// 整理 context 并搬到长期记忆仓
     Maintain(maintain::MaintainArgs),

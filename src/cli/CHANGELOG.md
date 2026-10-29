@@ -4,14 +4,14 @@
 
 ### Added
 
-- 公理分层：`[[axiom]]` 新增 `domain`（只认 `meta`／`asset`，缺省 meta）。`meta axiom` 只打本体论层，新增 `asset axiom` 打资产层；`meta classify` 点名照旧跨层按名字取，引用不断。分层判据一句话：把 estate 的物理形态（子模块、目录名、仓库边界）全改了还成立的是本体论层，离开物理形态说不出口的是资产层
-- 资产层新增四条公理：`source-per-repo`（一个事实源开一个子模块）、`structure-not-concept`（目录名用代码实际结构）、`entry-archive-separate`（入口与归档分开）、`context-first`（新内容先进 context）——四条都是从散文里的组织习惯提炼上来的
-- `meta validate` 增公理分层三道校验：domain 枚举（读契约时拦）；落位卡点名的六条公理必须是本体论层（抽 `classify::CITED_AXIOMS` 常量交叉查）；本体论层公理不点 estate 物理词（窄词表：子模块、目录名、路径、仓库根、.gitmodules、data/）——三道都真拦，各配测试与手工验证
+- 公理按领域归：`[[axiom]]` 新增 `domain`（只认 `meta`／`asset`，缺省 meta）。`meta axiom` 打元模型领域，新增 `asset axiom` 打资产领域；`meta classify` 点名照旧跨域按名字取，引用不断。归域判据一句话：管建模与跨领域一致性进 meta，管领域怎么运转进 asset
+- 资产领域新增四条公理：`source-per-repo`（一个事实源开一个子模块）、`structure-not-concept`（目录名用代码实际结构）、`entry-archive-separate`（入口与归档分开）、`context-first`（新内容先进 context）——四条都是从散文里的组织习惯提炼上来的
+- `meta validate` 增公理归域三道校验：domain 枚举（读契约时拦）；落位卡点名的六条公理必须归 meta（抽 `classify::CITED_AXIOMS` 常量交叉查）；meta 公理不点 estate 物理词（窄词表：子模块、目录名、路径、仓库根、.gitmodules、data/）——三道都真拦，各配测试与手工验证
 
 ### Changed
 
-- `archive-vs-transfer` 与 `template-scope` 改写 description 为抽象表述，具象细节（只移动不改写／哪些资产结构固定）沉回 asset 契约各条；`target-then-source` 与 `no-fallback` 归入资产层。`no-fallback` 是已知别扭点——它既非本体论假设也不离不开物理形态，是工程前提，勉强归 asset 并在契约里注明
-- `user-guide/meta.md` 新增「分层的边界是判断题」一节：交代 meta 从 asset 显性化出来的历史、两层怎么分、已知别扭点与工具守的三道——风险提示的主场在 meta，因为具体与抽象这条边界正是 meta 显性化的目的；`user-guide/asset.md` 补 `asset axiom` 一节并指向它
+- `archive-vs-transfer` 与 `template-scope` 改写 description 为领域中立的表述，具象细节（只移动不改写／哪些资产结构固定）沉回 asset 契约各条；`target-then-source` 归资产领域。`no-fallback` 归元模型领域——它是「每个领域的契约都得这么读才互相一致」的跨领域一致性规则，正是 meta 该管的；`why` 补了这句理由
+- `user-guide/meta.md` 新增「两个领域的边界」一节：交代 meta 是元模型、不解决具体问题只给其他领域提供一致性，两个领域怎么分，将来出现第三个领域加第三个 domain 值而不是往现有两域里塞，以及工具守的三道——风险提示的主场在 meta，因为归域准确与否直接决定读者能不能对上；`user-guide/asset.md` 补 `asset axiom` 一节并指向它
 
 ## [0.0.42] - 2026-10-29
 

@@ -30,12 +30,12 @@ const MEMORY_ROLE: &str = "memory";
 
 /// estate 物理形态词（第三档边界网）。
 ///
-/// 本体论层公理不该点名这些——它们只在 estate 的当前形态下才有意义，
+/// 元模型领域的公理不该点名这些——它们只在 estate 的当前形态下才有意义，
 /// 换一套子模块与目录，词就落空了。词表刻意窄到零误报：内容词（归档、日志、
-/// 入口）不进表，它们在两层里都是合法词。真误报了，修法通常是改写那条公理——
-/// 抽象公理本就不该点名具体物件。
+/// 入口）不进表，它们在两个领域里都是合法词。真误报了，修法通常是改写那条公理——
+/// 管建模的公理本就不该点名具体物件。
 ///
-/// 判断题本身留在人这边：见 docs/user-guide/meta.md「分层的边界是判断题」。
+/// 归域的判断题留在人这边：见 docs/user-guide/meta.md「两个领域的边界」。
 const ESTATE_PHYSICAL_TERMS: [&str; 6] = [
     "子模块",
     "仓库根",
@@ -191,14 +191,14 @@ fn check_transitions(contract: &Contract) -> Vec<String> {
     problems
 }
 
-/// 公理分层的三档校验。第一档（domain 只认 meta / asset）在读契约时就拦，
-/// 这里查后两档：
+/// 公理归域的三道校验。第一道（domain 只认 meta / asset）在读契约时就拦，
+/// 这里查后两道：
 ///
-/// 第二档，硬不变量：落位卡点名的公理必须是本体论层。破了这条，
-/// 一条资产层公理就混进了分类输出，两层边界名存实亡。
+/// 第二道，硬不变量：落位卡点名的公理必须归元模型领域。破了这条，
+/// 一条资产领域的公理就混进了分类输出，域界名存实亡。
 ///
-/// 第三档，窄词表网：本体论层公理不点名 estate 物理形态词。抓的是「自称抽象、
-/// 其实依赖物理形态」这种错标——未来的人（或 AI）最容易犯的那种。
+/// 第三道，窄词表网：元模型领域公理不点名 estate 物理形态词。抓的是「管建模，
+/// 其实依赖物理形态」这种错归——未来的人（或 AI）最容易犯的那种。
 fn check_axioms(contract: &Contract) -> Vec<String> {
     let mut problems = Vec::new();
     for name in crate::meta::classify::cited_axiom_names() {
@@ -207,7 +207,7 @@ fn check_axioms(contract: &Contract) -> Vec<String> {
                 "axiom：classify 点名的 {name} 不在契约里，落位卡会漏引它"
             )),
             Some(axiom) if axiom.is_asset() => problems.push(format!(
-                "axiom：{name} 被落位卡点名，却标了 domain = \"asset\"；被分类消费的公理必须是本体论层"
+                "axiom：{name} 被落位卡点名，却标了 domain = \"asset\"；被分类消费的公理必须归元模型领域"
             )),
             Some(_) => {}
         }
@@ -217,7 +217,7 @@ fn check_axioms(contract: &Contract) -> Vec<String> {
         for term in ESTATE_PHYSICAL_TERMS {
             if text.contains(term) {
                 problems.push(format!(
-                    "axiom：{} 是本体论层，description 或 why 里却点了物理形态词「{term}」；把 estate 换一套子模块与目录，这条还成立吗？成立就改写，不成立就标 domain = \"asset\"",
+                    "axiom：{} 归了元模型领域，description 或 why 里却点了物理形态词「{term}」；管建模的前提不该依赖 estate 的具体形态，改写它，或把它标到实际管的那个领域",
                     axiom.name
                 ));
             }
