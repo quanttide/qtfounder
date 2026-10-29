@@ -2,7 +2,7 @@
 
 studio 的版本记录，仓库级版本见 [仓库 CHANGELOG](../../CHANGELOG.md)。
 
-## [Unreleased]
+## [0.0.2] - 2026-10-29
 
 ### Added
 
