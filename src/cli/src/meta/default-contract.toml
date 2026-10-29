@@ -599,8 +599,8 @@ pair = ["specification", "essay"]
 ask = "概念定义稳定、阈值有数据吗？都有进规格，否则进论文。"
 
 # ---------------- 本体 ----------------
-# 模型描述两族九宫格的轴；公理是归位时不重新论证的前提。
-# 两者都不参与算分：模型只描述轴，公理只在落位卡上点名出处；判断仍看 [[category]]、[[transition]] 与 [[question]]。
+# 模型描述两族九宫格的轴。模型不参与算分：只描述轴；判断仍看 [[category]]、[[transition]] 与 [[question]]。
+# 公理另起一段（见下），分 meta / asset 两层，同样不参与算分，只在落位卡上点名出处。
 
 [model]
 description = "一份内容只有一个正确去处。十八格分两族，各成九宫格。"
@@ -631,59 +631,106 @@ values = ["宪法", "法律", "法理"]
 name = "消费对象"
 values = ["人读", "AI 解析", "直接运行"]
 
+# ---------------- 公理 ----------------
+# 公理分两层，`domain` 标：
+#   meta  —— 本体论假设。怎么分：把 estate 的物理形态（子模块、目录名、仓库边界）全改了，这条还成立。
+#   asset —— 资产层前提。怎么分：离开 estate 的物理形态就说不出口。
+# 两层之间没有第三条路；夹在中间的（如 no-fallback）是工程前提，勉强归 asset，已在
+# user-guide/meta.md 的「分层的边界是判断题」一节记为已知别扭点。
+
 [[axiom]]
 name = "one-place"
 description = "一份内容只有一个正确去处。"
 why = "放错格的代价不是难看，是下一轮没人找得到它。"
 status = "suspected"
+domain = "meta"
 
 [[axiom]]
 name = "home-before-category"
 description = "先定去处，再定范畴，再过准入，最后给写法。"
 why = "顺序换了，去处错时范畴越准，搬得越远。"
 status = "suspected"
+domain = "meta"
 
 [[axiom]]
 name = "text-only"
 description = "只看正文，不看它现在住在哪。"
 why = "现在的位置可能是上一次判错留下的。"
 status = "suspected"
+domain = "meta"
 
 [[axiom]]
 name = "no-fit"
 description = "一格都套不上就不收，留在日志里等它重复。"
 why = "硬归进某一格，只会让那一格多一条没人再看的记录。"
 status = "suspected"
+domain = "meta"
 
 [[axiom]]
 name = "one-source"
 description = "同一内容只在一处完整展开，其余留一句互链。"
 why = "两处都写同一个事实，就是两个真源。"
 status = "suspected"
+domain = "meta"
 
 [[axiom]]
-name = "no-fallback"
-description = "契约缺了就停手，不内置兜底。"
-why = "静默回退会让人以为规则生效了。"
+name = "archive-vs-transfer"
+description = "归档与移交是两种不同的动词。"
+why = "改错了形态，历史对不上，或者目标仓多一份不合体的文。归档只移动不改写，移交必须改体例——细节在 asset 契约的 archive 那一条里。"
 status = "suspected"
+domain = "meta"
+
+[[axiom]]
+name = "template-scope"
+description = "有固定结构才有固定写法；结构随内容走的不设固定写法。"
+why = "结构不固定还套模板，等于让模板替作者删内容。哪些资产结构固定，看 asset 契约各条的 skeleton。"
+status = "confirmed"
+domain = "meta"
+
+[[axiom]]
+name = "source-per-repo"
+description = "一个事实源开一个子模块。"
+why = "共用一个仓，两个事实源的发版节奏与历史就缠在一起了。"
+status = "suspected"
+domain = "asset"
+
+[[axiom]]
+name = "structure-not-concept"
+description = "目录名用代码实际结构，不用抽象概念词。"
+why = "目录名是导航线索；写成概念词，得先懂概念才找得到东西。"
+status = "suspected"
+domain = "asset"
+
+[[axiom]]
+name = "entry-archive-separate"
+description = "入口与归档分开存放。"
+why = "入口还在流入，归档已经退出；混在一起，两头都找不到。"
+status = "suspected"
+domain = "asset"
+
+[[axiom]]
+name = "context-first"
+description = "新内容先进 context，整理通过再搬长期记忆。"
+why = "直接写进长期记忆仓，没通过整理校验的稿子就混进了正式库存。"
+status = "suspected"
+domain = "asset"
 
 [[axiom]]
 name = "target-then-source"
 description = "迁移先写目标、再删源，源侧不留复制件。"
 why = "窗口里不能两边都空；完成后也不能两边都有。"
 status = "suspected"
+domain = "asset"
 
+# 已知别扭点：no-fallback 讲的是工具对契约缺省的行为，既不是本体论假设，
+# 也不离不开 estate 物理形态——它是工程前提。两层装不下它，勉强归 asset。
+# 见 docs/user-guide/meta.md「分层的边界是判断题」。
 [[axiom]]
-name = "archive-vs-transfer"
-description = "归档只移动不改写；移交必须改体例。"
-why = "改错了形态，历史对不上，或者目标仓多一份不合体的文。"
+name = "no-fallback"
+description = "契约缺了就停手，不内置兜底。"
+why = "静默回退会让人以为规则生效了。"
 status = "suspected"
-
-[[axiom]]
-name = "template-scope"
-description = "有固定结构才有模板；结构随内容走的不设固定写法。手册、规格与按日期落的日志结构固定，可以有模板。"
-why = "结构不固定还套模板，等于让模板替作者删内容。"
-status = "confirmed"
+domain = "asset"
 
 # ---------------- 标准属性 ----------------
 # 字段名、所属组与定义。`meta property` 读这里，`meta validate` 拿它跟 property.md 对。

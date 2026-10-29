@@ -1,8 +1,9 @@
-//! `qtfounder asset`：资产契约、清单、关系与维护。
+//! `qtfounder asset`：资产契约、清单、关系、公理与维护。
 //!
-//! `contract`、`catalog`、`relation` 是只读视图，数据源是归位契约——十八类长期记忆加两端，共二十种资产。
-//! `maintain` 整理 context 的「领域 / 资产」结构，并按关系搬到长期记忆仓。
+//! `contract`、`catalog`、`relation`、`axiom` 是只读视图，数据源是归位契约——
+//! 十八类长期记忆加两端，共二十种资产。`maintain` 整理 context 的「领域 / 资产」结构，并按关系搬到长期记忆仓。
 
+pub mod axiom;
 pub mod catalog;
 pub mod contract;
 pub mod maintain;
@@ -29,6 +30,8 @@ pub enum AssetCommand {
     Catalog(catalog::CatalogArgs),
     /// 看资产关系：家族与目录分组
     Relation(relation::RelationArgs),
+    /// 看资产层公理：离不开 estate 物理形态的前提
+    Axiom(axiom::AxiomArgs),
     /// 整理 context 并搬到长期记忆仓
     Maintain(maintain::MaintainArgs),
 }
@@ -38,6 +41,7 @@ pub fn run(args: &AssetArgs) -> Result<i32, String> {
         AssetCommand::Contract(command) => contract::run(command, args.rules.as_deref()),
         AssetCommand::Catalog(command) => catalog::run(command, args.rules.as_deref()),
         AssetCommand::Relation(command) => relation::run(command, args.rules.as_deref()),
+        AssetCommand::Axiom(command) => axiom::run(command, args.rules.as_deref()),
         AssetCommand::Maintain(command) => maintain::run(command, args.rules.as_deref()),
     }
 }

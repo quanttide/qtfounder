@@ -263,6 +263,10 @@ pub struct Axis {
 }
 
 /// 公理：归位时不重新论证的前提。
+///
+/// `domain` 分两层：`meta` 是本体论假设（拆了子模块照样成立），`asset`
+/// 是资产层的具体前提（离不开 estate 的物理形态）。`meta axiom` 与
+/// `asset axiom` 各打一面；`meta classify` 点名时不看 domain，按名字取。
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct Axiom {
     /// 机器可读的标识；uuid 留给 id 字段。
@@ -273,6 +277,13 @@ pub struct Axiom {
     /// `confirmed` 或 `suspected`，缺省按怀疑算。
     #[serde(default)]
     pub status: String,
+    /// `meta`（本体论假设）或 `asset`（资产层前提）；缺省 meta。
+    #[serde(default = "default_axiom_domain")]
+    pub domain: String,
+}
+
+fn default_axiom_domain() -> String {
+    "meta".to_string()
 }
 
 impl Axiom {
@@ -282,6 +293,16 @@ impl Axiom {
 
     pub fn status_label(&self) -> &'static str {
         status_label(&self.status)
+    }
+
+    /// 本体论假设层。怎么分：把 estate 的物理形态全改了，这条还成立。
+    pub fn is_meta(&self) -> bool {
+        self.domain.trim() != "asset"
+    }
+
+    /// 资产层前提。怎么分：离开 estate 的物理形态就说不出口。
+    pub fn is_asset(&self) -> bool {
+        !self.is_meta()
     }
 }
 
@@ -515,6 +536,15 @@ impl Contract {
             if !status.is_empty() && status != "confirmed" && status != "suspected" {
                 return Err(format!(
                     "契约 {origin} 的公理 status 只能写 confirmed 或 suspected：{}",
+                    axiom.name
+                ));
+            }
+            // 第一档边界：domain 只认 meta / asset。抓拼写错，不判判断错——
+            // 抽象层是道判断题，留给写契约的人，见 user-guide/meta.md「分层的边界是判断题」。
+            let domain = axiom.domain.trim();
+            if domain != "meta" && domain != "asset" {
+                return Err(format!(
+                    "契约 {origin} 的公理 domain 只能写 meta 或 asset（写了「{domain}」）：{}",
                     axiom.name
                 ));
             }

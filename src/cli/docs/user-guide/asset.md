@@ -1,6 +1,6 @@
 # `qtfounder asset` 用户指南
 
-资产契约、清单、关系与维护，四个入口。数据源是归位契约：十八类长期记忆，加 context 与 archive，共二十种资产。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
+资产契约、清单、关系、公理与维护，五个入口。数据源是归位契约：十八类长期记忆，加 context 与 archive，共二十种资产。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
 
 ## 一、catalog：仓库里到底有没有
 
@@ -111,7 +111,34 @@ insight  Insight 洞察  长期记忆
 
 只读契约，不推断资产之间的引用或依赖。
 
-## 四、maintain：整理 context 并搬进长期记忆仓
+## 四、axiom：离不开物理形态的前提
+
+公理分两层。`asset axiom` 打资产层——那些离开 estate 的物理形态（子模块、目录名、仓库边界）就说不出口的前提；本体论层走 `meta axiom`。两层怎么分、已知别扭点（如 `no-fallback` 是工程前提）与工具守的三道防线，见 [meta 用户指南「分层的边界是判断题」](meta.md#分层的边界是判断题)。
+
+```bash
+qtfounder asset axiom                 # 全部资产层公理
+qtfounder asset axiom context-first   # 只看一条
+qtfounder asset axiom --json          # 给脚本读
+```
+
+```text
+source-per-repo  怀疑  一个事实源开一个子模块。
+  共用一个仓，两个事实源的发版节奏与历史就缠在一起了。
+
+structure-not-concept  怀疑  目录名用代码实际结构，不用抽象概念词。
+  目录名是导航线索；写成概念词，得先懂概念才找得到东西。
+...
+```
+
+用途：
+
+- 新开仓库、改目录结构、拆分子模块之前，先看这层管着什么。
+- 判一条前提该标哪层时，先跑这两条对照：它像 `one-place` 那样拆了子模块还成立，还是像 `source-per-repo` 那样得有子模块才说得出口。
+- `maintain` 搬动 context 之前，`context-first` 说明新内容为什么先落 context 再整理。
+
+只读契约，不替你标层。标层是判断题，工具只拦拼错与错标，判对错还是人来。
+
+## 五、maintain：整理 context 并搬进长期记忆仓
 
 context 与 archive 是「领域 / 资产」两级；长期记忆是资产一级仓库、领域一级文件夹。搬动时交换前两段：
 
@@ -146,6 +173,6 @@ qtfounder asset maintain --json      # 给脚本读
 - 目标仓的顶层出现资产名，说明还没做二次整理，报「目标布局异常」。
 - 命令只移动文件，不提交、不推、不改子模块指针。
 
-## 五、契约在哪
+## 六、契约在哪
 
 `src/meta/default-contract.toml`，查找顺序与 `meta` 一致；`--rules` 可换一份。

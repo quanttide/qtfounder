@@ -92,5 +92,7 @@ qtfounder meta classify --stdin [--rules PATH] [--json]
 | `[[category.grade]]` | `label`／`cues`／`fallback` | 档的顺序即展示顺序；`fallback` 兜底 |
 | `[[transition]]` | `from`／`to`／`require_any`／`lack_any`／`reason` | 准入不足时降格 |
 | `[[question]]` | `pair`／`ask` | 两格打平时问哪一句 |
+| `[[axiom]]` | `name`／`description`／`why`／`status` | 不再论证的前提；`status` 只认 `confirmed`／`suspected`，缺省怀疑 |
+| | `domain` | 只认 `meta`／`asset`，缺省 `meta`；本体论层走 `meta axiom`，资产层走 `asset axiom`，写别的在读契约时拦下 |
 
 `pair` 必须正好两格，`from` 与 `to` 必须是真格，读契约时就校验，不等到判的时候才暴露。

@@ -12,7 +12,8 @@
 |---|---|---|
 | 模型 | `meta model` | 两族九宫格的轴与格 |
 | 关系 | `meta relation` | 一格的迁出、迁入与分辨句 |
-| 公理 | `meta axiom` | 归位时不重新论证的前提 |
+| 公理 | `meta axiom` | 归位时不重新论证的前提，分本体论层与资产层两层 |
+| 资产层公理 | `asset axiom` | 离不开 estate 物理形态的前提 |
 | 属性 | `meta property` | 标准属性的字段名、组与定义 |
 | 范畴 | `meta category` | 十八格与两端各收什么 |
 | 去处 | `meta home` | 内容搬出本仓能去哪里 |
@@ -165,8 +166,9 @@ qtfounder meta model
 ## 十、axiom：公理
 
 ```bash
-qtfounder meta axiom
-qtfounder meta axiom no-fallback
+qtfounder meta axiom                 # 本体论层
+qtfounder meta axiom one-place       # 只看一条
+qtfounder asset axiom                # 资产层
 ```
 
 ```text
@@ -183,10 +185,11 @@ home-before-category  怀疑  先定去处，再定范畴，再过准入，最�
 用途：
 
 - 判一条内容前，先看哪些前提不再论证，省得每次重新讨论。
-- 迁移或归档前，`target-then-source` 与 `archive-vs-transfer` 是操作边界。
+- 归档与移交前，`archive-vs-transfer` 说明这是两种动词。
 - 写模板前，`template-scope` 说明有固定结构才有模板：手册、规格与按日期落的日志可以有，结构随内容走的不设固定写法。
+- 迁移、整理子模块、安排入口与归档之前，看 `asset axiom`——`target-then-source`、`source-per-repo`、`entry-archive-separate` 那一层离不开 estate 的物理形态。
 
-公理在契约里是 `[[axiom]]`，每条写清 name、description 与 why；`status` 写 `confirmed` 或 `suspected`，缺省怀疑。name 为空、description 为空、why 为空、name 重复、status 写了别的值，都会在读契约时被拦下。只有结论的公理是口号：记不住当初的失败，后来的人就无从判断它还算不算前提。
+公理在契约里是 `[[axiom]]`，每条写清 name、description 与 why；`status` 写 `confirmed` 或 `suspected`，缺省怀疑；`domain` 写 `meta` 或 `asset`，缺省 meta。name 为空、description 为空、why 为空、name 重复、status 写了别的值、domain 写了别的值，都会在读契约时被拦下。只有结论的公理是口号：记不住当初的失败，后来的人就无从判断它还算不算前提。
 
 ### 卡上点哪几条
 
@@ -198,6 +201,24 @@ home-before-category  怀疑  先定去处，再定范畴，再过准入，最�
 - 不收：`no-fit`
 
 点名只点契约里还在的：把一条 `[[axiom]]` 删了，卡上就不会再出现它——沉默比报错早一步暴露改动。反过来，契约里加了新公理，卡也不会自动引用，要在 `classify` 的 `cited` 里写上它管哪一步。
+
+### 分层的边界是判断题
+
+本仓早期用资产表达一切，meta 是后来从 asset 里显性化出来的。所以「具体还是抽象」这条边界不是天生就清楚，是拆出来的——**分层要的就是把这条边界摆到台面上**。风险也在这里：未来的人（和 AI）很可能把一条前提标错层，而标错层不报错，只是让人读的时候对不上。
+
+两层怎么分，一句话：把 estate 的物理形态（子模块、目录名、仓库边界）全改了，这条还成立，它就是本体论层（`domain = "meta"`）；离开物理形态就说不出口，它是资产层（`domain = "asset"`）。
+
+- `one-place`「一份内容只有一个正确去处」——拆了所有子模块它照样成立，本体论层。
+- `source-per-repo`「一个事实源开一个子模块」——没有子模块这个物件，这条就说不出来，资产层。
+- `no-fallback`「契约缺了就停手，不内置兜底」——已知别扭点：它既不是本体论假设，也不离不开物理形态，是工程前提。两层装不下它，勉强归 asset。遇到这种夹在中间的，选一层写下来，并在契约里注一句为什么，别留空。
+
+工具替你守三道，都不能代替那个判断：
+
+- `domain` 只认 `meta` 与 `asset`，写别的在读契约时就拦——抓的是拼写错，不是判断错。
+- 落位卡点名的六条公理必须是本体论层。一条资产层公理混进分类输出，边界就真破了；`meta validate` 逐条查。
+- 本体论层公理的 description 与 why 里不点 estate 物理词（子模块、目录名、路径、仓库根…）。自称抽象、其实依赖物理形态，是错标最常见的形态；词表刻意窄到零误报，所以报了就是真问题。
+
+改完契约跑一次 `qtfounder meta validate`。它对不上时，先问的不是「哪条规则错了」，是「这条前提我标对层了吗」。
 
 ## 十一、home：去处
 
@@ -237,8 +258,8 @@ qtfounder meta domain --json
   分类 2
   ...
 
-公理（9）
-  确认 1，怀疑 8
+公理（13）
+  确认 1，怀疑 12
 ```
 
 域是本体论的根：一个域由范畴、属性与公理组成。本仓的域叫 meta，写在契约顶层的 `domain` 里；每个命令的契约都用同一行标明自己属于哪个域。
@@ -315,6 +336,9 @@ validate 只读契约，不读任何仓库文档：契约是唯一事实源，�
 - 格：name、label 与 path 不空，path 不重，cues 不空——没有线索的格永远判不进去。
 - 去处：cues 不空——没有线索的去处永远不会被指到。
 - 降格：不指向自己。
+- 资产：domain 只认 meta 与 asset，这道在读契约时就拦。
+- 公理：落位卡点名的六条公理必须是本体论层——一条资产层公理混进分类输出，边界就真破了。
+- 公理：本体论层公理的 description 与 why 不点 estate 物理词（子模块、目录名、路径…）。为什么这么分，见上面「分层的边界是判断题」。
 
 查出问题退出码 1，逐条列出。名字重复、缺字段、引用指向不存在的格这类硬伤在读契约时就报，轮不到 validate。
 

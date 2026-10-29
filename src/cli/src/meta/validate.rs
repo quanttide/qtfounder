@@ -28,6 +28,23 @@ const TRANSFORMS: [&str; 2] = ["flip", "same"];
 /// 十八类长期记忆的统称：关系边的端点写它，指任意一类记忆仓。
 const MEMORY_ROLE: &str = "memory";
 
+/// estate 物理形态词（第三档边界网）。
+///
+/// 本体论层公理不该点名这些——它们只在 estate 的当前形态下才有意义，
+/// 换一套子模块与目录，词就落空了。词表刻意窄到零误报：内容词（归档、日志、
+/// 入口）不进表，它们在两层里都是合法词。真误报了，修法通常是改写那条公理——
+/// 抽象公理本就不该点名具体物件。
+///
+/// 判断题本身留在人这边：见 docs/user-guide/meta.md「分层的边界是判断题」。
+const ESTATE_PHYSICAL_TERMS: [&str; 6] = [
+    "子模块",
+    "仓库根",
+    "目录名",
+    "路径",
+    ".gitmodules",
+    "data/",
+];
+
 pub fn run(args: &ValidateArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;
     let mut problems = Vec::new();
@@ -36,6 +53,7 @@ pub fn run(args: &ValidateArgs) -> Result<i32, String> {
     problems.extend(check_categories(&contract));
     problems.extend(check_homes(&contract));
     problems.extend(check_transitions(&contract));
+    problems.extend(check_axioms(&contract));
 
     if args.json {
         println!(
@@ -168,6 +186,41 @@ fn check_transitions(contract: &Contract) -> Vec<String> {
                 "transition：{} → {} 指向自己",
                 transition.from, transition.to
             ));
+        }
+    }
+    problems
+}
+
+/// 公理分层的三档校验。第一档（domain 只认 meta / asset）在读契约时就拦，
+/// 这里查后两档：
+///
+/// 第二档，硬不变量：落位卡点名的公理必须是本体论层。破了这条，
+/// 一条资产层公理就混进了分类输出，两层边界名存实亡。
+///
+/// 第三档，窄词表网：本体论层公理不点名 estate 物理形态词。抓的是「自称抽象、
+/// 其实依赖物理形态」这种错标——未来的人（或 AI）最容易犯的那种。
+fn check_axioms(contract: &Contract) -> Vec<String> {
+    let mut problems = Vec::new();
+    for name in crate::meta::classify::cited_axiom_names() {
+        match contract.axiom.iter().find(|axiom| axiom.name == name) {
+            None => problems.push(format!(
+                "axiom：classify 点名的 {name} 不在契约里，落位卡会漏引它"
+            )),
+            Some(axiom) if axiom.is_asset() => problems.push(format!(
+                "axiom：{name} 被落位卡点名，却标了 domain = \"asset\"；被分类消费的公理必须是本体论层"
+            )),
+            Some(_) => {}
+        }
+    }
+    for axiom in contract.axiom.iter().filter(|axiom| axiom.is_meta()) {
+        let text = format!("{} {}", axiom.description, axiom.why);
+        for term in ESTATE_PHYSICAL_TERMS {
+            if text.contains(term) {
+                problems.push(format!(
+                    "axiom：{} 是本体论层，description 或 why 里却点了物理形态词「{term}」；把 estate 换一套子模块与目录，这条还成立吗？成立就改写，不成立就标 domain = \"asset\"",
+                    axiom.name
+                ));
+            }
         }
     }
     problems

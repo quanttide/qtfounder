@@ -262,6 +262,25 @@ pub fn judge(text: &str, contract: &Contract) -> Card {
     }
 }
 
+/// 落位卡可能点名的公理全集：任何一步判断最多引用这些。
+///
+/// 这是条硬不变量的另一边——被分类消费的公理必须是本体论层（`domain = "meta"`）。
+/// `meta axiom` 的测试拿它逐条对 domain，`meta validate` 运行时也查；破了这条，
+/// 一条资产层公理就会混进落位卡，两层边界名存实亡。
+pub const CITED_AXIOMS: [&str; 6] = [
+    "home-before-category",
+    "text-only",
+    "archive-vs-transfer",
+    "no-fit",
+    "one-place",
+    "template-scope",
+];
+
+/// 落位卡点名的公理全集（给校验用）。
+pub fn cited_axiom_names() -> [&'static str; 6] {
+    CITED_AXIOMS
+}
+
 /// 落位卡点名的公理：只列这次判断真用到的，不摊全表；契约里没有的也不点。
 ///
 /// 确认过的排前面，同组内保持契约顺序。公理不参与算分，只留一行出处，事后能对账：
