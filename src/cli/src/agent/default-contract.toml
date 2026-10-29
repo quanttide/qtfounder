@@ -15,7 +15,7 @@ max_chars = 32
 # 登记过的范围。新范围先写进来，再起名。
 scopes = ["agent", "audit", "code", "design", "docs", "execute", "language", "meta", "skill", "think", "git", "devops", "product", "write"]
 # 这些范围对应 CLI 的命令组：正文里应当出现 `qtfounder <范围>`，否则名与实对不上。
-cli_scopes = ["agent", "asset", "audit", "code", "design", "docs", "execute", "git", "language", "meta", "product", "think", "write"]
+cli_scopes = ["agent", "asset", "audit", "code", "data", "design", "docs", "execute", "git", "language", "meta", "product", "think", "write"]
 # 名词化后缀：第二段以它们收尾，说明写成了名词而不是动词。
 noun_suffixes = ["ance", "ence", "ment", "tion", "sion", "ing", "ity", "ness"]
 

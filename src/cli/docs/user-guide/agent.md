@@ -105,7 +105,7 @@ language-govern
 meta-classify
   qtfounder meta classify
 ...
-未覆盖的命令组：agent、asset、code、git
+未覆盖的命令组：agent、asset、code、data、git
 ```
 
 用途：

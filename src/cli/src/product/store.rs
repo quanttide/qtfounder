@@ -15,7 +15,7 @@ use super::AppError;
 const DATA_FILE: &str = "clarify.json";
 const RULES_FILE: &str = "rules.md";
 /// XDG 下的应用目录名。
-const APP_DIR: &str = "qtfounder";
+pub const APP_DIR: &str = "qtfounder";
 
 /// 一次澄清记录（这次哪里不对）。
 #[derive(Debug, Clone, Serialize, Deserialize)]

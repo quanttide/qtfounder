@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `qtfounder data`：标注数据三入口——`rule` 设计与存取规则（机器名/显示名/定义/正反例/批次，校验与 studio 同一把尺子），`task` 只读 studio 导出的任务包（规则快照 + 待标单元），`result` 导入标注端导出的 JSONL 并按任务与标签统计（追加不覆盖）。存储在 XDG `data/rules|tasks|results/`，与 `product`、`execute` 同一根；本命令组不区分开发与发布构建——与 studio、lite 共享的存储必须位置稳定；`QTFOUNDER_DATA` 仍优先。文档 `user-guide/data.md` 与 `api-reference/data.md` 同步
+
 ### Changed
 
 - 退出码统一四码：新增 `core` 模块（`src/core/exit.rs`）单点定义 `OK=0`、`FINDINGS=1`、`USAGE=2`、`NOT_FOUND=3`，语义写进文档注释；`main.rs` 的 11 处 `exit(2)`、`docs` 的 0/1/2、`product` 的 2/3 全部改用常量（值未变）；`docs` 目标路径不存在时由静默退 0 改为退 3（目标缺席）；测试钉住四码互不相同且恰为 0..=3
