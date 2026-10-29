@@ -9,6 +9,7 @@ mod agent;
 mod asset;
 mod audit;
 mod code;
+mod core;
 mod design;
 mod docs;
 mod execute;
@@ -65,49 +66,49 @@ fn main() {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Language(args)) => match language::run_language(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Docs(args)) => match docs::run_docs(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Write(args)) => match write::run_write(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Think(args)) => match think::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Meta(args)) => match meta::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Asset(args)) => match asset::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Product(args)) => {
@@ -126,28 +127,28 @@ fn main() {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Git(args)) => match git::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Audit(args)) => match audit::run_audit(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         Some(CliCommand::Design(args)) => match design::run_design(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");
-                std::process::exit(2);
+                std::process::exit(core::exit::USAGE);
             }
         },
         None => {

@@ -85,8 +85,8 @@ impl AppError {
 
     pub fn exit_code(&self) -> i32 {
         match self {
-            AppError::Usage(_) => 2,
-            AppError::NotFound { .. } => 3,
+            AppError::Usage(_) => crate::core::exit::USAGE,
+            AppError::NotFound { .. } => crate::core::exit::NOT_FOUND,
         }
     }
 }

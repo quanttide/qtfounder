@@ -351,3 +351,20 @@ fn status_rule_count_agrees_with_audit() {
     assert_eq!(one.rules, 2);
     assert!(check_rule("sample.md", text, &contract()).is_empty());
 }
+
+#[test]
+fn 目标缺席退三() {
+    let args = super::DocsArgs {
+        command: None,
+        root: std::path::PathBuf::from("no-such-target-xyz"),
+        kind: None,
+        rules: None,
+        top: 15,
+        json: false,
+        stats: false,
+    };
+    assert_eq!(
+        super::run_docs(&args).unwrap(),
+        crate::core::exit::NOT_FOUND
+    );
+}

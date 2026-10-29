@@ -85,12 +85,14 @@ fn filter_kind(findings: &mut Vec<Finding>, kind_name: &Option<String>) -> Resul
     Ok(())
 }
 
-/// 0 没命中 / 1 有命中 / 2 有文件读不了。
+/// 0 无命中 / 1 有命中 / 2 用法或环境错；码值取 `core::exit`。
 fn exit_code(findings: &[Finding], broken: &[String]) -> i32 {
     if !broken.is_empty() {
-        2
+        crate::core::exit::USAGE
+    } else if findings.is_empty() {
+        crate::core::exit::OK
     } else {
-        i32::from(!findings.is_empty())
+        crate::core::exit::FINDINGS
     }
 }
 
@@ -200,12 +202,16 @@ fn finding_json(finding: &Finding) -> String {
     )
 }
 
-/// 入口：返回退出码（0 无命中 / 1 有命中 / 2 契约或文件读不了）。
+/// 入口：返回退出码（0 无命中 / 1 有命中 / 2 用法或环境错 / 3 目标缺席）。
 pub fn run_docs(args: &DocsArgs) -> Result<i32, String> {
     match &args.command {
         Some(DocsCommand::Check { root }) => return check::run_check(root),
         Some(DocsCommand::Format { root }) => return run_format(args, root),
         None => {}
+    }
+    if !args.root.exists() {
+        eprintln!("目标不在：{}", args.root.display());
+        return Ok(crate::core::exit::NOT_FOUND);
     }
     let contract = Contract::load(args.rules.as_deref())?;
 
@@ -230,6 +236,10 @@ pub fn run_docs(args: &DocsArgs) -> Result<i32, String> {
 /// `docs format`：先给格式状态，再跑同一套审计。
 /// 状态看有没有滥用（数字），审计看该改哪一处（命中）；两路用的是同一批文件。
 fn run_format(args: &DocsArgs, root: &Path) -> Result<i32, String> {
+    if !root.exists() {
+        eprintln!("目标不在：{}", root.display());
+        return Ok(crate::core::exit::NOT_FOUND);
+    }
     let contract = Contract::load(args.rules.as_deref())?;
     let (mut findings, broken, scanned) = scan::scan(root, &contract);
     filter_kind(&mut findings, &args.kind)?;
