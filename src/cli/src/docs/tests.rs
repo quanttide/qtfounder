@@ -88,7 +88,7 @@ fn plain_checklist_is_quiet() {
 
 #[test]
 fn long_list_item_is_reported() {
-    let long = "这一条本身就是一段话".repeat(12);
+    let long = "这一条本身就是一段话".repeat(13);
     let text = format!("- {long}\n- 短的一条\n- 另一条\n");
     assert!(kinds(&text).contains(&"list"));
 }

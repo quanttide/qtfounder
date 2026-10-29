@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- `docs` 阈值标定：正式组 `docs/gallery` 19 篇、普通组 `data/roadmap` 10 篇（各取 ≥500 字）`--stats` 对照——块占比两组重叠（10–100% 对 59–93%）无判别力，保持关闭只观测；无散文率 29 篇里 28 篇为 0%，`max_run_ratio` 定 0.35 只命中极端；`[list]` 的 `max_item_chars` 100→120，正式组 9 处越线里 5 处是 101–115 的边缘误伤；数据与理由写进 `default-contract.toml` 注释，测试夹具同步
+
 ### Added
 
 - `execute-collect` Skill 随 CLI 发布（第九条）：把协作里冒出来的下一步活收成待办，攒成池子；命中推迟信号直接入账、收尾主动盘点、用户召唤三级，优先级只认明说
