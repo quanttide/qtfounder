@@ -42,8 +42,10 @@ pub struct MaintainArgs {
 #[derive(Debug, Default)]
 pub struct Plan {
     pub moves: Vec<Step>,
+    pub created: Vec<Step>,
     pub conflicts: Vec<String>,
     pub unclassified: Vec<String>,
+    pub today: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -72,12 +74,17 @@ pub fn run(args: &MaintainArgs, rules: Option<&Path>) -> Result<i32, String> {
     }
 
     let issues = !plan.conflicts.is_empty() || !plan.unclassified.is_empty() || !nested.is_empty();
-    let pending = args.check && !plan.moves.is_empty();
+    let pending = args.check && (!plan.moves.is_empty() || !plan.created.is_empty());
     Ok(if issues || pending { 1 } else { 0 })
 }
 
 /// 扫 context，算出要移动的文件。只算，不动。
 pub fn plan(contract: &Contract, root: &Path) -> Result<Plan, String> {
+    plan_on(contract, root, &today())
+}
+
+/// 指定「今天」的日期，供测试固定时间。
+pub fn plan_on(contract: &Contract, root: &Path, today: &str) -> Result<Plan, String> {
     let source = contract
         .source()
         .ok_or_else(|| "契约缺少 source 资产：context".to_string())?;
@@ -125,23 +132,56 @@ pub fn plan(contract: &Contract, root: &Path) -> Result<Plan, String> {
             continue;
         }
         let segments = segments(rel);
-        if segments.len() < 3 {
+        if segments.len() < 2 {
             let name = segments.last().map(String::as_str).unwrap_or("");
             if !SCAFFOLD.contains(&name) && name != ".gitignore" {
                 plan.unclassified.push(rel.display().to_string());
             }
             continue;
         }
-        let Some((domain, asset, rest)) = classify(&segments, &memories) else {
+        if let Some((domain, asset, rest)) = classify(&segments, &memories) {
+            if rest.len() == 1 && SCAFFOLD.contains(&rest[0].as_str()) {
+                plan.unclassified.push(rel.display().to_string());
+                continue;
+            }
+            if is_today(&rest, today) {
+                plan.today.push(rel.display().to_string());
+                continue;
+            }
+            let mut target = root.join(&asset.path).join(&domain);
+            for part in &rest {
+                target.push(part);
+            }
+            if target.exists() {
+                plan.conflicts
+                    .push(format!("{} -> {}", rel.display(), target.display()));
+                continue;
+            }
+            plan.moves.push(Step {
+                from: path.to_path_buf(),
+                to: target,
+                asset: asset.name.clone(),
+                asset_label: asset.label().to_string(),
+                category: asset.category.clone(),
+                domain,
+            });
+            continue;
+        }
+        // 没有的资产可以新建：首段当新资产名，路径原样落在同级资产仓下。
+        let rest = &segments[1..];
+        if rest.len() == 1 && SCAFFOLD.contains(&rest[0].as_str()) {
+            continue;
+        }
+        if is_today(rest, today) {
+            plan.today.push(rel.display().to_string());
+            continue;
+        }
+        let Some(parent) = context.parent() else {
             plan.unclassified.push(rel.display().to_string());
             continue;
         };
-        if rest.len() == 1 && SCAFFOLD.contains(&rest[0].as_str()) {
-            plan.unclassified.push(rel.display().to_string());
-            continue;
-        }
-        let mut target = root.join(&asset.path).join(&domain);
-        for part in &rest {
+        let mut target = parent.join(&segments[0]);
+        for part in rest {
             target.push(part);
         }
         if target.exists() {
@@ -149,17 +189,22 @@ pub fn plan(contract: &Contract, root: &Path) -> Result<Plan, String> {
                 .push(format!("{} -> {}", rel.display(), target.display()));
             continue;
         }
-        plan.moves.push(Step {
+        plan.created.push(Step {
             from: path.to_path_buf(),
             to: target,
-            asset: asset.name.clone(),
-            asset_label: asset.label().to_string(),
-            category: asset.category.clone(),
-            domain,
+            asset: segments[0].clone(),
+            asset_label: segments[0].clone(),
+            category: String::new(),
+            domain: String::new(),
         });
     }
 
     Ok(plan)
+}
+
+/// `rest` 是单个今天的日期文件时留在 context——当天还要继续录入。
+fn is_today(rest: &[String], today: &str) -> bool {
+    rest.len() == 1 && rest[0].trim_end_matches(".md") == today
 }
 
 /// 前两段是「领域 / 资产」还是「资产 / 领域」，两种都认；资产套资产不算。
@@ -188,10 +233,37 @@ fn segments(rel: &Path) -> Vec<String> {
 }
 
 fn execute(plan: &Plan) -> Result<(), String> {
-    for step in &plan.moves {
+    for step in plan.moves.iter().chain(plan.created.iter()) {
         move_file(&step.from, &step.to)?;
     }
     Ok(())
+}
+
+/// 今天的日期，`YYYY-MM-DD`（UTC）。不引依赖，用 Unix 纪元天数换算。
+fn today() -> String {
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    civil_from_days((secs / 86_400) as i64)
+}
+
+/// Hinnant 的 `civil_from_days`：纪元天数 → 年月日。
+fn civil_from_days(days: i64) -> String {
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let day = doy - (153 * mp + 2) / 5 + 1;
+    let month = if mp < 10 { mp + 3 } else { mp - 9 };
+    let year = if month <= 2 {
+        yoe + era * 400 + 1
+    } else {
+        yoe + era * 400
+    };
+    format!("{year:04}-{month:02}-{day:02}")
 }
 
 fn move_file(from: &Path, to: &Path) -> Result<(), String> {
@@ -248,6 +320,18 @@ fn print_text(args: &MaintainArgs, plan: &Plan, nested: &[String], moving: bool)
         println!("  {from} -> {to}");
     }
 
+    println!("新建资产 {}", plan.created.len());
+    for step in &plan.created {
+        let from = step.from.display();
+        let to = step.to.display();
+        println!("  {from} -> {to}");
+    }
+
+    println!("当天不移动 {}", plan.today.len());
+    for path in &plan.today {
+        println!("  {path}");
+    }
+
     println!("目标已存在 {}", plan.conflicts.len());
     for conflict in &plan.conflicts {
         println!("  {conflict}");
@@ -279,6 +363,17 @@ fn print_json(args: &MaintainArgs, plan: &Plan, nested: &[String], moving: bool)
             })
         })
         .collect();
+    let created: Vec<serde_json::Value> = plan
+        .created
+        .iter()
+        .map(|step| {
+            json!({
+                "from": step.from.display().to_string(),
+                "to": step.to.display().to_string(),
+                "asset": step.asset,
+            })
+        })
+        .collect();
     println!(
         "{}",
         serde_json::to_string_pretty(&json!({
@@ -287,6 +382,8 @@ fn print_json(args: &MaintainArgs, plan: &Plan, nested: &[String], moving: bool)
             "dry_run": args.dry_run,
             "check": args.check,
             "steps": steps,
+            "created": created,
+            "today": plan.today,
             "conflicts": plan.conflicts,
             "unclassified": plan.unclassified,
             "nested": nested,
@@ -370,5 +467,61 @@ mod tests {
         let contract = Contract::bundled();
         let plan = plan(&contract, dir.path()).unwrap();
         assert!(plan.conflicts.iter().any(|line| line.contains("a.md")));
+    }
+
+    #[test]
+    fn 没有的资产可以新建() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        fs::create_dir_all(root.join("data/context/create")).unwrap();
+        fs::write(root.join("data/context/create/2026-10-28.md"), "丁").unwrap();
+        let contract = Contract::bundled();
+        let plan = plan_on(&contract, root, "2026-10-30").unwrap();
+        assert_eq!(plan.created.len(), 1);
+        assert!(plan.created[0].to.ends_with("data/create/2026-10-28.md"));
+        execute(&plan).unwrap();
+        assert!(root.join("data/create/2026-10-28.md").exists());
+        assert!(!root.join("data/context/create/2026-10-28.md").exists());
+    }
+
+    #[test]
+    fn 当天的日志不移动() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        fs::create_dir_all(root.join("data/context/default/journal")).unwrap();
+        fs::write(
+            root.join("data/context/default/journal/2026-10-30.md"),
+            "今",
+        )
+        .unwrap();
+        fs::write(
+            root.join("data/context/default/journal/2026-10-29.md"),
+            "昨",
+        )
+        .unwrap();
+        let contract = Contract::bundled();
+        let plan = plan_on(&contract, root, "2026-10-30").unwrap();
+        assert!(
+            plan.today
+                .iter()
+                .any(|path| path.ends_with("2026-10-30.md"))
+        );
+        assert!(
+            !plan
+                .moves
+                .iter()
+                .any(|step| step.to.ends_with("2026-10-30.md"))
+        );
+        assert!(
+            plan.moves
+                .iter()
+                .any(|step| step.to.ends_with("data/journal/default/2026-10-29.md"))
+        );
+    }
+
+    #[test]
+    fn 日期换算对得上() {
+        assert_eq!(civil_from_days(0), "1970-01-01");
+        assert_eq!(civil_from_days(19_723), "2024-01-01");
     }
 }
