@@ -4,6 +4,9 @@
 
 ### Added
 
+- `execute-collect` Skill 随 CLI 发布（第九条）：把协作里冒出来的下一步活收成待办，攒成池子；命中推迟信号直接入账、收尾主动盘点、用户召唤三级，优先级只认明说
+- `qtfounder execute collect` / `execute draw`：收待办进池子（同文本去重、`--stdin` 批量、优先级缺省 1、0 的签拒收），`draw` 按优先级加权抽一件，抽走的进 `drawn` 留痕；数据落 `execute.json`，复用 `product` 的数据目录与 id 方案（前缀 `tdo`）
+
 - `design-review` Skill 随 CLI 发布（第八条）：交互设计评判十二条——先立问题再做屏幕、减分项七条、交付纪律三条，配评分标准；原则自 qtcloud 仓的交互设计评判原则抽取，案例存照随文。`qtfounder design principles` 摊开全文
 - `qtfounder design review`：界面交付物走查，只做机器判得了的两条的数字面——第九条中文微排版（`font-size` 低于 12px 报缺陷、12–14px 报嫌疑，rem 按 16px 根换算，em 只计数不换算）与第五条主行动唯一（class 含 `primary` 的按钮一文件多于一个报一次嫌疑）。目录递归扫 `.html`，跳过 `.git`／`node_modules`／`target`／`_build`；其余十条归 Skill 里的走查与自评分
 - `docs-format` Skill 随 CLI 发布（第七条）：照《量潮科技文档格式章程》管正式 Markdown 文档的排版与结构，提交前跑 `qtfounder docs format <文件>` 看格式状态与审计命中。章程原文两处用词按禁用词清单改写（`制定依据` → `制定理由`、`条目` → `短条`），条文含义不变

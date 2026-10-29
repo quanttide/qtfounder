@@ -2,7 +2,7 @@
 version: 1
 project:
   title: qtfounder CLI 文档
-  description: code、language、docs、write、think、meta、asset、product、agent、git、audit 与 design 十二个子命令的用户指南、开发指南与接口参考
+  description: code、language、docs、write、think、meta、asset、product、execute、agent、git、audit 与 design 十三个子命令的用户指南、开发指南与接口参考
   toc:
     - file: index.md
     - title: 用户指南
@@ -15,6 +15,7 @@ project:
         - file: user-guide/meta.md
         - file: user-guide/asset.md
         - file: user-guide/product.md
+        - file: user-guide/execute.md
         - file: user-guide/agent.md
         - file: user-guide/design.md
     - title: 开发指南
@@ -36,6 +37,7 @@ project:
         - file: api-reference/think.md
         - file: api-reference/meta.md
         - file: api-reference/product.md
+        - file: api-reference/execute.md
         - file: api-reference/agent.md
         - file: api-reference/design.md
 site:

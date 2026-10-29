@@ -2,9 +2,9 @@
 
 `agent` 这一组：把 Skill 装到该在的位置，再检查它写得对不对。装的时候只搬运，查的时候只读。
 
-随 CLI 发布的 Skill 有八条：`design-review`、`docs-format`、`meta-classify`、`language-govern`、`think-reflect`、`product-collect`、`product-organize`、`write-express`。你装了二进制，就同时得到这八份说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
+随 CLI 发布的 Skill 有九条：`design-review`、`docs-format`、`execute-collect`、`meta-classify`、`language-govern`、`think-reflect`、`product-collect`、`product-organize`、`write-express`。你装了二进制，就同时得到这九份说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
 
-## 一、嵌了哪八条
+## 一、嵌了哪九条
 
 来源是本包的 `skills/` 目录，改来源用环境变量 `QTFOUNDER_SKILLS_DIR`。目录下有 `SKILL.md` 的子目录算一条，其余文本文件当附属文件一起带走。
 
@@ -25,7 +25,7 @@ qtfounder agent skill check
 ## 三、`install`：装一条或全部
 
 ```bash
-qtfounder agent skill install                  # 八条都装到系统位置
+qtfounder agent skill install                  # 九条都装到系统位置
 qtfounder agent skill install meta-classify    # 只装一条
 qtfounder agent skill install --root <仓>      # 只装进某个仓
 qtfounder agent skill install --copy           # 复制而不是链接
@@ -76,7 +76,7 @@ qtfounder agent skill lint --json
 
 文字措辞归 `language`，格式归 `docs`。`lint` 只管 Agent 能不能靠名字和说明找对门。
 
-主仓不需要装：它自己那些 Skill 就地维护，这八条随着 CLI 装在系统位置，在哪个目录下都找得到。
+主仓不需要装：它自己那些 Skill 就地维护，这九条随着 CLI 装在系统位置，在哪个目录下都找得到。
 
 ## 七、relation：Skill 与命令的边
 
@@ -86,7 +86,7 @@ qtfounder agent relation meta-classify      # 只看一条
 qtfounder agent relation --json
 ```
 
-当前八条 Skill 的引用：
+当前九条 Skill 的引用：
 
 ```text
 design-review
@@ -94,6 +94,10 @@ design-review
   qtfounder design principles
 docs-format
   qtfounder docs format
+execute-collect
+  qtfounder execute
+  qtfounder execute collect
+  qtfounder execute draw
 language-govern
   qtfounder audit
   qtfounder language

@@ -11,6 +11,7 @@ mod audit;
 mod code;
 mod design;
 mod docs;
+mod execute;
 mod git;
 mod language;
 mod meta;
@@ -46,6 +47,8 @@ enum CliCommand {
     Asset(asset::AssetArgs),
     /// 产品：需求与澄清，名词读、动词写
     Product(product::ProductArgs),
+    /// 执行：collect 收待办进池子，draw 按优先级抽一件
+    Execute(execute::ExecuteArgs),
     /// Agent：装 Skill、查写法
     Agent(agent::AgentArgs),
     /// Git：装钩子、查配置漂移
@@ -109,6 +112,12 @@ fn main() {
         },
         Some(CliCommand::Product(args)) => {
             if let Err(error) = product::run(args.command) {
+                product::print_error(&error);
+                std::process::exit(error.exit_code());
+            }
+        }
+        Some(CliCommand::Execute(args)) => {
+            if let Err(error) = execute::run(args.command, args.json) {
                 product::print_error(&error);
                 std::process::exit(error.exit_code());
             }

@@ -1,6 +1,6 @@
 # qtfounder CLI 文档
 
-命令行工具，十二个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知，`meta` 判归位，`asset` 看资产契约、清单、关系与维护规则，`product` 记需求差，`agent` 装 Skill 并查写法，`git` 管钩子配置，`audit` 出体检报告，`design` 走查界面交付物。
+命令行工具，十三个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知，`meta` 判归位，`asset` 看资产契约、清单、关系与维护规则，`product` 记需求差，`execute` 收待办并抽一件，`agent` 装 Skill 并查写法，`git` 管钩子配置，`audit` 出体检报告，`design` 走查界面交付物。
 
 ## 用户指南
 
@@ -12,7 +12,7 @@
 - [`meta`](user-guide/meta.md)：归位，`classify` 给一段内容一张落位卡：域、格、档、写法。
 - [`asset`](user-guide/asset.md)：资产，`catalog` 清点二十种资产、`contract` 看边界、`relation` 看角色与迁入边、`maintain` 整理 context 并搬进长期记忆仓。
 - [`product`](user-guide/product.md)：需求与澄清，`clarify` 记一次「不对劲」，`requirement` 看攒出了什么。
-- [`agent`](user-guide/agent.md)：装 Skill（`list`、`install`、`check`）并查写法（`lint`）。
+- [`execute`](user-guide/execute.md)：待办的收与抽，`collect` 收进池子，`draw` 按优先级抽一件开工。- [`agent`](user-guide/agent.md)：装 Skill（`list`、`install`、`check`）并查写法（`lint`）。
 - [`audit`](user-guide/audit.md)：文字体检，合并两套审计，每期只说一处。
 - [`design`](user-guide/design.md)：交互设计走查，数 HTML 交付物的字号与主按钮；`design principles` 摊开十二条原则。
 
@@ -34,6 +34,7 @@
 - [`think` 接口](api-reference/think.md)：三个子命令的参数、输入字段、JSON 与错误表。
 - [`meta` 接口](api-reference/meta.md)：怎么判、落位卡字段、退出码与契约结构。
 - [`product` 接口](api-reference/product.md)：两个入口、输入字段、JSON 与错误表。
+- [`execute` 接口](api-reference/execute.md)：两个入口、JSON 形状、错误表与数据存放位置。
 - [`agent` 接口](api-reference/agent.md)：嵌入清单、安装位置、七道检查、JSON 与退出码。
 - [`audit` 接口](api-reference/audit.md)：参数、退出码与报告 JSON。
 

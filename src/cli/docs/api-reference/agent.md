@@ -19,7 +19,7 @@ qtfounder agent skill lint [ROOT] [--rules PATH] [--top N] [--json]
 
 来源取 `QTFOUNDER_SKILLS_DIR`，没有就是包内的 `skills/`。目录不存在时清单为空，CLI 仍能构建与运行：`list` 打印一句说明后退 `0`，`check` 退 `2`，`install` 报错退 `2`。
 
-你装好后会得到八条：`design-review`、`docs-format`、`language-govern`、`meta-classify`、`product-collect`、`product-organize`、`think-reflect`、`write-express`。它们点名的命令都由本 CLI 提供；接口与文字必须同版本。
+你装好后会得到九条：`design-review`、`docs-format`、`execute-collect`、`language-govern`、`meta-classify`、`product-collect`、`product-organize`、`think-reflect`、`write-express`。它们点名的命令都由本 CLI 提供；接口与文字必须同版本。
 
 ## 三、装到哪
 
