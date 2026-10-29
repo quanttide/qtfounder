@@ -4,8 +4,7 @@
 
 ### Changed
 
-- `docs/dev-guide/docs/roadmap.md` 状态同步：阶段三标定标为已完成，补记实测结论（块占比保持关闭、无散文率 0.35、列表单项 120）；阶段零的手写/AI 分离验证仍开放
-
+- `docs/dev-guide/docs/roadmap.md` 迁至路线图仓 `data/roadmap/qtfounder/docs.md`：CLI 的方向文档全部归路线图仓（此前 `dev-guide/roadmap.md` 已迁 `qtfounder/index.md`）；迁入前同步了阶段状态（阶段三标定已完成并补记实测结论，阶段零的手写/AI 分离验证仍开放）；`dev-guide/docs/index.md`、`dev-guide/index.md`、`user-guide/docs.md` 与 `myst.yml` 目录同步摘除，后两处状态句顺带修正（阈值已标定：块占比保持 0、无散文率 0.35）
 - `docs` 阈值标定：正式组 `docs/gallery` 19 篇、普通组 `data/roadmap` 10 篇（各取 ≥500 字）`--stats` 对照——块占比两组重叠（10–100% 对 59–93%）无判别力，保持关闭只观测；无散文率 29 篇里 28 篇为 0%，`max_run_ratio` 定 0.35 只命中极端；`[list]` 的 `max_item_chars` 100→120，正式组 9 处越线里 5 处是 101–115 的边缘误伤；数据与理由写进 `default-contract.toml` 注释，测试夹具同步
 
 ### Added

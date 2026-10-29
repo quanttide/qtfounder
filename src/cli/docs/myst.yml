@@ -27,7 +27,6 @@ project:
         - file: dev-guide/language/sense-layer.md
         - file: dev-guide/testing.md
         - file: dev-guide/docs/index.md
-        - file: dev-guide/docs/roadmap.md
     - title: 接口参考
       children:
         - file: api-reference/code.md

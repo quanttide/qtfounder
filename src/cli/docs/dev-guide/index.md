@@ -8,12 +8,11 @@
 - [加一条验收标准](adding-a-check.md)：一条检查住在四处，另加三种不该加的验收标准。
 - [测试](testing.md)：真样本、反样本、契约可变，以及并行测试的临时文件坑。
 
-路线图已迁至路线图仓 `data/roadmap/qtfounder/index.md`。
+路线图已迁至路线图仓 `data/roadmap/qtfounder/index.md`（CLI 方向）与 `qtfounder/docs.md`（文档审计阶段）。
 
 ## 文档审计
 
 - [文档审计](docs/index.md)：为什么是 linter 而不是统计器，已有的表格层缺什么。
-- [审计路线图](docs/roadmap.md)：验证假设、列表层、密度兜底与阈值标定的先后。
 
 ## `code` 模块
 
