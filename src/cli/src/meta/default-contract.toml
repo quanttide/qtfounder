@@ -188,22 +188,6 @@ category = "laboratory"
 path = "examples/quanttide-founder-lab/"
 layout = "asset-domain"
 
-[[asset]]
-name = "create"
-label = "Create 创作"
-role = "memory"
-path = "data/create/"
-layout = "asset-domain"
-description = "创作冲动与产品想法；能展开成一件事，但还没到需求档案。暂不入十八格。"
-
-[[asset]]
-name = "agent"
-label = "Agent 协作"
-role = "memory"
-path = "data/agent/"
-layout = "asset-domain"
-description = "人机协作现场的做法与反思：怎么让 AI 干活、验收什么、改了哪条规矩。暂不入格。"
-
 # ---------------- 关系 ----------------
 # 迁移边。flip 交换前两段，same 保持。
 

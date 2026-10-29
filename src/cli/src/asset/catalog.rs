@@ -95,9 +95,9 @@ mod tests {
     }
 
     #[test]
-    fn 清单覆盖二十二种资产() {
+    fn 清单覆盖二十种资产() {
         let contract = Contract::bundled();
-        assert_eq!(contract.asset.len(), 22);
+        assert_eq!(contract.asset.len(), 20);
     }
 
     #[test]

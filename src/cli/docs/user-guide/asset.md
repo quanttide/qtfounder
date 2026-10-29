@@ -1,6 +1,6 @@
 # `qtfounder asset` 用户指南
 
-资产契约、清单、关系与维护，四个入口。数据源是归位契约：context 与 archive 两端，加 20 类长期记忆资产（`create`、`agent` 为 2026-10-29 新增，暂不入十八格），共二十二种。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
+资产契约、清单、关系与维护，四个入口。数据源是归位契约：十八类长期记忆，加 context 与 archive，共二十种资产。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
 
 ## 一、catalog：仓库里到底有没有
 
@@ -10,11 +10,11 @@
 qtfounder asset catalog
 ```
 
-主仓根跑，当前是 22/22：
+主仓根跑，当前是 20/20：
 
 ```text
 根：.
-22 种资产，仓库里有 22 种，缺 0 种
+20 种资产，仓库里有 20 种，缺 0 种
 
 context  Context 入口  data/context/  source  有
 report  Report 报告  data/report/  memory  有
@@ -26,7 +26,7 @@ archive  Archive 归档  data/archive/  exit  有
 
 ```text
 根：.
-22 种资产，仓库里有 0 种，缺 22 种
+20 种资产，仓库里有 0 种，缺 20 种
 ```
 
 用 `--root` 指回仓根：
@@ -77,7 +77,7 @@ qtfounder asset relation insight
 ```text
 入口（1）
   context  data/context/
-长期记忆（20）
+长期记忆（18）
   report  data/report/  report
   library  data/library/  library
   ...
@@ -141,10 +141,9 @@ qtfounder asset maintain --json      # 给脚本读
 ```
 
 - `--root` 指仓根，缺省当前目录。
-- 首段不匹配任何已知资产时，视为新资产：`context/<新资产>/<余下>` 原样落到同级资产仓下（`data/context/create/x.md` → `data/create/x.md`），仓目录随之建出，输出单列「新建资产」；要让 catalog 与 relation 认它，仍需在契约里补 `[[asset]]`。
 - 文件名等于今天（UTC）时留在 context 不移动，输出单列「当天不移动」——当天还要继续录入，隔天再搬。
 - 目标已存在时不覆盖，报「目标已存在」。
-- 目标仓的顶层再出现同一个资产名（如 `data/insight/insight/`），说明内容平铺没分层，报「目标布局异常」；资产名撞普通内容词时不误伤别的资产的领域目录。
+- 目标仓的顶层出现资产名，说明还没做二次整理，报「目标布局异常」。
 - 命令只移动文件，不提交、不推、不改子模块指针。
 
 ## 五、契约在哪

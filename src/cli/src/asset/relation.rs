@@ -214,7 +214,7 @@ mod tests {
     #[test]
     fn 关系覆盖入口长期记忆与归档() {
         let contract = Contract::bundled();
-        assert_eq!(contract.asset.len(), 22);
+        assert_eq!(contract.asset.len(), 20);
         assert!(
             contract
                 .relation
