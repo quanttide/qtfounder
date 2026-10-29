@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- 契约增两类资产：`create`（创作与产品想法，`data/create/`）与 `agent`（人机协作现场的工作记忆，`data/agent/`），长期记忆资产 18 → 20 类、资产总数 20 → 22 种；两者暂不入十八格，格子与范畴不变；`maintain` 同日补：已知资产下当天日期的单文件（如 `agent/2026-10-29.md`）也归「当天不移动」；用户指南数字同步
+- `asset maintain` 目标布局异常检查收窄为同名嵌套（`data/insight/insight/` 式）——资产名扩到 22 个后 create、agent 与普通内容词撞名，原「顶层出现任意资产名」会把 `docs/gallery/create/` 这类正常领域目录报成异常
+
 ### Changed
 
 - 退出码统一四码：新增 `core` 模块（`src/core/exit.rs`）单点定义 `OK=0`、`FINDINGS=1`、`USAGE=2`、`NOT_FOUND=3`，语义写进文档注释；`main.rs` 的 11 处 `exit(2)`、`docs` 的 0/1/2、`product` 的 2/3 全部改用常量（值未变）；`docs` 目标路径不存在时由静默退 0 改为退 3（目标缺席）；测试钉住四码互不相同且恰为 0..=3

@@ -144,7 +144,9 @@ pub fn plan_on(contract: &Contract, root: &Path, today: &str) -> Result<Plan, St
                 plan.unclassified.push(rel.display().to_string());
                 continue;
             }
-            if is_today(&rest, today) {
+            if is_today(&rest, today)
+                || (rest.is_empty() && domain.trim_end_matches(".md") == today)
+            {
                 plan.today.push(rel.display().to_string());
                 continue;
             }
@@ -280,10 +282,10 @@ fn move_file(from: &Path, to: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// 长期记忆的顶层应当是领域；顶层出现资产名，说明还没做二次整理。
+/// 长期记忆的顶层应当是领域；顶层再出现同一个资产名，说明内容平铺进了资产仓没分层。
+/// 资产名撞了普通内容词（create、agent）时不误伤别的资产的正常领域目录。
 fn nested_assets(contract: &Contract, root: &Path) -> Vec<String> {
     let memories = contract.memory();
-    let names: Vec<&str> = memories.iter().map(|asset| asset.name.as_str()).collect();
     let mut nested = Vec::new();
     for asset in memories {
         let dir = root.join(&asset.path);
@@ -295,7 +297,7 @@ fn nested_assets(contract: &Contract, root: &Path) -> Vec<String> {
             let Some(name) = entry.file_name().to_str().map(str::to_string) else {
                 continue;
             };
-            if is_dir && names.contains(&name.as_str()) {
+            if is_dir && name == asset.name {
                 nested.push(format!("{}{}/ 是资产名，不是领域", asset.path, name));
             }
         }
@@ -473,15 +475,15 @@ mod tests {
     fn 没有的资产可以新建() {
         let dir = tempfile::tempdir().unwrap();
         let root = dir.path();
-        fs::create_dir_all(root.join("data/context/create")).unwrap();
-        fs::write(root.join("data/context/create/2026-10-28.md"), "丁").unwrap();
+        fs::create_dir_all(root.join("data/context/scratch")).unwrap();
+        fs::write(root.join("data/context/scratch/2026-10-28.md"), "丁").unwrap();
         let contract = Contract::bundled();
         let plan = plan_on(&contract, root, "2026-10-30").unwrap();
         assert_eq!(plan.created.len(), 1);
-        assert!(plan.created[0].to.ends_with("data/create/2026-10-28.md"));
+        assert!(plan.created[0].to.ends_with("data/scratch/2026-10-28.md"));
         execute(&plan).unwrap();
-        assert!(root.join("data/create/2026-10-28.md").exists());
-        assert!(!root.join("data/context/create/2026-10-28.md").exists());
+        assert!(root.join("data/scratch/2026-10-28.md").exists());
+        assert!(!root.join("data/context/scratch/2026-10-28.md").exists());
     }
 
     #[test]
@@ -517,6 +519,23 @@ mod tests {
                 .iter()
                 .any(|step| step.to.ends_with("data/journal/default/2026-10-29.md"))
         );
+    }
+
+    #[test]
+    fn 当天的领域级日期文件也不移动() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        fs::create_dir_all(root.join("data/context/agent")).unwrap();
+        fs::write(root.join("data/context/agent/2026-10-30.md"), "今").unwrap();
+        let contract = Contract::bundled();
+        let plan = plan_on(&contract, root, "2026-10-30").unwrap();
+        assert!(
+            plan.today
+                .iter()
+                .any(|path| path.ends_with("2026-10-30.md"))
+        );
+        assert!(plan.moves.is_empty());
+        assert!(plan.created.is_empty());
     }
 
     #[test]
