@@ -1,24 +1,12 @@
 # Changelog
 
-## [Unreleased]
+## [0.0.42] - 2026-10-29
 
 ### Added
 
 - `qtfounder data`：标注数据三入口——`rule` 设计与存取规则（机器名/显示名/定义/正反例/批次，校验与 studio 同一把尺子），`task` 只读 studio 导出的任务包（规则快照 + 待标单元），`result` 导入标注端导出的 JSONL 并按任务与标签统计（追加不覆盖）。存储在 XDG `data/rules|tasks|results/`，与 `product`、`execute` 同一根；本命令组不区分开发与发布构建——与 studio、lite 共享的存储必须位置稳定；`QTFOUNDER_DATA` 仍优先。文档 `user-guide/data.md` 与 `api-reference/data.md` 同步
-
-### Changed
-
-- 退出码统一四码：新增 `core` 模块（`src/core/exit.rs`）单点定义 `OK=0`、`FINDINGS=1`、`USAGE=2`、`NOT_FOUND=3`，语义写进文档注释；`main.rs` 的 11 处 `exit(2)`、`docs` 的 0/1/2、`product` 的 2/3 全部改用常量（值未变）；`docs` 目标路径不存在时由静默退 0 改为退 3（目标缺席）；测试钉住四码互不相同且恰为 0..=3
-
-- `asset maintain`：文件名等于今天（UTC）时留在 context 不移动，输出单列「当天不移动」——当天还要继续录入，隔天再搬；JSON 只增不删（`today`）
-- `docs/dev-guide/docs/roadmap.md` 迁至路线图仓 `data/roadmap/qtfounder/docs.md`：CLI 的方向文档全部归路线图仓（此前 `dev-guide/roadmap.md` 已迁 `qtfounder/index.md`）；迁入前同步了阶段状态（阶段三标定已完成并补记实测结论，阶段零的手写/AI 分离验证仍开放）；`dev-guide/docs/index.md`、`dev-guide/index.md`、`user-guide/docs.md` 与 `myst.yml` 目录同步摘除，后两处状态句顺带修正（阈值已标定：块占比保持 0、无散文率 0.35）
-- `docs` 阈值标定：正式组 `docs/gallery` 19 篇、普通组 `data/roadmap` 10 篇（各取 ≥500 字）`--stats` 对照——块占比两组重叠（10–100% 对 59–93%）无判别力，保持关闭只观测；无散文率 29 篇里 28 篇为 0%，`max_run_ratio` 定 0.35 只命中极端；`[list]` 的 `max_item_chars` 100→120，正式组 9 处越线里 5 处是 101–115 的边缘误伤；数据与理由写进 `default-contract.toml` 注释，测试夹具同步
-
-### Added
-
 - `execute-collect` Skill 随 CLI 发布（第九条）：把协作里冒出来的下一步活收成待办，攒成池子；命中推迟信号直接入账、收尾主动盘点、用户召唤三级，优先级只认明说
 - `qtfounder execute collect` / `execute draw`：收待办进池子（同文本去重、`--stdin` 批量、优先级缺省 1、0 的签拒收），`draw` 按优先级加权抽一件，抽走的进 `drawn` 留痕；数据落 `execute.json`，复用 `product` 的数据目录与 id 方案（前缀 `tdo`）
-
 - `design-review` Skill 随 CLI 发布（第八条）：交互设计评判十二条——先立问题再做屏幕、减分项七条、交付纪律三条，配评分标准；原则自 qtcloud 仓的交互设计评判原则抽取，案例存照随文。`qtfounder design principles` 摊开全文
 - `qtfounder design review`：界面交付物走查，只做机器判得了的两条的数字面——第九条中文微排版（`font-size` 低于 12px 报缺陷、12–14px 报嫌疑，rem 按 16px 根换算，em 只计数不换算）与第五条主行动唯一（class 含 `primary` 的按钮一文件多于一个报一次嫌疑）。目录递归扫 `.html`，跳过 `.git`／`node_modules`／`target`／`_build`；其余十条归 Skill 里的走查与自评分
 - `docs-format` Skill 随 CLI 发布（第七条）：照《量潮科技文档格式章程》管正式 Markdown 文档的排版与结构，提交前跑 `qtfounder docs format <文件>` 看格式状态与审计命中。章程原文两处用词按禁用词清单改写（`制定依据` → `制定理由`、`条目` → `短条`），条文含义不变
@@ -26,10 +14,13 @@
 
 ### Changed
 
+- 退出码统一四码：新增 `core` 模块（`src/core/exit.rs`）单点定义 `OK=0`、`FINDINGS=1`、`USAGE=2`、`NOT_FOUND=3`，语义写进文档注释；`main.rs` 的 11 处 `exit(2)`、`docs` 的 0/1/2、`product` 的 2/3 全部改用常量（值未变）；`docs` 目标路径不存在时由静默退 0 改为退 3（目标缺席）；测试钉住四码互不相同且恰为 0..=3
+- `asset maintain`：文件名等于今天（UTC）时留在 context 不移动，输出单列「当天不移动」——当天还要继续录入，隔天再搬；JSON 只增不删（`today`）
+- `docs/dev-guide/docs/roadmap.md` 迁至路线图仓 `data/roadmap/qtfounder/docs.md`：CLI 的方向文档全部归路线图仓（此前 `dev-guide/roadmap.md` 已迁 `qtfounder/index.md`）；迁入前同步了阶段状态（阶段三标定已完成并补记实测结论，阶段零的手写/AI 分离验证仍开放）；`dev-guide/docs/index.md`、`dev-guide/index.md`、`user-guide/docs.md` 与 `myst.yml` 目录同步摘除，后两处状态句顺带修正（阈值已标定：块占比保持 0、无散文率 0.35）
+- `docs` 阈值标定：正式组 `docs/gallery` 19 篇、普通组 `data/roadmap` 10 篇（各取 ≥500 字）`--stats` 对照——块占比两组重叠（10–100% 对 59–93%）无判别力，保持关闭只观测；无散文率 29 篇里 28 篇为 0%，`max_run_ratio` 定 0.35 只命中极端；`[list]` 的 `max_item_chars` 100→120，正式组 9 处越线里 5 处是 101–115 的边缘误伤；数据与理由写进 `default-contract.toml` 注释，测试夹具同步
 - `docs/dev-guide/roadmap.md` 迁至路线图仓 `data/roadmap/qtfounder/roadmap.md`：方向文档统一归路线图仓，仓内只留开发指南；新增「qtcloud 组织验证」一节（探底噪、真实交付对照、漏率刻度三步，先记顺序不实现）。`docs/index.md`、`dev-guide/index.md` 与 `myst.yml` 目录同步摘除
 - `docs` 的 `--kind`／`--rules`／`--top`／`--json`／`--stats` 改为全局参数：`qtfounder docs format docs --json` 这样写在子命令后也认
 - `--kind` 报错提示补上 `journal`：七个取值本来就含它，提示里却漏了
-
 - `meta validate` 改为契约自检：只查契约内部一致（重复名字、悬空引用、落空路径），不再读任何仓库的镜像文档，移除 `--docs`；镜像只给人看，机器只认契约
 
 ## [0.0.41] - 2026-10-27
