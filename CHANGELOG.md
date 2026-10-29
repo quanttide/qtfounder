@@ -4,6 +4,7 @@
 
 ### Changed
 
+- `CONTRIBUTING.md`：新增「API 兼容约定（自 `cli/v0.1.0` 起）」——命令面、输出面、退出码、落盘格式、契约文件五面冻结；破坏 bump minor、兼容 bump patch、废弃不删、JSON 只增不删、阈值属配置不属 API
 - CHANGELOG 拆分：`cli/v0.0.1` 至 `cli/v0.0.3` 三个版本段移至 `src/cli/CHANGELOG.md`，与 `src/site/CHANGELOG.md` 的模块化约定一致；本文件只留仓库级版本，模块版本按 `<模块>/CHANGELOG.md` 维护（studio 自 0.0.1 起版，记录见 `src/studio/CHANGELOG.md`）
 - 数据源同步：主仓库子模块 `assets/memory` → `assets/context` → `data/context`、`quanttide-founder` 组织迁至 `quanttide`；文档路径示例、部署 workflow 的数据源仓库引用与官网链接同步（环境变量名 `QTFOUNDER_MEMORY_PATH` 与运行时目录 `data/memory` 保持不变）
 

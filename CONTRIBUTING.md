@@ -33,6 +33,20 @@
 
 本地双绿（格式 + lint 通过）约等于 CI 绿；CI 失败先查是格式差异还是逻辑错误。
 
+## API 兼容约定（自 `cli/v0.1.0` 起）
+
+CLI 的 API 有五张脸：命令面（子命令与参数）、输出面（`--json` 结构，以及 Skill 正文里引导 AI 读的文本）、退出码、落盘格式（`execute.json`、product 数据、`.skill-lock.json`、git 钩子）、契约文件格式（各检查器的 `default-contract.toml`）。`cli/v0.1.0` 起冻结：破坏性变更 bump minor，其余照常 patch。
+
+| 类别 | 情形 | 版本 |
+|------|------|------|
+| 破坏 | 删改子命令或参数名；JSON 删字段或改名；退出码语义变化；契约 schema 改语义；落盘格式不兼容 | minor |
+| 兼容 | 新增子命令、参数或 JSON 字段；规则库加检查项；修误报 | patch |
+| 配套 | 默认阈值调整（阈值属配置不属 API） | patch |
+
+- 废弃不删：要改名的先留旧名并打废弃警告，跨一个 minor 再删
+- JSON 只增不删：字段只加不减，删改即破坏
+- Skill 正文写死命令用法，属兼容承诺的一部分：动命令面后跑 `qtfounder agent skill install check`，确认漂移报得出来
+
 ## 分层提交
 
 1. 模块内（src/studio 等）提交推送
