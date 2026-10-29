@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'asset/screens/asset_shell.dart';
+import 'data/screens/data_shell.dart';
 
 void main() {
   runApp(const FounderApp());
 }
 
-/// 应用入口与骨架。
+/// 应用入口：导航栏 + 命名路由。
 ///
-/// 业务代码已归档至 `data/archive/platform/qtfounder/studio/`；重建时在 `lib/`
-/// 下按模块分层添加。当前已重建的是 `asset/`（资产抽查）。
+/// 业务代码已归档至 `data/archive/platform/qtfounder/studio/`；重建时在
+/// `lib/` 下按模块分层添加。当前已重建的是 `asset/`（资产抽查）与
+/// `data/`（journal 段落标注）。
 class FounderApp extends StatelessWidget {
   const FounderApp({super.key});
 
@@ -28,93 +30,70 @@ class FounderApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Inter',
       ),
-      home: const HomePage(),
+      routes: {
+        AppShell.dataRoute: (_) => const AppShell(initialIndex: 0),
+        AppShell.assetRoute: (_) => const AppShell(initialIndex: 1),
+      },
+      home: const AppShell(initialIndex: 0),
     );
   }
 }
 
-/// 首页：功能入口列表。
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+/// 应用壳：左侧导航栏，右侧内容区。
+///
+/// 两个页面叠在 [IndexedStack] 里，来回切换不丢批次状态。
+class AppShell extends StatefulWidget {
+  const AppShell({super.key, this.initialIndex = 0});
+
+  /// 「数据」页路由与导航栏下标。
+  static const dataRoute = '/data';
+
+  /// 「资产」页路由与导航栏下标。
+  static const assetRoute = '/assets';
+
+  final int initialIndex;
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  late int _index = widget.initialIndex;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('量潮创始人工作台')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _EntryCard(
-                icon: Icons.fact_check_outlined,
-                title: '资产抽查',
-                subtitle: '抽查仓库里的文档与代码，保留或移入回收目录',
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const AssetAuditPage(),
-                    ),
-                  );
-                },
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: _index,
+            onDestinationSelected: (index) => setState(() => _index = index),
+            labelType: NavigationRailLabelType.all,
+            leading: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Icon(Icons.dashboard_outlined, size: 32),
+            ),
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.notes_outlined),
+                selectedIcon: Icon(Icons.notes),
+                label: Text('数据'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.fact_check_outlined),
+                selectedIcon: Icon(Icons.fact_check),
+                label: Text('资产'),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EntryCard extends StatelessWidget {
-  const _EntryCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 420,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Icon(icon, size: 40),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
+          const VerticalDivider(width: 1, thickness: 1),
+          Expanded(
+            child: IndexedStack(
+              index: _index,
+              children: const [DataAnnotatePage(), AssetAuditPage()],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

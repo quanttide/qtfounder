@@ -2,6 +2,14 @@
 
 studio 的版本记录，仓库级版本见 [仓库 CHANGELOG](../../CHANGELOG.md)。
 
+## [Unreleased]
+
+### Added
+
+- 导航栏与路由：`lib/main.dart` 改为应用壳——左侧导航栏（`数据`、`资产`），命名路由 `/data`、`/assets`，内容区 `IndexedStack` 切换，来回切不丢批次状态；原首页入口列表移除
+- `lib/data/` 数据标注模块（journal 段落）：`JournalRepository` 解析仓库根（同资产抽查的解析方式），递归扫 `data/journal/**/*.md`，按空行与 `---` 切段（纯标题段丢弃），段 id 为「相对路径#段号」；批次随机抽 20 段，逐段贴「事实 / 感受 / 需要 / 行动」四类标签（取自页面规划的思考页方向）或跳过；栈空进保存页过一遍后落盘 `.annotations/journal.jsonl`（JSON Lines，追加不覆盖）
+- 模块文档 `doc/data.md`：切段规则、标签集、结果格式与边界；ROADMAP、planned-ui、架构与索引文档同步当前形态
+
 ## [0.0.1] - 2026-10-28
 
 初版：骨架入口 + 资产抽查模块。
