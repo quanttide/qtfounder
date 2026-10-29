@@ -2,6 +2,18 @@
 
 studio 的版本记录，仓库级版本见 [仓库 CHANGELOG](../../CHANGELOG.md)。
 
+## [Unreleased]
+
+### Added
+
+- `lib/data/` 改为标注规则设计工具：规则列表与编辑器（规则名、标签集——每格机器名/显示名/定义/正例/反例、批次），试标 3 段真样本验规则（不落盘），保存规则与导出任务包；与 CLI `qtfounder data` 共用 XDG 存储（`QTFOUNDER_DATA` → `$XDG_DATA_HOME/qtfounder` → `~/.local/share/qtfounder`），校验与 CLI 同一把尺子
+- 新增 `DataStore`（规则与任务包读写）、`RulesCubit`（列表）、`EditorCubit`（草稿/试标/保存/导出）；`DataStore.rootFrom` 纯函数钉住三级解析
+
+### Changed
+
+- `JournalRepository` 只读：去掉标注落盘（`save`），标注结果由标注端产出，经 `qtfounder data result import` 进存储；模块文档与架构、规划、路线图、README 同步改说法
+- 原段落标注流（`DataCubit`、标签页、保存页）与 `AnnotateLabel` 四类硬编码标签移除：标签集从规则读，不再写死在代码里
+
 ## [0.0.1] - 2026-10-29
 
 首版：骨架入口 + 导航栏 + 资产抽查与数据标注两个模块。

@@ -1,11 +1,13 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
 import '../models/journal_segment.dart';
 
-/// 读 journal 日志，切成段落供标注；标注结果写回仓库 `data/` 下。
+/// 读 journal 日志，切成段落供试标与任务包导出。
+///
+/// 本仓只管「有哪几段」；标注结果由标注端产出，经 CLI `qtfounder data
+/// result import` 进 XDG 存储，不在这里落盘。
 class JournalRepository {
   JournalRepository({required this.root});
 
@@ -71,7 +73,7 @@ class JournalRepository {
     return out;
   }
 
-  /// 只收 `data/journal/<域>/<月>/<日>.md` 三层结构，跳过隐藏目录。
+  /// 只收 `data/journal/**/*.md`，跳过隐藏目录。
   Future<void> _walk(Directory dir, List<File> out) async {
     final subdirs = <Directory>[];
     for (final entry in await dir.list(followLinks: false).toList()) {
@@ -106,32 +108,6 @@ class JournalRepository {
         .toList();
     if (lines.isEmpty) return false;
     return lines.any((line) => !line.startsWith('#') && !line.startsWith('---'));
-  }
-
-  /// 把一批标注追加写入 `<root>/.annotations/journal.jsonl`（JSON Lines，
-  /// 一行一条，追加不覆盖，与资产抽查的 `.trash/` 同例放仓库根）。返回写入后的文件路径。
-  Future<String> save(List<Annotation> annotations) async {
-    if (annotations.isEmpty) {
-      throw JournalScanException('没有可保存的标注');
-    }
-    final file = File(
-      p.join(root.path, '.annotations', 'journal.jsonl'),
-    );
-    await file.parent.create(recursive: true);
-    final buffer = StringBuffer();
-    for (final annotation in annotations) {
-      buffer.writeln(
-        jsonEncode({
-          'id': annotation.segment.id,
-          'domain': annotation.segment.domain,
-          'label': annotation.label.name,
-          'text': annotation.segment.text,
-          'at': annotation.at.toIso8601String(),
-        }),
-      );
-    }
-    await file.writeAsString(buffer.toString(), mode: FileMode.append);
-    return file.path;
   }
 }
 

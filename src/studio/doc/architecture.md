@@ -4,11 +4,14 @@
 
 ```text
 lib/main.dart                   入口：导航栏壳与命名路由
-lib/data/                      数据标注模块（journal 段落）
-  models/journal_segment.dart  JournalSegment、AnnotateLabel、Annotation
-  repos/journal_repository.dart  仓库根解析、切段、落盘 JSONL
-  states/data_cubit.dart        批次状态机
-  screens/                      段落流、保存页、状态分发
+lib/data/                      标注规则设计模块
+  models/rule.dart             Rule、RuleSource、RuleLabel
+  models/journal_segment.dart  JournalSegment（试标与导出的单元）
+  repos/data_store.dart        XDG 存储：规则与任务包的读写
+  repos/journal_repository.dart  仓库根解析、journal 切段（只读）
+  states/rules_cubit.dart      规则列表状态
+  states/editor_cubit.dart     编辑器状态：草稿、试标、保存、导出
+  screens/                     规则列表、编辑器、试标页
 lib/asset/                     资产抽查模块
   models/asset_file.dart       AssetFile、AssetKind、Decision
   repos/asset_repository.dart  仓库根解析、扫描、预览、移入回收目录
@@ -17,7 +20,7 @@ lib/asset/                     资产抽查模块
 assets/contracts/              数据契约
 ```
 
-`lib/main.dart` 只负责应用壳（导航栏 + 命名路由 `/data`、`/assets`，内容区 `IndexedStack` 切换）；业务页面按模块逐步重建。`lib/data/` 是 journal 段落标注工具，`lib/asset/` 是参考 recaller 思路实现的资产抽查工具，分别详见[数据标注](data.md)与[资产抽查](asset.md)。
+`lib/main.dart` 只负责应用壳（导航栏 + 命名路由 `/data`、`/assets`，内容区 `IndexedStack` 切换）；业务页面按模块逐步重建。`lib/data/` 是标注规则设计工具（不执行标注，任务包导出给 lite），`lib/asset/` 是参考 recaller 思路实现的资产抽查工具，分别详见[数据：标注规则设计](data.md)与[资产抽查](asset.md)。
 
 ## 依赖方向
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'asset/screens/asset_shell.dart';
-import 'data/screens/data_shell.dart';
+import 'data/screens/rules_page.dart';
 
 void main() {
   runApp(const FounderApp());
@@ -11,7 +11,7 @@ void main() {
 ///
 /// 业务代码已归档至 `data/archive/platform/qtfounder/studio/`；重建时在
 /// `lib/` 下按模块分层添加。当前已重建的是 `asset/`（资产抽查）与
-/// `data/`（journal 段落标注）。
+/// `data/`（标注规则设计，任务包给标注端）。
 class FounderApp extends StatelessWidget {
   const FounderApp({super.key});
 
@@ -90,7 +90,7 @@ class _AppShellState extends State<AppShell> {
           Expanded(
             child: IndexedStack(
               index: _index,
-              children: const [DataAnnotatePage(), AssetAuditPage()],
+              children: const [DataRulesPage(), AssetAuditPage()],
             ),
           ),
         ],

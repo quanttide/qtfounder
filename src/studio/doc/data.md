@@ -1,54 +1,41 @@
-# 数据标注
+# 数据：标注规则设计
 
 ## 目的
 
-从 quanttide-founder 仓库的 `data/journal/` 里随机抽一批日志段落，人工贴「事实 / 感受 / 需要 / 行动」标签。参考 Label Studio 的最小可用：一个单位、一组标签、逐条过、结果落盘，不做项目管理与多人协作。
+studio 的数据页是标注规则的设计工具，不执行标注。设计一条规则（什么算一个标签）、试标验规则、导出任务包给标注端；标注在 lite 做，数据进出都走 CLI `qtfounder data` 同一份 XDG 存储。
+
+分工一句话：studio 设计规则，lite 执行标注，CLI 存取数据，三者只共享存储不共享代码。
 
 ## 流程
 
-1. `JournalRepository.resolve()` 解析仓库根：优先 `--dart-define=QTFOUNDER_ROOT`，否则从当前目录向上找同时有 `.gitmodules`、`apps/`、`data/` 的目录，最多八层。
-2. `segments()` 递归扫 `data/journal/**/*.md`，按空行与 `---` 分隔线切段；纯标题、纯分隔线的块丢弃。段 id 是「相对路径#段号」，域取自 `journal/` 下的目录名（default、write、think…）。
-3. `DataCubit.load()` 打乱后取前 20 段。
-4. 段落流逐段决策：点「事实 / 感受 / 需要 / 行动」贴标签并前进，或点「跳过」。
-5. 栈空进保存页：过一遍本批标注（标签、来源、正文前三行），确认后落盘。
-6. 完成页给出保存路径与条数，可再抽一批。
+1. 规则列表页读 `DataStore.resolve()`：`QTFOUNDER_DATA` → `$XDG_DATA_HOME/qtfounder` → `~/.local/share/qtfounder`，与 CLI 的解析顺序一致。空态给引导。
+2. 「设计规则」进编辑器：规则名、标签集（每格：机器名、显示名、定义、正例、反例）、批次。
+3. 「试标 3 段：验规则」从 journal 抽三段真样本按草稿标签走一遍——试标不落盘，只为验规则本身；跳过率高说明定义没盖住内容。
+4. 「保存规则」校验后写 `data/rules/<id>.json`（`rul_` 前缀，带已有 id 覆盖）。
+5. 「导出任务包」按批次从 journal 抽段，规则做快照，写 `data/tasks/<id>.json`（`tsk_` 前缀）。
 
-## 标签
-
-四个标签取自页面规划里「思考」页的方向（日志四分类），是先定死的一组，暂不做配置界面：
-
-| 标签 | 名字 |
-| --- | --- |
-| `fact` | 事实 |
-| `feeling` | 感受 |
-| `need` | 需要 |
-| `action` | 行动 |
-
-## 结果格式
-
-`<仓库根>/.annotations/journal.jsonl`，JSON Lines，一行一条，追加不覆盖（与资产抽查的 `.trash/` 同例放仓库根，不进 `data/` 内容区）：
-
-```json
-{"id":"data/journal/write/2026-10/2026-10-13.md#2","domain":"write","label":"feeling","text":"我今天写《重生》，感觉找到了感觉。","at":"2026-10-29T08:12:42.000"}
-```
-
-## 数据模型
+## 模型
 
 ```dart
-enum AnnotateLabel { fact, feeling, need, action }
-
-class JournalSegment {
-  final String id;    // 相对仓库根的来源#段号
-  final String path;  // 绝对文件路径
-  final String domain;
-  final String text;
+class Rule {
+  final String id;              // rul_XXXX
+  final String name;
+  final RuleSource source;      // kind: journal, split: blank-line
+  final List<RuleLabel> labels; // name 机器名 / label 显示名 / define / yes / no
+  final int batch;
+  final String at;
 }
 ```
 
-批次状态用 sealed class 收敛为八种：`DataLoading`、`DataReady`、`DataSave`、`DataSaving`、`DataDone`、`DataEmpty`、`DataError`。
+校验与 CLI `validate_rule` 同一把尺子：规则名不能为空、至少一个标签、标签机器名与显示名都不能为空、机器名不能重复、批次至少 1。不合格时编辑器顶部出横幅，不落盘。
+
+## journal 从哪来
+
+`JournalRepository` 解析仓库根（优先 `--dart-define=QTFOUNDER_ROOT`，否则向上找同时有 `.gitmodules`、`apps/`、`data/` 的目录），递归扫 `data/journal/**/*.md`，按空行与 `---` 切段（纯标题段丢弃）。它只回答「有哪几段」，不落任何标注数据——试标是内存里的会话，结果由标注端产出。
 
 ## 边界
 
-- 切段只认空行与 `---`，不做语义分段；切错了是后续改进项。
-- 保存只追加，没有撤销与编辑；标错了追加一条更正记录或手改 JSONL。
-- 标签写死在模型里；要改标签集就改 `AnnotateLabel` 与本文档。
+- 标注不在 studio 执行：任务包导出后归 lite，结果由 `qtfounder data result import` 进存储。
+- 标签的机器名进结果文件参与统计，改名等于换了统计的分组方式；存储里的旧结果不跟着改。
+- 规则的 `source` 当前只有 journal / blank-line 一档，加新数据源要同时动 `JournalRepository` 与 CLI 契约文档。
+- 保存只覆盖不删：删规则直接删 `data/rules/<id>.json` 文件。

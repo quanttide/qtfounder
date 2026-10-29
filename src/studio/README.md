@@ -1,12 +1,12 @@
 # 量潮创始人工作台
 
-`qtfounder_studio` 是创始人工作台的 Flutter 客户端，主题是创作现场：让创作过程可见。当前处于重建阶段：入口是 `lib/main.dart`（导航栏壳，`数据`、`资产` 两个入口），已落地两个模块：`lib/data/`（journal 段落标注）与 `lib/asset/`（资产抽查）。
+`qtfounder_studio` 是创始人工作台的 Flutter 客户端，主题是创作现场：让创作过程可见。当前处于重建阶段：入口是 `lib/main.dart`（导航栏壳，`数据`、`资产` 两个入口），已落地两个模块：`lib/data/`（标注规则设计）与 `lib/asset/`（资产抽查）。
 
 ## 当前状态
 
 左侧导航栏切两个页：
 
-- **数据**（`/data`）：journal 段落标注——从 `data/journal/` 随机抽段落，贴「事实 / 感受 / 需要 / 行动」标签（参考 Label Studio 的最小可用），确认后追加写仓库根 `.annotations/journal.jsonl`。详见[数据标注](doc/data.md)。
+- **数据**（`/data`）：标注规则设计——编辑规则（标注对象、标签集、批次），试标 3 段真样本验规则，导出任务包给标注端；与 CLI `qtfounder data` 共用 XDG 存储，标注在 lite 做。详见[数据：标注规则设计](doc/data.md)。
 - **资产**（`/assets`）：资产抽查——从仓库的文档与代码里随机抽一批，卡片流决策保留或删除。详见[资产抽查](doc/asset.md)。
 
 两个页叠在 `IndexedStack` 里，来回切不丢批次状态；无导航栏之外的路由层级。
@@ -21,7 +21,7 @@
 src/studio/
 ├── lib/
 │   ├── main.dart                 入口：导航栏壳与命名路由
-│   ├── data/                     数据标注模块（journal 段落）
+│   ├── data/                     标注规则设计模块
 │   │   ├── models/journal_segment.dart
 │   │   ├── repos/journal_repository.dart
 │   │   ├── states/data_cubit.dart
@@ -60,7 +60,7 @@ flutter run -d linux --dart-define=QTFOUNDER_ROOT=/abs/path/to/quanttide-founder
 
 - [Studio 文档](doc/index.md)
 - [架构](doc/architecture.md)
-- [数据标注](doc/data.md)
+- [数据：标注规则设计](doc/data.md)
 - [资产抽查](doc/asset.md)
 - [数据源与契约](doc/data-sources.md)
 - [页面规划](doc/planned-ui.md)
