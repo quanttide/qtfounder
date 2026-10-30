@@ -14,6 +14,7 @@
 
 ### Changed
 
+- `asset maintain` 的 `--root` 改为起点：从起点沿祖先目录向上定位含契约 `source.path` 的仓根（起点本身含就直接用），查不到时报错退出而不是静默返回空计划 exit 0——「路径指错了」不再和「真没东西可搬」混成同一种输出；查找键取自契约不写死；输出 JSON 增 `start` 与 `root_located_upward`
 - Skill 发布清单九条 → 十条：`registry` 单测、`tests/agent_skill.rs` 的 `PUBLISHED` 与安装数断言、根仓 `AGENTS.md`／`CONTRIBUTING.md`／`api-reference/agent.md` 三处名单同步
 
 ## [0.0.43] - 2026-10-29

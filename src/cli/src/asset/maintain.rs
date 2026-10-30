@@ -25,7 +25,7 @@ const SCAFFOLD: [&str; 7] = [
 
 #[derive(Args, Debug)]
 pub struct MaintainArgs {
-    /// 仓根；context 与资产的相对路径按它算
+    /// 起点；从这里向上定位含 context 的仓根（起点本身含就直接用），缺省当前目录
     #[arg(long, default_value = ".")]
     pub root: PathBuf,
     /// 只整理与校验，不移动
@@ -59,22 +59,52 @@ pub struct Step {
 
 pub fn run(args: &MaintainArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
-    let plan = plan(&contract, &args.root)?;
-    let nested = nested_assets(&contract, &args.root);
+    let (root, upward) = resolve_root(&contract, &args.root)?;
+    let plan = plan(&contract, &root)?;
+    let nested = nested_assets(&contract, &root);
     let moving = !args.check && !args.dry_run;
     if moving {
         execute(&plan)?;
     }
 
     if args.json {
-        print_json(args, &plan, &nested, moving);
+        print_json(args, &root, upward, &plan, &nested, moving);
     } else {
-        print_text(args, &plan, &nested, moving);
+        print_text(args, &root, upward, &plan, &nested, moving);
     }
 
     let issues = !plan.conflicts.is_empty() || !plan.unclassified.is_empty() || !nested.is_empty();
     let pending = args.check && !plan.moves.is_empty();
     Ok(if issues || pending { 1 } else { 0 })
+}
+
+/// 从 `start` 起沿祖先目录向上，找第一个直接含契约 source 资产路径的目录；
+/// 起点本身含就直接用。返回（仓根，是否向上才找到）。
+///
+/// 找不到必须报错——「路径指错了」和「真没东西可搬」不能混成同一种输出。
+/// 查找键取自契约 `source.path`，不写死：契约换路径，解析跟着换。
+fn resolve_root(contract: &Contract, start: &Path) -> Result<(PathBuf, bool), String> {
+    let source = contract
+        .source()
+        .ok_or_else(|| "契约缺少 source 资产：context".to_string())?;
+    let start = std::fs::canonicalize(start)
+        .map_err(|error| format!("{} 走不到：{error}", start.display()))?;
+    let mut searched = Vec::new();
+    let mut dir = Some(start.as_path());
+    while let Some(current) = dir {
+        searched.push(current.display().to_string());
+        if current.join(&source.path).is_dir() {
+            return Ok((current.to_path_buf(), current != start));
+        }
+        dir = current.parent();
+    }
+    Err(format!(
+        "找不到 {}：自 {} 向上 {} 级目录都查过（{}）；--root 指到直接包含它的仓根",
+        source.path,
+        start.display(),
+        searched.len(),
+        searched.join(" ")
+    ))
 }
 
 /// 扫 context，算出要移动的文件。只算，不动。
@@ -118,7 +148,11 @@ pub fn plan_on(contract: &Contract, root: &Path, today: &str) -> Result<Plan, St
     let memories = contract.memory();
     let mut plan = Plan::default();
     if !context.exists() {
-        return Ok(plan);
+        return Err(format!(
+            "{} 下没有 {}——root 定位错了",
+            root.display(),
+            source.path
+        ));
     }
 
     for entry in WalkDir::new(&context).into_iter().filter_map(Result::ok) {
@@ -273,8 +307,23 @@ fn nested_assets(contract: &Contract, root: &Path) -> Vec<String> {
     nested
 }
 
-fn print_text(args: &MaintainArgs, plan: &Plan, nested: &[String], moving: bool) {
-    println!("根：{}", args.root.display());
+fn print_text(
+    args: &MaintainArgs,
+    root: &Path,
+    upward: bool,
+    plan: &Plan,
+    nested: &[String],
+    moving: bool,
+) {
+    if upward {
+        println!(
+            "根：{}（自 {} 向上定位）",
+            root.display(),
+            args.root.display()
+        );
+    } else {
+        println!("根：{}", root.display());
+    }
     if args.dry_run {
         println!("预览，不落盘");
     }
@@ -311,7 +360,14 @@ fn print_text(args: &MaintainArgs, plan: &Plan, nested: &[String], moving: bool)
     }
 }
 
-fn print_json(args: &MaintainArgs, plan: &Plan, nested: &[String], moving: bool) {
+fn print_json(
+    args: &MaintainArgs,
+    root: &Path,
+    upward: bool,
+    plan: &Plan,
+    nested: &[String],
+    moving: bool,
+) {
     let steps: Vec<serde_json::Value> = plan
         .moves
         .iter()
@@ -329,7 +385,9 @@ fn print_json(args: &MaintainArgs, plan: &Plan, nested: &[String], moving: bool)
     println!(
         "{}",
         serde_json::to_string_pretty(&json!({
-            "root": args.root.display().to_string(),
+            "root": root.display().to_string(),
+            "start": args.root.display().to_string(),
+            "root_located_upward": upward,
             "moved": moving,
             "dry_run": args.dry_run,
             "check": args.check,
@@ -459,5 +517,34 @@ mod tests {
     fn 日期换算对得上() {
         assert_eq!(civil_from_days(0), "1970-01-01");
         assert_eq!(civil_from_days(19_723), "2024-01-01");
+    }
+
+    #[test]
+    fn 起点在子仓内时向上定位仓根() {
+        let dir = fixture();
+        let contract = Contract::bundled();
+        let start = dir.path().join("data/context/default");
+        let (root, upward) = resolve_root(&contract, &start).unwrap();
+        assert_eq!(root, dir.path().canonicalize().unwrap());
+        assert!(upward);
+    }
+
+    #[test]
+    fn 起点即仓根时不再向上找() {
+        let dir = fixture();
+        let contract = Contract::bundled();
+        let (root, upward) = resolve_root(&contract, dir.path()).unwrap();
+        assert_eq!(root, dir.path().canonicalize().unwrap());
+        assert!(!upward);
+    }
+
+    #[test]
+    fn 找不到_context_时报错而不是空计划() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir_all(dir.path().join("sub")).unwrap();
+        let contract = Contract::bundled();
+        let error = resolve_root(&contract, &dir.path().join("sub")).unwrap_err();
+        assert!(error.contains("找不到"));
+        assert!(error.contains("--root"));
     }
 }
