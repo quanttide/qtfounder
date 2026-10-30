@@ -31,6 +31,8 @@
 5. **数据源一致**：环境变量命名（QTFOUNDER_*）跨模块统一，不另起名
 6. **文档同步**：重要变更同步更新 STATUS.md / CHANGELOG.md
 
+另：改 `src/cli` 功能时，三套文档一起改——`docs/user-guide/`（怎么用）、`docs/dev-guide/`（为什么这么设计）、`docs/api-reference/`（命令面、JSON 形、退出码）。新文件加进 `docs/myst.yml` 导航，改完跑 `qtfounder language` 与 `qtfounder docs format` 审新增行。
+
 ## 验证命令
 
 ```bash

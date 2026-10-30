@@ -42,6 +42,8 @@ project:
         - file: api-reference/execute.md
         - file: api-reference/data.md
         - file: api-reference/agent.md
+        - file: api-reference/git.md
+        - file: api-reference/infra.md
         - file: api-reference/design.md
 site:
   template: book-theme

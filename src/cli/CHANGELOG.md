@@ -4,6 +4,15 @@
 
 ### Added
 
+- `api-reference/infra.md`：命令面、`add` 的互斥与不校验、`list` 的 JSON 形、`run` 与 `fire` 的退出码规则、`emit` 打什么、数据放哪
+- `api-reference/git.md`：`hook install`／`status`／`uninstall`／`run` 与 `submodule check` 的命令面与 JSON 形
+- `state` 六种与 `issues[].kind` 六种都写全；写文档时对着代码逐个核过，不是凭记忆写
+- 两篇进 `myst.yml` 导航；至此 15 个命令组的 user-guide 与 api-reference 两套齐了
+
+### Changed
+
+- `apps/qtfounder/AGENTS.md` 工作原则加第七条：改 `src/cli` 功能时三套文档（user-guide／dev-guide／api-reference）一起改
+
 - `user-guide/infra.md`：`infra` 的用法六节——登记、emit 只打印、fire 与 run、停用不是删除、退出码，以及它刻意不做的三件事
 - `dev-guide/local-and-cloud.md`：设计立场「本地程序跟着平台模型适配，不写兼容层」；写清兼容层与跟着适配两种做法的代价差、怎么落进 `infra` 的代码，以及不写下来就会被「修好」的提醒
 - 两篇都进 `myst.yml` 导航，`dev-guide/index.md` 通用一节加指针
