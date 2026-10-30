@@ -22,18 +22,21 @@
 - 正向：造一笔带禁用词的提交，经 fire 触发订阅表里的 gate，拦下退 1
 - 反向：`infra remove gate` 后同一笔放行，fire 打「没有订阅者」退 0
 - 子模块提交走的也是这条链路（hooks 装在各子模块）
+- 测试已补：抽出 `fire_exit`／`emit_lines`／`should_run` 三个纯函数，六条测试钉住退码语义与两种接线形状；实跑核过全过退 0、失败退第一条的码、无人听退 0
 
 订阅登记在本机 XDG 数据根 `~/.local/share/qtfounder/infra/subscriptions.json`，不在仓里。换机器或重新克隆后要重新 `infra add gate --on pre-commit --run "qtfounder git hook run pre-commit"`，否则钩子静默放行——这是 fire 的立场，不是故障。
 
-## 任务一：补测试
+## 任务一：契约变更事件接完
 
-`src/infra/` 目前零覆盖。照 `tests/` 现有文件的风格（真样本、反样本、临时目录隔离）补三处：
+本机已有一条 Redis Streams 总线，接法与实测记在 [用户指南：事件总线](docs/user-guide/infra/event-bus.md)。`contract-changed` 已用真实提交验过（`ff9a0ef` → `domain=code`、`09f6bcd` → `domain=meta`、只改文档的提交不推），发布端与订阅端都还是手工跑的临时脚本，没接进任何钩子，也没常驻。剩三件：
 
-- store：add → load 字段不变的往返；重名 add 报错
-- fire：无人听退 0；多条订阅时返回第一条失败的退出码
-- run：返回被跑命令的退出码；停用的订阅不跑、退 0
+- 发布端接进 `post-commit`：提交碰了 `src/*/default-contract.toml` 就推上总线，带 `domain` 与 `commit` 两个字段
+- 订阅端常驻：消费组取事件、注入环境变量、交给 `fire`、ACK
+- 用户级契约（`~/.config/qtfounder/<域>/`）在任何仓之外，没有提交就没有信号源，三种解法待定：改完手动 fire、加 `--every` 轮询、或接受改了没人知道
 
-验收：`cargo test` 全绿。
+验收：在 CLI 仓真改一笔契约，总线自动收到并复跑对应域的审计；换机器重新拉起订阅端，积压的事件不丢。
+
+两处踩过的坑，接线时别再踩：`git diff-tree --relative=.` 返回空，`--relative` 要的是从仓根算的前缀，用 `git rev-parse --show-prefix` 自动取；按仓根路径写的正则对不上真实路径（真实的是 `src/cli/src/code/default-contract.toml`），检测会对明摆着改了契约的提交报「没碰」。
 
 ## 任务二：外部驱动方验证（不写代码）
 
@@ -54,6 +57,8 @@ qtcloud-infra 侧真正要接的是第一个云端事件源：总线推事件 �
 
 验收：云端事件经 fire 触发一条真实订阅，与本地走同一条命令面。
 
-## 唯一可能动形状的地方
+## 唯一可能动形状的地方：基本不用动了
 
-fire 不带载荷：只有事件名，订阅的 run 是固定命令串。本地世界没有东西能先验证它——crontab 行不带数据，git 钩子只说「发生了」；云端的队列消息必然带消息体。哪天某条订阅需要「按事件内容决定跑什么」（qtcloud 的 `release.published` 带版本号、`deploy.finished` 带环境名），fire 的签名要加东西（`--data` 或环境变量注入）。真到那天，先在 qtfounder 侧把载荷语义定了再平移，避免两边各长一版。
+`fire` 只有事件名，订阅的 `run` 是固定命令串，不带载荷。原先的担心是本地没有东西能先验证它——crontab 行不带数据，git 钩子只说「发生了」。**本机这条 Redis 总线把这个担心解掉了**：`contract-changed` 推上去时带 `domain` 与 `commit`，订阅端把字段放进环境变量再调 `fire`，订阅的命令里用 `$QTFOUNDER_CONTRACT_DOMAIN` 就读到了，`fire` 的签名一个字没改。载荷属于驱动方，跟「触发的执行机制属于环境」是同一条。
+
+真到云端需要显式载荷那天，先看环境变量注入够不够——够就不动形状。
