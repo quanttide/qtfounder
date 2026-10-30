@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "./dist",
-  "projectname": "lite",
+  "projectname": "qtfounder-lite",
   "description": "量潮创始人 lite 小程序",
   "appid": "touristappid",
   "setting": {
