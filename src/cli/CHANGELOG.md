@@ -4,6 +4,14 @@
 
 ### Added
 
+- `infra` 补 fire／run 的测试：抽出 `fire_exit`（第一条失败的退码，全过或没人跑退 0）与 `emit_lines`（emit 的两行交付物）与 `should_run`（停用不跑但不删），六条测试钉住退码语义与两种接线形状
+
+### Changed
+
+- `code reflect` 收到路径时改说它不扫代码：沿用 `code .` 习惯的人原先只会看到「没有这条反思规则」，以为是名字写错了接着去翻契约；现在直接指到 `code <路径>` 与 `code review <路径>`
+
+### Added
+
 - `src/cli/ROADMAP.md`：infra 走向云端的实现任务清单（补测试、外部驱动方验证、平移到 qtcloud 三步与验收），给接手会话用；方向正本仍在路线图仓 `data/roadmap/qtfounder/infra.md`，dev-guide 索引补指向
 
 ### Changed

@@ -189,7 +189,7 @@ fn run_one(name: &str) -> Result<i32, String> {
         eprintln!("没有订阅「{name}」；`infra list` 看有哪些");
         return Ok(exit::NOT_FOUND);
     };
-    if !item.enabled {
+    if !should_run(item) {
         println!("订阅「{name}」已停用，不跑");
         return Ok(exit::OK);
     }
@@ -207,14 +207,41 @@ fn fire(event: &str) -> Result<i32, String> {
         println!("事件「{event}」没有订阅者");
         return Ok(exit::OK);
     }
-    let mut first_failure = exit::OK;
+    let mut codes = Vec::with_capacity(listeners.len());
     for item in listeners {
-        let code = execute(item);
-        if code != exit::OK && first_failure == exit::OK {
-            first_failure = code;
-        }
+        codes.push(execute(item));
     }
-    Ok(first_failure)
+    Ok(fire_exit(codes))
+}
+
+/// `fire` 的退出码：第一条失败的退码；全过或压根没人跑退 0。
+///
+/// 「没人听退 0」是摘闸门的退路——订阅表被清空后，钩子应该放行而不是拦人。
+pub(super) fn fire_exit(codes: impl IntoIterator<Item = i32>) -> i32 {
+    codes
+        .into_iter()
+        .find(|code| *code != exit::OK)
+        .unwrap_or(exit::OK)
+}
+
+/// `emit` 打的两行：接线注释与驱动方那一行。
+/// 抽出来是为了能断言——它就是 emit 的全部交付物。
+pub(super) fn emit_lines(item: &Subscription) -> Vec<String> {
+    match &item.trigger {
+        Trigger::Event { name: event } => vec![
+            format!("# git 钩子片段：追加进 .githooks/{event}（本仓已有钩子管理，不自动改）"),
+            format!("exec qtfounder infra fire {event}"),
+        ],
+        Trigger::Every { spec } => vec![
+            "# crontab 行：`crontab -e` 加进去（不自动写你的 crontab）".to_string(),
+            format!("{spec} qtfounder infra run {}", item.name),
+        ],
+    }
+}
+
+/// `run` 的该不该跑：停用的跳过，但不删——停用不是删除。
+pub(super) fn should_run(item: &Subscription) -> bool {
+    item.enabled
 }
 
 fn execute(item: &Subscription) -> i32 {
@@ -237,15 +264,8 @@ fn emit(name: &str) -> Result<i32, String> {
         eprintln!("没有订阅「{name}」；`infra list` 看有哪些");
         return Ok(exit::NOT_FOUND);
     };
-    match &item.trigger {
-        Trigger::Event { name: event } => {
-            println!("# git 钩子片段：追加进 .githooks/{event}（本仓已有钩子管理，不自动改）");
-            println!("exec qtfounder infra fire {event}");
-        }
-        Trigger::Every { spec } => {
-            println!("# crontab 行：`crontab -e` 加进去（不自动写你的 crontab）");
-            println!("{spec} qtfounder infra run {name}");
-        }
+    for line in emit_lines(item) {
+        println!("{line}");
     }
     Ok(exit::OK)
 }
@@ -254,5 +274,77 @@ fn describe(trigger: &Trigger) -> String {
     match trigger {
         Trigger::Event { name } => format!("事件 {name}"),
         Trigger::Every { spec } => format!("周期 {spec}"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn event(name: &str) -> Trigger {
+        Trigger::Event {
+            name: name.to_string(),
+        }
+    }
+
+    fn sub(name: &str, trigger: Trigger, enabled: bool) -> Subscription {
+        Subscription {
+            name: name.to_string(),
+            trigger,
+            run: "true".to_string(),
+            enabled,
+        }
+    }
+
+    #[test]
+    fn 全过或没人跑都退零() {
+        assert_eq!(fire_exit(std::iter::empty()), exit::OK, "没人听不是错");
+        assert_eq!(fire_exit([0, 0, 0]), exit::OK);
+    }
+
+    #[test]
+    fn 第一条失败说了算() {
+        // 中间夹着成功的也照样退第一条失败的码——不取最后一条，也不求和。
+        assert_eq!(fire_exit([0, 3, 2]), 3);
+        assert_eq!(fire_exit([2, 3]), 2);
+    }
+
+    #[test]
+    fn 停用的不跑但也不删() {
+        let on = sub("a", event("pre-commit"), true);
+        let off = sub("b", event("pre-commit"), false);
+        assert!(should_run(&on));
+        assert!(!should_run(&off), "停用不是删除：记录还在，只是不派发");
+    }
+
+    #[test]
+    fn emit事件给钩子片段() {
+        let item = sub("gate", event("pre-commit"), true);
+        let lines = emit_lines(&item);
+        assert_eq!(lines.len(), 2);
+        assert!(lines[0].contains(".githooks/pre-commit"), "注释要说清贴哪：{}", lines[0]);
+        assert_eq!(lines[1], "exec qtfounder infra fire pre-commit");
+    }
+
+    #[test]
+    fn emit周期给crontab行() {
+        let item = sub("nightly", Trigger::Every { spec: "0 3 * * *".into() }, true);
+        let lines = emit_lines(&item);
+        assert!(lines[0].contains("crontab -e"), "注释要说清怎么贴：{}", lines[0]);
+        assert_eq!(lines[1], "0 3 * * * qtfounder infra run nightly");
+    }
+
+    #[test]
+    fn emit不替人接线() {
+        // emit 只产文本，不写 crontab、不动钩子文件——立场写在 dev-guide/local-and-cloud.md。
+        for item in [
+            sub("a", event("pre-commit"), true),
+            sub("b", Trigger::Every { spec: "* * * * *".into() }, true),
+        ] {
+            for line in emit_lines(&item) {
+                assert!(!line.contains(">>") && !line.contains("crontab -e |"),
+                    "emit 里出现重定向，它不该替人写：{line}");
+            }
+        }
     }
 }

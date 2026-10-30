@@ -30,6 +30,14 @@ struct RuleOut<'a> {
     example: &'a str,
 }
 
+/// 参数看着像路径而不是规则名：带分隔符、是当前或上级目录、或磁盘上真有这个目录。
+pub(super) fn looks_like_path(arg: &str) -> bool {
+    arg.contains('/')
+        || arg.contains('\\')
+        || matches!(arg, "." | "..")
+        || std::path::Path::new(arg).is_dir()
+}
+
 pub fn run(args: &ReflectArgs, rules_path: Option<&Path>, json: bool) -> Result<i32, String> {
     let rules = Rules::load(rules_path)?;
     if rules.reflect.is_empty() {
@@ -43,6 +51,13 @@ pub fn run(args: &ReflectArgs, rules_path: Option<&Path>, json: bool) -> Result<
         Some(want) => {
             let hit: Vec<&ReflectRule> = all.iter().filter(|r| r.name == *want).collect();
             if hit.is_empty() {
+                // 沿用 `code .` 习惯输入路径的人，最该先知道的是它不扫代码——
+                // 报「没有这条规则」会让人以为是规则名写错了，接着去翻契约。
+                if looks_like_path(want) {
+                    return Err(format!(
+                        "`code reflect` 不扫代码，它只打反思清单；要扫用 `qtfounder code {want}`，要反推意图用 `qtfounder code review {want}`"
+                    ));
+                }
                 let known: Vec<&str> = all.iter().map(|r| r.name.as_str()).collect();
                 return Err(format!(
                     "契约里没有这条反思规则「{want}」；有的是：{}",

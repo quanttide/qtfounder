@@ -513,3 +513,20 @@ fn 审查JSON的锚点带全八键() {
         assert!(!first.get(key).is_none(), "review 的 JSON 少了 {key}");
     }
 }
+
+#[test]
+fn 反思收到路径时说它不扫代码() {
+    // 沿用 `code .` 习惯的人最该先知道这件事，而不是以为规则名写错了。
+    for arg in [".", "..", "src/meta", "src\\meta"] {
+        assert!(
+            super::reflect::looks_like_path(arg),
+            "「{arg}」该被判成路径"
+        );
+    }
+    for arg in ["unmarked-additions", "no-fallback", "boundary-creep"] {
+        assert!(
+            !super::reflect::looks_like_path(arg),
+            "「{arg}」是规则名不是路径"
+        );
+    }
+}
