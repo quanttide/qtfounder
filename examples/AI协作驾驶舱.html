@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 协作驾驶舱 · MVP（Roadmap Loop）</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#171b2e; --panel2:#1f2540; --line:#2a3150;
+    --txt:#e7eaf3; --muted:#9aa3c0; --accent:#6c8cff; --accent2:#37d6a0;
+    --warn:#ffb454; --bad:#ff6b6b; --good:#37d6a0;
+    --chip:#262d4d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+    line-height:1.5;font-size:14px}
+  header{padding:18px 22px;border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg,#171b2e,#1f2540)}
+  header h1{margin:0;font-size:19px;letter-spacing:.5px}
+  header p{margin:4px 0 0;color:var(--muted);font-size:12px}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 22px 60px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0 22px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .stat .k{color:var(--muted);font-size:12px}
+  .stat .v{font-size:22px;font-weight:700;margin-top:2px}
+  .loop{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:999px;
+    padding:6px 14px;font-size:12px;color:var(--muted)}
+  .step.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h2{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .card h2 .n{background:var(--chip);color:var(--accent);border-radius:8px;
+    width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+  input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);
+    color:var(--txt);border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit}
+  textarea{resize:vertical;min-height:64px}
+  label{display:block;color:var(--muted);font-size:12px;margin:10px 0 4px}
+  button{cursor:pointer;border:none;border-radius:9px;padding:9px 14px;font-size:13px;
+    font-weight:600;color:#fff;background:var(--accent);transition:.15s}
+  button:hover{filter:brightness(1.1)}
+  button.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+  button.warn{background:var(--warn);color:#222}
+  button.good{background:var(--good);color:#06281d}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .task{display:flex;align-items:center;gap:10px;background:var(--panel2);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .task .t{flex:1;min-width:0}
+  .task .t b{display:block;font-size:13px}
+  .task .t small{color:var(--muted);font-size:11px}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .b-pending{background:#2a3150;color:#9aa3c0}
+  .b-active{background:var(--accent);color:#fff}
+  .b-done{background:#163a2c;color:var(--good)}
+  .x{background:none;border:none;color:var(--muted);font-size:16px;padding:2px 6px}
+  .x:hover{color:var(--bad)}
+  .banner{background:#2a2140;border:1px solid #4a3a6a;color:#d9c6ff;
+    border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
+  .pick{background:var(--panel2);border:1px dashed var(--accent);border-radius:12px;
+    padding:14px;margin-top:10px}
+  .pick b{font-size:14px}
+  .rangewrap{display:flex;align-items:center;gap:10px}
+  .rangewrap input[type=range]{flex:1}
+  .rangeval{width:54px;text-align:right;font-weight:700;color:var(--accent2)}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  .bar{height:8px;background:var(--panel2);border-radius:6px;overflow:hidden;margin-top:4px}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .bar i.hi{background:var(--warn)}
+  .muted{color:var(--muted);font-size:12px}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-weight:500}
+  .seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tip{font-size:11px;color:var(--muted);margin-top:6px}
+  .empty{color:var(--muted);font-size:12px;text-align:center;padding:18px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>AI 协作驾驶舱 · MVP</h1>
+  <p>Roadmap Loop — 单文件、零依赖、本地存储 ｜ 用便宜 AI 打最贵的工</p>
+</header>
+
+<div class="wrap">
+  <!-- 统计 -->
+  <div class="stats" id="stats"></div>
+
+  <!-- 闭环指示 -->
+  <div class="loop" id="loop">
+    <span class="step" data-step="1">① 规划 Roadmap</span>
+    <span class="step" data-step="2">② 抽取单任务</span>
+    <span class="step" data-step="3">③ 执行（单会话）</span>
+    <span class="step" data-step="4">④ 反思写回 + 审核</span>
+  </div>
+
+  <div class="grid">
+    <!-- 左：Roadmap 池 -->
+    <div class="card">
+      <h2><span class="n">1</span> Roadmap 任务池</h2>
+      <label>新增任务（标题 / 可选描述）</label>
+      <input id="nt-title" placeholder="例如：重构 qtfounder 数据模块">
+      <textarea id="nt-desc" placeholder="任务说明（可选）" style="margin-top:8px"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="add-btn">+ 加入任务池</button>
+        <span class="tip">所有数据仅存于本机浏览器（localStorage）</span>
+      </div>
+      <div id="task-list" style="margin-top:14px"></div>
+    </div>
+
+    <!-- 右：抽取 + 执行 + 写回 -->
+    <div class="card">
+      <h2><span class="n">2</span> 抽取单任务 → 执行 → 写回</h2>
+      <div id="extract-area"></div>
+      <div id="exec-area"></div>
+    </div>
+  </div>
+
+  <!-- 记分牌 -->
+  <div class="card" style="margin-top:16px">
+    <h2><span class="n">★</span> 成本 / 漂移记分牌</h2>
+    <div id="board"></div>
+  </div>
+</div>
+
+<script>
+const KEY="roadmapLoopState_v1";
+const MODELS={
+  mimo:{name:"MiMo",cost:0.5,note:"便宜·慢·可多开"},
+  deepseek:{name:"DeepSeek-V4.1-flash",cost:1.0,note:"稍贵·需控漂移"},
+  glm:{name:"GLM-5.3-flash",cost:2.0,note:"稳·贵 3~4 倍·按需"}
+};
+let S=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||seed()}catch(e){return seed()}}
+function seed(){return{tasks:[
+  {id:id(),title:"维护 roadmap 仓库命令",desc:"先写代码再提炼 roadmap",status:"pending"},
+  {id:id(),title:"qtgame-war 抽取一个兵推任务",desc:"方法论实验场",status:"pending"},
+  {id:id(),title:"qtcloud-feishu 增加 AI 审核环节",desc:"人类审核后再发",status:"pending"}
+],activeId:null,records:[]}}
+function id(){return Math.random().toString(36).slice(2,9)}
+function save(){localStorage.setItem(KEY,JSON.stringify(S));render()}
+
+/* ---------- 渲染 ---------- */
+function render(){
+  save_stats();
+  save_loop();
+  render_tasks();
+  render_extract();
+  render_exec();
+  render_board();
+}
+function save_stats(){
+  const done=S.tasks.filter(t=>t.status==="done").length;
+  const total=S.tasks.length;
+  const cost=S.records.reduce((a,r)=>a+r.cost,0);
+  const drift=S.records.filter(r=>r.drift).length;
+  const avgCtx=S.records.length?Math.round(S.records.reduce((a,r)=>a+r.ctx,0)/S.records.length):0;
+  const rate=total?Math.round(done/total*100):0;
+  document.getElementById("stats").innerHTML=`
+    <div class="stat"><div class="k">任务总数</div><div class="v">${total}</div></div>
+    <div class="stat"><div class="k">累计花费</div><div class="v">¥${cost.toFixed(2)}</div></div>
+    <div class="stat"><div class="k">漂移次数</div><div class="v" style="color:${drift?'var(--bad)':'var(--good)'}">${drift}</div></div>
+    <div class="stat"><div class="k">完成率 / 均上下文</div><div class="v">${rate}%<span style="font-size:13px;color:var(--muted)"> · ${avgCtx}%</span></div></div>`;
+}
+function save_loop(){
+  const step=S.activeId?"3":(S.tasks.some(t=>t.status==="done")?"4":"1");
+  document.querySelectorAll(".step").forEach(s=>{
+    s.classList.toggle("active", s.dataset.step===step || (step==="4"&&s.dataset.step==="4"));
+  });
+}
+function render_tasks(){
+  const el=document.getElementById("task-list");
+  if(!S.tasks.length){el.innerHTML='<div class="empty">任务池为空，先在上方添加一个任务</div>';return;}
+  el.innerHTML=S.tasks.map(t=>{
+    const b=t.status==="pending"?'<span class="badge b-pending">待抽取</span>'
+      :t.status==="active"?'<span class="badge b-active">进行中</span>'
+      :'<span class="badge b-done">已完成</span>';
+    return `<div class="task">
+      <div class="t"><b>${esc(t.title)}</b>${t.desc?`<small>${esc(t.desc)}</small>`:""}
+        ${t.reflection?`<small style="color:var(--good)">↳ 反思：${esc(t.reflection)}</small>`:""}</div>
+      ${b}
+      <button class="x" data-del="${t.id}" title="删除">✕</button>
+    </div>`;
+  }).join("");
+  el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.del===S.activeId){alert("当前任务进行中，请先完成或放弃");return;}
+    S.tasks=S.tasks.filter(t=>t.id!==b.dataset.del);save();
+  });
+}
+function render_extract(){
+  const el=document.getElementById("extract-area");
+  if(S.activeId){
+    const t=S.tasks.find(x=>x.id===S.activeId);
+    el.innerHTML=`<div class="banner">单会话进行中：<b>${esc(t.title)}</b>　（系统约束：同一时间只能跑一个任务）</div>`;
+    return;
+  }
+  const pending=S.tasks.filter(t=>t.status==="pending");
+  if(!pending.length){el.innerHTML='<div class="empty">没有可抽取的任务，先去左侧加几个</div>';return;}
+  el.innerHTML=`<button id="pick-btn">🎲 随机抽取一个任务</button>
+    <span class="tip">点击后从待抽取池中随机抽一个，确认业务意义后再进入执行</span>
+    <div id="pick-box"></div>`;
+  document.getElementById("pick-btn").onclick=()=>{
+    const t=pending[Math.floor(Math.random()*pending.length)];
+    document.getElementById("pick-box").innerHTML=`
+      <div class="pick">
+        <div class="muted">抽到：</div><b>${esc(t.title)}</b>
+        ${t.desc?`<div class="muted" style="margin-top:4px">${esc(t.desc)}</div>`:""}
+        <div class="row" style="margin-top:10px">
+          <button id="confirm-pick">✓ 确认业务意义，开始执行</button>
+          <button class="ghost" id="repick">↺ 换一个</button>
+        </div>
+      </div>`;
+    document.getElementById("confirm-pick").onclick=()=>{
+      S.tasks.forEach(x=>{if(x.status==="pending")x.status="pending"});
+      t.status="active";S.activeId=t.id;save();
+    };
+    document.getElementById("repick").onclick=()=>document.getElementById("pick-btn").onclick();
+  };
+}
+function render_exec(){
+  const el=document.getElementById("exec-area");
+  if(!S.activeId){el.innerHTML="";return;}
+  const t=S.tasks.find(x=>x.id===S.activeId);
+  const rec=S.records.find(r=>r.taskId===t.id);
+  el.innerHTML=`
+    <label>当前任务</label>
+    <div class="pick" style="border-style:solid">
+      <b>${esc(t.title)}</b>${t.desc?`<div class="muted" style="margin-top:4px">${esc(t.desc)}</div>`:""}
+    </div>
+    <label>选择模型（不挑 AI · 路由策略）</label>
+    <div class="seg" id="model-seg">
+      ${Object.entries(MODELS).map(([k,m])=>`<button data-m="${k}" class="${rec&&rec.model===k?'on':''}">${m.name}<br><small style="opacity:.8">¥${m.cost} · ${m.note}</small></button>`).join("")}
+    </div>
+    <label>执行记录（粘贴 AI 会话要点 / 产出）</label>
+    <textarea id="exec-notes" placeholder="把本次执行的要点、产出粘到这里">${rec?esc(rec.notes):""}</textarea>
+    <label>上下文占用率（目标 < 30%）</label>
+    <div class="rangewrap">
+      <input type="range" id="ctx" min="0" max="100" value="${rec?rec.ctx:20}">
+      <span class="rangeval" id="ctxv">${rec?rec.ctx:20}%</span>
+    </div>
+    <label>本次花费（¥，默认按模型）</label>
+    <input type="number" id="cost" step="0.1" min="0" value="${rec?rec.cost:MODELS.mimo.cost}">
+    <label>反思写回：发现了哪些架构缺陷 / 漂移点？</label>
+    <textarea id="reflection" placeholder="例如：对话串了两个不相关任务导致尾部漂移">${rec?esc(rec.reflection):""}</textarea>
+    <div class="row" style="margin-top:12px">
+      <label style="margin:0"><input type="checkbox" id="drift" ${rec&&rec.drift?'checked':''} style="width:auto;vertical-align:middle"> 本次发生漂移</label>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="warn" id="save-exec">暂存执行</button>
+      <button class="good" id="review-pass">✓ 人工审核通过 · 落库并写回 Roadmap</button>
+      <button class="ghost" id="abandon">放弃当前任务</button>
+    </div>
+    <div class="tip">“人工审核通过”前不会标记完成——把最耗精力的审核环节交给你拍板。</div>`;
+  // bind
+  document.getElementById("ctx").oninput=e=>document.getElementById("ctxv").textContent=e.target.value+"%";
+  document.getElementById("model-seg").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    const m=MODELS[b.dataset.m];
+    document.getElementById("cost").value=m.cost;
+    document.querySelectorAll("#model-seg button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    saveExec();
+  });
+  ["exec-notes","ctx","cost","reflection","drift"].forEach(k=>{
+    const el2=document.getElementById(k==="ctx"?"ctx":k);
+    el2.onchange=el2.oninput=saveExec;
+  });
+  document.getElementById("save-exec").onclick=()=>{saveExec();flash("已暂存执行记录")};
+  document.getElementById("review-pass").onclick=()=>{
+    saveExec(true);
+    const t2=S.tasks.find(x=>x.id===S.activeId);
+    t2.status="done";S.activeId=null;save();flash("✓ 已落库，反思写回 Roadmap");
+  };
+  document.getElementById("abandon").onclick=()=>{
+    const t2=S.tasks.find(x=>x.id===S.activeId);t2.status="pending";S.activeId=null;save();
+  };
+}
+function saveExec(finalize){
+  if(!S.activeId)return;
+  const model=document.querySelector("#model-seg button.on")?.dataset.m||"mimo";
+  const rec={
+    taskId:S.activeId,
+    model,
+    notes:document.getElementById("exec-notes").value,
+    ctx:+document.getElementById("ctx").value,
+    cost:+document.getElementById("cost").value||MODELS[model].cost,
+    reflection:document.getElementById("reflection").value,
+    drift:document.getElementById("drift").checked,
+    at:Date.now()
+  };
+  const i=S.records.findIndex(r=>r.taskId===S.activeId);
+  if(i>=0)S.records[i]=rec;else S.records.push(rec);
+  // 把反思写回任务
+  if(finalize){
+    const t=S.tasks.find(x=>x.id===S.activeId);
+    if(t)t.reflection=rec.reflection;
+  }
+  localStorage.setItem(KEY,JSON.stringify(S));
+}
+function render_board(){
+  const el=document.getElementById("board");
+  if(!S.records.length){el.innerHTML='<div class="empty">还没有执行记录。抽取并执行一个任务后，这里会出现成本与漂移记分。</div>';return;}
+  const rows=S.records.slice().reverse().map(r=>{
+    const t=S.tasks.find(x=>x.id===r.taskId);
+    const hi=r.ctx>=30?"hi":"";
+    return `<tr>
+      <td>${esc(t?t.title:"—")}</td>
+      <td>${MODELS[r.model]?MODELS[r.model].name:r.model}</td>
+      <td>¥${r.cost.toFixed(2)}</td>
+      <td>${r.ctx}%<div class="bar"><i class="${hi}" style="width:${r.ctx}%"></i></div></td>
+      <td>${r.drift?'<span class="badge b-active" style="background:var(--bad)">漂移</span>':'<span class="badge b-done">正常</span>'}</td>
+    </tr>`;
+  }).join("");
+  el.innerHTML=`<table><thead><tr>
+    <th>任务</th><th>模型</th><th>花费</th><th>上下文</th><th>状态</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function flash(msg){const b=document.createElement("div");b.textContent=msg;
+  b.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 18px;border-radius:10px;z-index:99;font-size:13px";
+  document.body.appendChild(b);setTimeout(()=>b.remove(),1600)}
+
+/* 绑定新增 */
+document.getElementById("add-btn").onclick=()=>{
+  const ti=document.getElementById("nt-title").value.trim();
+  if(!ti){alert("请填写任务标题");return;}
+  S.tasks.push({id:id(),title:ti,desc:document.getElementById("nt-desc").value.trim(),status:"pending"});
+  document.getElementById("nt-title").value="";document.getElementById("nt-desc").value="";
+  save();
+};
+render();
+</script>
+</body>
+</html>
