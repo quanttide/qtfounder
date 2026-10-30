@@ -27,6 +27,19 @@ pub struct Rules {
     pub module: ModuleRules,
     #[serde(default)]
     pub pragmatic: PragmaticRules,
+    /// 完成一个任务后的架构反思清单；缺省为空，`code reflect` 会提示契约里没有。
+    #[serde(default)]
+    pub reflect: Vec<ReflectRule>,
+}
+
+/// 一条架构反思规则：看什么、为什么它算缺陷、长什么样。
+#[derive(Debug, Clone, Deserialize)]
+pub struct ReflectRule {
+    pub name: String,
+    pub description: String,
+    pub why: String,
+    #[serde(default)]
+    pub example: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]

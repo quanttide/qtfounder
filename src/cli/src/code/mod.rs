@@ -9,6 +9,7 @@ pub mod lexical;
 pub mod model;
 pub mod module;
 pub mod pragmatic;
+pub mod reflect;
 pub mod rules;
 pub mod syntax;
 
@@ -19,7 +20,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use clap::Args;
+use clap::{Args, Subcommand};
 use walkdir::WalkDir;
 
 use model::{Finding, Layer};
@@ -28,6 +29,8 @@ use rules::Rules;
 /// 代码语用检查：词汇、句法、语篇、语用四层。
 #[derive(Args, Debug)]
 pub struct CodeArgs {
+    #[command(subcommand)]
+    pub command: Option<CodeCommand>,
     /// 要检查的目录或文件
     #[arg(default_value = ".")]
     pub root: PathBuf,
@@ -38,11 +41,18 @@ pub struct CodeArgs {
     #[arg(long, default_value_t = 0)]
     pub top: usize,
     /// 输出 JSON
-    #[arg(long)]
+    #[arg(long, global = true)]
     pub json: bool,
     /// 规则表路径（缺省用内嵌的默认表）
-    #[arg(long)]
+    #[arg(long, global = true)]
     pub rules: Option<PathBuf>,
+}
+
+/// `code` 的子命令；不给子命令就跑缺省的语用检查。
+#[derive(Subcommand, Debug)]
+pub enum CodeCommand {
+    /// 完成任务后的架构反思清单：看什么、为什么算缺陷、长什么样
+    Reflect(reflect::ReflectArgs),
 }
 
 // 归档代码与示例代码不审：由契约的 [scope].exclude 定，与语言、文档两份契约对齐。
@@ -199,6 +209,9 @@ fn render_json(findings: &[Finding]) {
 
 /// 入口：返回退出码（0 无命中 / 1 有命中 / 2 读不了）。
 pub fn run_code(args: &CodeArgs) -> Result<i32, String> {
+    if let Some(CodeCommand::Reflect(reflect_args)) = &args.command {
+        return reflect::run(reflect_args, args.rules.as_deref(), args.json);
+    }
     let rules = Rules::load(args.rules.as_deref())?;
     let layers = wanted_layers(&args.layer);
     if layers.is_empty() {

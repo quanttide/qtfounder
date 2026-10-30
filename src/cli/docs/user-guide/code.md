@@ -63,3 +63,25 @@ cargo run -- code src --rules my.toml   # 换契约
 默认契约是磁盘上的文件：`src/cli/src/code/default-contract.toml`。查找顺序是 `--rules`、环境变量 `QTFOUNDER_CODE_CONTRACT`、从当前目录往上找。
 
 刻意不内置兜底：找不到就以退出码 2 报错。契约是显性文件，它的数值就是唯一的量法。
+
+## 七、reflect：任务完成后的架构反思
+
+```bash
+qtfounder code reflect              # 打反思清单（看什么、为什么算缺陷）
+qtfounder code reflect --example    # 连例子一起打，例子按需
+qtfounder code reflect boundary-creep   # 只看一条
+qtfounder code reflect --json       # 给脚本读
+```
+
+**它只给清单，不下结论。** 对着刚改的代码哪几条成立是判断，归 AI；清单是四道问答题，答「不是」就翻篇，不硬凑。四条全空也是结论，照实写。
+
+四条按顺序排，顺序即优先级：
+
+1. `unmarked-additions` —— 这次改动里有没有哪一行不是你要求的，也没写进意图的哪一层。
+2. `unresolved-piling` —— 意图声明的不确定项，这次加了几条、解了几条。
+3. `boundary-creep` —— 这次改动有没有落在意图声明写「不干」的范围里。
+4. `patch-over-framework` —— 这次是把现有框架加固了，还是在框架外面又补了一块。
+
+**发现只进路线图** `data/roadmap/qtfounder/index.md`（独立 git 仓），不在这儿存，也不在 `data/` 下别的文件存第二份。整套走法见 Skill `code-reflect`：拿清单、逐条回看、按 Roadmap 维护手册的三个自检收口、提交并复跑。
+
+反思清单是契约的一部分，加规则改 `[[reflect]]` 段即可，改了要同步 skill 正文与 `src/code/tests.rs` 的条数——两处钉着同一批数，漂移报得出来。

@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `code reflect` 子命令：任务完成后的架构反思清单，从契约 `[[reflect]]` 读四条
+- 四条各管一类：无主的行、不确定项堆积、边界外渗、绕开框架打补丁（name 见契约）；每条三层 description／why／example
+- 缺省只给前两层，`--example` 连例子一起打，例子按需；可按 name 取单条，`--json` 给四层
+- 反思规则入契约 `src/code/default-contract.toml` 新增 `[[reflect]]` 段，改清单不碰代码
+- `--rules` 与 `--json` 提为 global，缺省检查与 `reflect` 两处通用；`qtfounder code <root>` 老用法不变
+- Skill `code-reflect`（随 CLI 发布的第十条）：拿清单 → 逐条回看刚改的代码作答 → 写回路线图 → 三个自检收口 → 提交并复跑
+- 作答只有一句：举得出具体一处才算命中；发现写进 `data/roadmap/qtfounder/index.md`，按 Roadmap 手册的三个自检过一遍
+
+### Changed
+
+- Skill 发布清单九条 → 十条：`registry` 单测、`tests/agent_skill.rs` 的 `PUBLISHED` 与安装数断言、根仓 `AGENTS.md`／`CONTRIBUTING.md`／`api-reference/agent.md` 三处名单同步
+
 ## [0.0.43] - 2026-10-29
 
 ### Added

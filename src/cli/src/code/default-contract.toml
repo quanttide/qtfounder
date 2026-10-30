@@ -46,3 +46,33 @@ missing_why_lines = 25
 uninformative_names = ["handle", "process", "do_it", "run", "exec", "execute", "work", "deal", "manage", "util", "utils", "helper", "helpers", "func", "stuff"]
 # 错误信息里出现这些词，才说明它告诉了读者下一步做什么
 action_words = ["请", "检查", "应该", "必须", "不能", "需要", "配置", "传入", "指定", "重试"]
+
+# ---------------- 反思 ----------------
+# 完成一个任务后照这份清单看一遍当前架构。找的是正在一边长的缺陷，不是语法与风格。
+# 每条给三层：description（看什么）、why（为什么它算缺陷）、example（具体长什么样）。
+# `qtfounder code reflect` 打这四条，`code reflect --example` 连 example 一起打。
+# 顺序即优先级：先看有没有无主的行，再看不确定项与边界，最后看框架。
+
+[[reflect]]
+name = "unmarked-additions"
+description = "这次改动里，有没有哪一行不是你要求的，也没写进意图的哪一层。"
+why = "对不上意图的行将来没人敢删，删了也不知道会塌什么。"
+example = "本来说只加一个导出，模型顺手把老的导入分支也重构了，意图里没写——那半截就是无主的。"
+
+[[reflect]]
+name = "unresolved-piling"
+description = "意图声明的不确定项，这次加了几条、解了几条。"
+why = "不确定只增不减，重构就是往不确定上叠新代码。"
+example = "axiom 归域那轮，「print_layer 改名会不会波及 asset 侧」当场验掉了；同类问题连着三条没人验，就是堆积。"
+
+[[reflect]]
+name = "boundary-creep"
+description = "这次改动有没有落在意图声明写「不干」的范围里。"
+why = "边界是一次一次挪出来的，没人记就等于它不存在。"
+example = "标着「只读、不落盘」的 JournalRepository，哪天悄悄多出一个 save——边界已经挪了，声明还写着不干。"
+
+[[reflect]]
+name = "patch-over-framework"
+description = "这次是把现有框架加固了，还是在框架外面又补了一块。"
+why = "路线图记的方向输入就是「现有框架渐跟不上」；补丁摞补丁，框架永远跟不上。"
+example = "排除目录本该契约里一处定，三份检查器各写各的——先对齐 exclude，再加新检查。"

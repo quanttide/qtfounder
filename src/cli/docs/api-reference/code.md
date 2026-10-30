@@ -4,7 +4,10 @@
 
 ```
 qtfounder code [ROOT] [--layer LAYER]... [--top N] [--json] [--rules PATH]
+qtfounder code reflect [NAME] [--example] [--json] [--rules PATH]
 ```
+
+### 缺省：语用检查
 
 **ROOT**：目录或单文件，缺省当前目录。目录会递归找 `.rs`／`.py`／`.go`／`.ts`／`.mts`／`.cts`／`.dart`，跳过 `target`／`.git`／`node_modules`／`build`／`dist`。
 
@@ -15,6 +18,16 @@ qtfounder code [ROOT] [--layer LAYER]... [--top N] [--json] [--rules PATH]
 **`--json`**：输出机器可读结果。
 
 **`--rules PATH`**：指定契约文件。缺省按环境变量 `QTFOUNDER_CODE_CONTRACT`、再从当前目录往上找 `src/code/default-contract.toml` 或 `src/cli/src/code/default-contract.toml`。
+
+### `reflect`：任务完成后的架构反思清单
+
+**NAME**：只看某一条（按 `name`），缺省四条全打。名字打错以退出码 2 报错，并列出认识的 name。
+
+**`--example`**：连 `example` 层一起打。缺省只给 description 与 why——要不要例子按需，缺省省掉。
+
+**`--json`**：每条输出 `{name, description, why, example}` 四层，缺省全给（JSON 不缺例）。
+
+`reflect` 不扫描代码、不产生命中，正常退出恒为 `0`；契约读不到、没有 `[[reflect]]`、name 不认识，以退出码 2 报错。`--json`／`--rules` 在缺省检查与 `reflect` 两处通用。
 
 ## 二、退出码
 
@@ -50,7 +63,9 @@ qtfounder code [ROOT] [--layer LAYER]... [--top N] [--json] [--rules PATH]
 
 ## 四、契约字段
 
-`default-contract.toml` 分五段：`scope`／`lexical`／`syntax`／`module`／`pragmatic`。`scope.exclude` 定不审的目录，与 `language`、`docs` 两份契约对齐。数值型字段一律「`0` 表示关闭这项检查」，词表型字段空数组表示不查。
+`default-contract.toml` 分六段：`scope`／`lexical`／`syntax`／`module`／`pragmatic`／`reflect`。`scope.exclude` 定不审的目录，与 `language`、`docs` 两份契约对齐。数值型字段一律「`0` 表示关闭这项检查」，词表型字段空数组表示不查。
+
+`[[reflect]]` 是数组表，每条必填 `name`／`description`／`why`，`example` 缺省空串（空则 `--example` 不打该层）。顺序即优先级。**它没有「`0` 表示关闭」的约定**——空数组表示契约里没写反思清单，`code reflect` 报错，不静默空转。
 
 改契约立即生效，不需重编译。这一点有测试兜底：`a_changed_contract_changes_the_verdict`。
 
