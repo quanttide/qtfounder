@@ -4,6 +4,14 @@
 
 ### Added
 
+- `user-guide/infra/event-bus.md`：在本机用 Redis Streams 造一条存得住的事件总线，事件排队等订阅端、容器重启不丢，十行 shell 就接上 `fire`；顺带解掉路线图「`fire` 不带载荷」那节——载荷由驱动方带，`fire` 的签名不动
+
+### Changed
+
+- `user-guide/infra.md` 改成目录式的 `user-guide/infra/index.md`，与 `dev-guide` 的 code／docs／language 同体例；README 与 `myst.yml` 的链接一并改
+
+### Added
+
 - `infra` 补 fire／run 的测试：抽出 `fire_exit`（第一条失败的退码，全过或没人跑退 0）与 `emit_lines`（emit 的两行交付物）与 `should_run`（停用不跑但不删），六条测试钉住退码语义与两种接线形状
 
 ### Changed

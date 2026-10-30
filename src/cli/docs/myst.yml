@@ -17,7 +17,8 @@ project:
         - file: user-guide/product.md
         - file: user-guide/execute.md
         - file: user-guide/data.md
-        - file: user-guide/infra.md
+        - file: user-guide/infra/index.md
+        - file: user-guide/infra/event-bus.md
         - file: user-guide/agent.md
         - file: user-guide/design.md
     - title: 开发指南

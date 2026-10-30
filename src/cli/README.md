@@ -29,7 +29,7 @@ cargo test
 | `qtfounder execute` | 待办的收与抽：`collect` 收待办进池子（同文本去重、`--stdin` 批量、优先级缺省 1），`draw` 按优先级加权抽一件。用法见 [docs/user-guide/execute.md](docs/user-guide/execute.md) |
 | `qtfounder data` | 标注三样：`rule` 设计与存取规则（机器名/显示名/定义/正反例），`task` 看 studio 导出的任务包，`result` 导入标注端 JSONL 并按标签统计；XDG 存储，与 studio、lite 共用。用法见 [docs/user-guide/data.md](docs/user-guide/data.md) |
 | `qtfounder product` | 产品：`clarify` 记一次澄清、`list` 看需求差、`organize` 读聚类与归档、`clear` 清缓存。用法见 [docs/user-guide/product.md](docs/user-guide/product.md) |
-| `qtfounder infra` | 订阅登记与派发：`add` 记一条周期或事件订阅，`list`／`remove` 管表，`run`／`fire` 执行，`emit` 打驱动方那一行。用法见 [docs/user-guide/infra.md](docs/user-guide/infra.md) |
+| `qtfounder infra` | 订阅登记与派发：`add` 记一条周期或事件订阅，`list`／`remove` 管表，`run`／`fire` 执行，`emit` 打驱动方那一行。用法见 [docs/user-guide/infra/index.md](docs/user-guide/infra/index.md)；本机要一条存得住的事件总线见 [docs/user-guide/infra/event-bus.md](docs/user-guide/infra/event-bus.md) |
 | `qtfounder design` | 交互设计走查：数 HTML 交付物的字号（第九条中文微排版）与主按钮（第五条主行动唯一），`design principles` 摊开十二条原则。用法见 [docs/user-guide/design.md](docs/user-guide/design.md) |
 
 ## 添加新功能
