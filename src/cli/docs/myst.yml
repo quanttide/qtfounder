@@ -17,12 +17,14 @@ project:
         - file: user-guide/product.md
         - file: user-guide/execute.md
         - file: user-guide/data.md
+        - file: user-guide/infra.md
         - file: user-guide/agent.md
         - file: user-guide/design.md
     - title: 开发指南
       children:
         - file: dev-guide/index.md
         - file: dev-guide/architecture.md
+        - file: dev-guide/local-and-cloud.md
         - file: dev-guide/adding-a-check.md
         - file: dev-guide/code/adding-a-language.md
         - file: dev-guide/language/sense-layer.md

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- `user-guide/infra.md`：`infra` 的用法六节——登记、emit 只打印、fire 与 run、停用不是删除、退出码，以及它刻意不做的三件事
+- `dev-guide/local-and-cloud.md`：设计立场「本地程序跟着平台模型适配，不写兼容层」；写清兼容层与跟着适配两种做法的代价差、怎么落进 `infra` 的代码，以及不写下来就会被「修好」的提醒
+- 两篇都进 `myst.yml` 导航，`dev-guide/index.md` 通用一节加指针
+
 ### Changed
 
 - `data` 拆成五个文件：`mod.rs` 只留命令面、派发与共用的存储原语，模型进 `model.rs`
