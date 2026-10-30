@@ -1,63 +1,35 @@
 # Changelog
 
-## [Unreleased]
+## [0.0.46] - 2026-10-30
 
 ### Added
 
-- `user-guide/infra/event-bus.md`：在本机用 Redis Streams 造一条存得住的事件总线，事件排队等订阅端、容器重启不丢，十行 shell 就接上 `fire`；顺带解掉路线图「`fire` 不带载荷」那节——载荷由驱动方带，`fire` 的签名不动
+- `user-guide/infra/event-bus.md`：在本机用 Redis Streams 造一条存得住的事件总线，事件排队等订阅端、容器重启不丢，十行 shell 就接上 `fire`
+- 载荷随之验通：`contract-changed` 推上去带 `domain` 与 `commit`，订阅端放进环境变量再调 `fire`，签名一个字没改——路线图「`fire` 不带载荷」那节基本收敛
+- `api-reference/infra.md` 与 `api-reference/git.md`：至此 15 个命令组的 user-guide 与 api-reference 两套齐了
+- 两篇里的 `state` 六种与 `issues[].kind` 六种都写全，对着代码逐个核过，不凭记忆写
+- `user-guide/infra/index.md`：`infra` 的用法六节，以及它刻意不做的三件事
+- `dev-guide/local-and-cloud.md`：设计立场「本地程序跟着平台模型适配，不写兼容层」，写清两种做法的代价差与不写下来就会被「修好」的提醒
+- `src/cli/ROADMAP.md`：infra 走向云端的实现任务清单，方向正本仍在路线图仓 `data/roadmap/qtfounder/infra.md`
 
 ### Changed
 
-- `user-guide/infra.md` 改成目录式的 `user-guide/infra/index.md`，与 `dev-guide` 的 code／docs／language 同体例；README 与 `myst.yml` 的链接一并改
-
-### Added
-
-- `infra` 补 fire／run 的测试：抽出 `fire_exit`（第一条失败的退码，全过或没人跑退 0）与 `emit_lines`（emit 的两行交付物）与 `should_run`（停用不跑但不删），六条测试钉住退码语义与两种接线形状
-
-### Changed
-
-- `code reflect` 收到路径时改说它不扫代码：沿用 `code .` 习惯的人原先只会看到「没有这条反思规则」，以为是名字写错了接着去翻契约；现在直接指到 `code <路径>` 与 `code review <路径>`
-
-### Added
-
-- `src/cli/ROADMAP.md`：infra 走向云端的实现任务清单（补测试、外部驱动方验证、平移到 qtcloud 三步与验收），给接手会话用；方向正本仍在路线图仓 `data/roadmap/qtfounder/infra.md`，dev-guide 索引补指向
-
-### Changed
-
+- `infra` 补 fire／run 测试：抽出 `fire_exit`／`emit_lines`／`should_run` 三个纯函数，六条测试钉住退码语义与两种接线形状
 - 全套文档按 `api-reference` 那次的风格收一遍：硬错从 13 处降到 0，嫌疑从 59 条收到 18 条
-- 三处「十四个子命令」改十五个并补上 `infra`；README 的命令表补齐 `product` 与 `infra` 两行，至此 15 个组两套文档都在
-- README 的 language 行改用真实机器键（`placement`／`banned`／`required`／`numbers`／`syntax`／`voice`），顺带去掉禁用词「落点」
-- 三处两列「码\|含义」表转散文——转列表会触发三段式硬错，散文两边都不沾；表头「说明」是排版词，换成真属性名「做什么」
-- `api-reference/meta.md` 的 18 行契约表拆成单值段与数组段两张
-- 11 段没对读者说话的补上主语，长句与「的」链逐句拆开
+- 三处「十四个子命令」改十五个并补上 `infra`；README 的命令表补齐 `product` 与 `infra` 两行
+- README 的 language 行改用真实机器键，顺带去掉禁用词「落点」
+- 三处两列「码\|含义」表转散文——转列表会触发三段式硬错，散文两边都不沾；表头「说明」换成真属性名「做什么」
+- `api-reference/meta.md` 的 18 行契约表拆成单值段与数组段两张；11 段没对读者说话的补上主语
+- `data` 拆成五个文件：`mod.rs` 只留命令面与派发，`mod.rs` 从 813 行降到 131 行
+- `data` 与 `code` 模块头补五层意图声明——这是 `code review` 自检第一条的根因
+- `code review` 的 JSON 锚点补 `layer_name`／`kind`／`principle`／`advice` 四键，少了 `kind` 就分不了组
+- `user-guide/infra.md` 改成目录式的 `user-guide/infra/index.md`，与 `dev-guide` 的 code／docs／language 同体例
+- `apps/qtfounder/AGENTS.md` 工作原则加第七条：改 `src/cli` 功能时三套文档一起改
 
 ### Fixed
 
-- `language` 的 `numbers` 规则改跳代码块：同文件的 `syntax` 与 `voice` 都跳，它不跳，于是每份展示真实输出的示例都被报，而样例里加出处会污染样例；补两条测试钉住两边
-
-### Added
-
-- `api-reference/infra.md`：命令面、`add` 的互斥与不校验、`list` 的 JSON 形、`run` 与 `fire` 的退出码规则、`emit` 打什么、数据放哪
-- `api-reference/git.md`：`hook install`／`status`／`uninstall`／`run` 与 `submodule check` 的命令面与 JSON 形
-- `state` 六种与 `issues[].kind` 六种都写全；写文档时对着代码逐个核过，不是凭记忆写
-- 两篇进 `myst.yml` 导航；至此 15 个命令组的 user-guide 与 api-reference 两套齐了
-
-### Changed
-
-- `apps/qtfounder/AGENTS.md` 工作原则加第七条：改 `src/cli` 功能时三套文档（user-guide／dev-guide／api-reference）一起改
-
-- `user-guide/infra.md`：`infra` 的用法六节——登记、emit 只打印、fire 与 run、停用不是删除、退出码，以及它刻意不做的三件事
-- `dev-guide/local-and-cloud.md`：设计立场「本地程序跟着平台模型适配，不写兼容层」；写清兼容层与跟着适配两种做法的代价差、怎么落进 `infra` 的代码，以及不写下来就会被「修好」的提醒
-- 两篇都进 `myst.yml` 导航，`dev-guide/index.md` 通用一节加指针
-
-### Changed
-
-- `data` 拆成五个文件：`mod.rs` 只留命令面、派发与共用的存储原语，模型进 `model.rs`
-- `rule`／`task`／`result` 三个子命令各带自己的模型与加载器；`mod.rs` 从 813 行降到 131 行
-- `data` 与 `code` 模块头补五层意图声明（核心目标／边界／约束／已知假设／不确定性）
-- 这是 `code review` 自检第一条的根因：全仓没有一处意图声明，「模块拆多细」没有说法，于是同一个 CLI 出现两种组织法
-- `code review` 的 JSON 锚点补 `layer_name`／`kind`／`principle`／`advice` 四键，与 `code` 自己的 JSON 同形
-- 少了 `kind` 就分不了组，只能正则猜 message；这是自检第五条，是那轮自己带进来的
+- `code reflect` 收到路径时改说它不扫代码：原先只报「没有这条反思规则」，沿用 `code .` 习惯的人会以为名字写错了接着去翻契约
+- `language` 的 `numbers` 规则改跳代码块：同文件的 `syntax` 与 `voice` 都跳，它不跳，于是每份展示真实输出的示例都被报，而样例里加出处会污染样例
 
 ## [0.0.45] - 2026-10-30
 
