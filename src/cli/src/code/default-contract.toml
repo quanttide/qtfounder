@@ -76,3 +76,41 @@ name = "patch-over-framework"
 description = "这次是把现有框架加固了，还是在框架外面又补了一块。"
 why = "路线图记的方向输入就是「现有框架渐跟不上」；补丁摞补丁，框架永远跟不上。"
 example = "排除目录本该契约里一处定，三份检查器各写各的——先对齐 exclude，再加新检查。"
+
+# ---------------- 审查 ----------------
+# `code review` 打这份。审查是意图驱动编程的反向流程：从代码反推写它时的意图，
+# 再看代码还对不对得上。交付物是一份报告，不是过程记录。
+# 与反思（[[reflect]]）分工：反思看「这轮干完多了什么缺陷」，审查看「这段代码还对不对得上意图」。
+# 与重构（Skill code-refactor）的关系：审查出偏移，重构按意图重写，两边用同一套五层意图。
+
+[[review]]
+name = "conclusion-first"
+description = "报告开头一到三句说结论：最可能的意图、整体偏移程度、最该先处理的一件事。"
+why = "读的人先要一个判断，才知道要不要往下看清单。"
+example = "核心意图疑为「把用户输入翻译成 API 调用序列」，但混入了重试与鉴权，与声明的边界矛盾；建议先拆出重试。"
+
+[[review]]
+name = "anchor-required"
+description = "每条发现带 file:line 锚点；写不出锚点就不写。"
+why = "没有锚点的发现没法核，等于把猜测当结论递出去。"
+example = "重试逻辑散落在调度器内 — src/planner.rs:88"
+
+[[review]]
+name = "one-finding-per-item"
+description = "一条一个发现，不嵌套，不把几个问题塞进一条。"
+why = "一条挂几个问题，改的时候只能挑着改，剩下的自然烂掉。"
+
+[[review]]
+name = "severity-sorted"
+description = "按严重度排，只列高价值的若干条，其余归入其他。"
+why = "清单一长，重要的就沉到底没人看。"
+
+[[review]]
+name = "candidates-not-verdicts"
+description = "只给候选解释与偏移线索，判定归人。"
+why = "模型会过度合理化，给每个奇怪的地方都编一个像样的解释；还原得成不成立，人说了算。"
+
+[[review]]
+name = "no-process"
+description = "不粘贴 git 日志，不复述模型的逐条推测，不写过程旁白。"
+why = "交付物是报告，扫描、git、考古都是脚手架，脚手架不进报告。"

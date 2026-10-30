@@ -457,3 +457,37 @@ fn 反思输出JSON带全四层() {
         }
     }
 }
+
+// ---------- 审查纪律 ----------
+
+#[test]
+fn 审查纪律六条齐备且名字不重复() {
+    let rules = Rules::load(None).expect("仓里应能找到默认契约");
+    assert_eq!(rules.review.len(), 6, "契约里应有六条审查纪律，改数量要同步 skill 正文");
+    let mut seen = std::collections::HashSet::new();
+    for rule in &rules.review {
+        assert!(!rule.name.is_empty(), "name 不能为空");
+        assert!(!rule.description.is_empty(), "{} 缺 description", rule.name);
+        assert!(!rule.why.is_empty(), "{} 缺 why", rule.name);
+        assert!(seen.insert(rule.name.as_str()), "name 重复：{}", rule.name);
+    }
+    assert_eq!(rules.review[0].name, "conclusion-first", "头一条是结论先行");
+}
+
+#[test]
+fn 审查纪律含锚点与判定归人两条() {
+    // 这两条是审查与反思、重构的分界：机械层只给锚点，判断归人。
+    let rules = Rules::load(None).expect("仓里应能找到默认契约");
+    let names: Vec<&str> = rules.review.iter().map(|rule| rule.name.as_str()).collect();
+    assert!(names.contains(&"anchor-required"), "写不出锚点就不写");
+    assert!(names.contains(&"candidates-not-verdicts"), "模型只给候选，判定归人");
+}
+
+#[test]
+fn 审查骨架的意图五层与重构同一套() {
+    // 反向流程用的五层，必须与 Skill code-refactor 的正向流程一字不差。
+    assert_eq!(
+        super::review::INTENT_LAYERS.map(|line| line.split('：').next().unwrap()),
+        ["核心目标", "边界", "约束", "已知假设", "不确定性"]
+    );
+}

@@ -5,6 +5,7 @@
 ```
 qtfounder code [ROOT] [--layer LAYER]... [--top N] [--json] [--rules PATH]
 qtfounder code reflect [NAME] [--example] [--json] [--rules PATH]
+qtfounder code review [ROOT] [--layer LAYER]... [--example] [--json] [--rules PATH]
 ```
 
 ### 缺省：语用检查
@@ -28,6 +29,18 @@ qtfounder code reflect [NAME] [--example] [--json] [--rules PATH]
 **`--json`**：每条输出 `{name, description, why, example}` 四层，缺省全给（JSON 不缺例）。
 
 `reflect` 不扫描代码、不产生命中，正常退出恒为 `0`；契约读不到、没有 `[[reflect]]`、name 不认识，以退出码 2 报错。`--json`／`--rules` 在缺省检查与 `reflect` 两处通用。
+
+### `review`：意图审查骨架
+
+**ROOT**：要审的目录或文件，缺省当前目录。目标不在以退出码 3 报错。
+
+**`--layer`**：只取某几层的命中当锚点，写法同缺省检查。
+
+**`--example`**：连六条纪律的 `example` 一起打。
+
+输出四节骨架（结论／意图假设／偏移清单／建议）与六条交付纪律；偏移清单里是语用命中的 `file:line` 锚点，**不排序、不标严重度**——严重度对着意图判，归写报告的人。锚点计数进退出码：有命中退 `1`，零命中退 `0`。
+
+JSON 输出 `{root, intent_layers, rules, findings}`；`intent_layers` 是五层反推提问，与 Skill `code-refactor` 的正向五层一字不差。
 
 ## 二、退出码
 
@@ -63,7 +76,7 @@ qtfounder code reflect [NAME] [--example] [--json] [--rules PATH]
 
 ## 四、契约字段
 
-`default-contract.toml` 分六段：`scope`／`lexical`／`syntax`／`module`／`pragmatic`／`reflect`。`scope.exclude` 定不审的目录，与 `language`、`docs` 两份契约对齐。数值型字段一律「`0` 表示关闭这项检查」，词表型字段空数组表示不查。
+`default-contract.toml` 分七段：`scope`／`lexical`／`syntax`／`module`／`pragmatic`／`reflect`／`review`。`scope.exclude` 定不审的目录，与 `language`、`docs` 两份契约对齐。数值型字段一律「`0` 表示关闭这项检查」，词表型字段空数组表示不查。
 
 `[[reflect]]` 是数组表，每条必填 `name`／`description`／`why`，`example` 缺省空串（空则 `--example` 不打该层）。顺序即优先级。**它没有「`0` 表示关闭」的约定**——空数组表示契约里没写反思清单，`code reflect` 报错，不静默空转。
 

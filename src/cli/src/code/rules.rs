@@ -30,6 +30,19 @@ pub struct Rules {
     /// 完成一个任务后的架构反思清单；缺省为空，`code reflect` 会提示契约里没有。
     #[serde(default)]
     pub reflect: Vec<ReflectRule>,
+    /// 意图审查的交付规则；缺省为空，`code review` 会提示契约里没有。
+    #[serde(default)]
+    pub review: Vec<ReviewRule>,
+}
+
+/// 一条意图审查规则：审查交付物的形状与纪律。
+#[derive(Debug, Clone, Deserialize)]
+pub struct ReviewRule {
+    pub name: String,
+    pub description: String,
+    pub why: String,
+    #[serde(default)]
+    pub example: String,
 }
 
 /// 一条架构反思规则：看什么、为什么它算缺陷、长什么样。

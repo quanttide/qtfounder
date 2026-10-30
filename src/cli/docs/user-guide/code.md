@@ -85,3 +85,21 @@ qtfounder code reflect --json       # 给脚本读
 **发现只进路线图** `data/roadmap/qtfounder/index.md`（独立 git 仓），不在这儿存，也不在 `data/` 下别的文件存第二份。整套走法见 Skill `code-reflect`：拿清单、逐条回看、按 Roadmap 维护手册的三个自检收口、提交并复跑。
 
 反思清单是契约的一部分，加规则改 `[[reflect]]` 段即可，改了要同步 skill 正文与 `src/code/tests.rs` 的条数——两处钉着同一批数，漂移报得出来。
+
+## 八、review：意图审查
+
+```bash
+qtfounder code review src/meta           # 报告骨架 + 语用命中的 file:line 锚点
+qtfounder code review src/meta --layer pragmatic   # 只取某几层的命中
+qtfounder code review src/meta --example # 连纪律的例子一起打
+qtfounder code review src/meta --json    # 给脚本读
+```
+
+审查是意图驱动编程的**反向流程**：从代码反推写它时的意图，再看还对不对得上。命令只出两样——
+
+- **四节骨架**：结论、意图假设（核心目标／边界／约束／已知假设／不确定性）、偏移清单、建议；
+- **锚点**：语用检查的命中自带 `file:line`，正是报告要求的锚点格式。
+
+**锚点不排序、不标严重度**。严重度得对着意图判，那是判断，归写报告的人；意图假设那五节命令一个字不填——反推也是判断。这条分工与 `reflect` 一致：机械层能给的只有锚点。
+
+交付纪律六条写在契约 `[[review]]`：结论先行、锚点必备（写不出就不写）、一条一个发现、按严重度排、只给候选不给结论、不写过程。与反思的分工：反思看「这轮干完多了什么」，审查看「这段代码还对不对得上意图」。整套走法见 Skill `code-review`。

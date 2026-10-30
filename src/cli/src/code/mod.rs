@@ -1,7 +1,14 @@
-//! `qtfounder code`：代码语用检查。
+//! `qtfounder code`：给写代码的 AI 配的 **reviewer**。
 //!
-//! 判的不是语法错、不是风格、不是圈复杂度，而是**下一个维护者能不能看懂**。
-//! 四层验收标准见 `docs/user-guide/code.md`；阈值全在 `src/code/default-contract.toml`。
+//! 三道，一道比一道靠后：
+//!
+//! - `code <root>` 语用检查——判下一个维护者能不能看懂，给 file:line 的事实；
+//! - `code reflect` 任务后反思——这轮干完，架构里多了什么以前没有的毛病；
+//! - `code review` 意图审查——从代码反推写它时的意图，看还对不对得上。
+//!
+//! 前两道出的是事实与清单，判断归 AI；第三道连骨架都只是形状，反推与排序都归 AI。
+//! 这条分工是刻意的：机械层能给的只有锚点，严重度与意图只能对着上下文判。
+//! 验收标准与阈值全在 `src/code/default-contract.toml`，四层见 `docs/user-guide/code.md`。
 
 pub mod extract;
 pub mod ir;
@@ -10,6 +17,7 @@ pub mod model;
 pub mod module;
 pub mod pragmatic;
 pub mod reflect;
+pub mod review;
 pub mod rules;
 pub mod syntax;
 
@@ -53,11 +61,13 @@ pub struct CodeArgs {
 pub enum CodeCommand {
     /// 完成任务后的架构反思清单：看什么、为什么算缺陷、长什么样
     Reflect(reflect::ReflectArgs),
+    /// 意图审查：从代码反推写它时的意图，出报告骨架与交付纪律
+    Review(review::ReviewArgs),
 }
 
 // 归档代码与示例代码不审：由契约的 [scope].exclude 定，与语言、文档两份契约对齐。
 
-fn wanted_layers(requested: &[String]) -> Vec<Layer> {
+pub(super) fn wanted_layers(requested: &[String]) -> Vec<Layer> {
     if requested.is_empty() {
         return Layer::ALL.to_vec();
     }
@@ -101,7 +111,7 @@ fn display_path(root: &Path, path: &Path) -> String {
 }
 
 /// 跑完整个目录：返回（命中，解析失败的文件）。
-fn collect(
+pub(super) fn collect(
     root: &PathBuf,
     rules: &Rules,
     layers: &[Layer],
@@ -175,7 +185,7 @@ fn render(findings: &[Finding], top: usize) {
     }
 }
 
-fn json_escape(text: &str) -> String {
+pub(super) fn json_escape(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
     for ch in text.chars() {
         match ch {
@@ -211,6 +221,9 @@ fn render_json(findings: &[Finding]) {
 pub fn run_code(args: &CodeArgs) -> Result<i32, String> {
     if let Some(CodeCommand::Reflect(reflect_args)) = &args.command {
         return reflect::run(reflect_args, args.rules.as_deref(), args.json);
+    }
+    if let Some(CodeCommand::Review(review_args)) = &args.command {
+        return review::run(review_args, args.rules.as_deref(), args.json);
     }
     let rules = Rules::load(args.rules.as_deref())?;
     let layers = wanted_layers(&args.layer);
