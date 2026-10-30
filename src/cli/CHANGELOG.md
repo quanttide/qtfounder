@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `src/cli/ROADMAP.md`：infra 走向云端的实现任务清单（补测试、外部驱动方验证、平移到 qtcloud 三步与验收），给接手会话用；方向正本仍在路线图仓 `data/roadmap/qtfounder/infra.md`，dev-guide 索引补指向
+
 ### Changed
 
 - 全套文档按 `api-reference` 那次的风格收一遍：硬错从 13 处降到 0，嫌疑从 59 条收到 18 条

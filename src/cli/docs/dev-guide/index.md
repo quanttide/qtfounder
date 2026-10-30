@@ -9,7 +9,7 @@
 - [测试](testing.md)：真样本、反样本、契约可变，以及并行测试的临时文件坑。
 - [本地与云端](local-and-cloud.md)：本地程序跟着平台模型适配，不写兼容层；为什么 `infra` 不校验事件名、不解析周期串、无人听的事件不报错。
 
-路线图已迁至路线图仓 `data/roadmap/qtfounder/index.md`（CLI 方向）与 `qtfounder/docs.md`（文档审计阶段）。
+路线图已迁至路线图仓 `data/roadmap/qtfounder/index.md`（CLI 方向）与 `qtfounder/docs.md`（文档审计阶段）；实现任务清单另见 [`src/cli/ROADMAP.md`](../ROADMAP.md)。
 
 ## 文档审计
 
