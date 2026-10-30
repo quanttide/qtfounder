@@ -30,7 +30,7 @@
 
 本机已有一条 Redis Streams 总线，接法与实测记在 [用户指南：事件总线](docs/user-guide/infra/event-bus.md)。`contract-changed` 已用真实提交验过（`ff9a0ef` → `domain=code`、`09f6bcd` → `domain=meta`、只改文档的提交不推），发布端与订阅端都还是手工跑的临时脚本，没接进任何钩子，也没常驻。剩三件：
 
-- 发布端接进 `post-commit`：提交碰了 `src/*/default-contract.toml` 就推上总线，带 `domain` 与 `commit` 两个字段
+- 发布端接进 `post-commit`：提交碰了 `src/*/default-contract.toml` 就推上总线，带 `domain` 与 `commit` 两个字段。**这个口子同时是 human 产出事件的口子**（roadmap 仓 `qtfounder/human.md` MVP）：真产出推事件、传播动作不推，human Skill 从消费组取积压；两种事件同一发布端同一队列，别建第二条管道
 - 订阅端常驻：消费组取事件、注入环境变量、交给 `fire`、ACK
 - 用户级契约（`~/.config/qtfounder/<域>/`）在任何仓之外，没有提交就没有信号源，三种解法待定：改完手动 fire、加 `--every` 轮询、或接受改了没人知道
 
