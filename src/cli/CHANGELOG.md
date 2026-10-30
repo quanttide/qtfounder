@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 全套文档按 `api-reference` 那次的风格收一遍：硬错从 13 处降到 0，嫌疑从 59 条收到 18 条
+- 三处「十四个子命令」改十五个并补上 `infra`；README 的命令表补齐 `product` 与 `infra` 两行，至此 15 个组两套文档都在
+- README 的 language 行改用真实机器键（`placement`／`banned`／`required`／`numbers`／`syntax`／`voice`），顺带去掉禁用词「落点」
+- 三处两列「码\|含义」表转散文——转列表会触发三段式硬错，散文两边都不沾；表头「说明」是排版词，换成真属性名「做什么」
+- `api-reference/meta.md` 的 18 行契约表拆成单值段与数组段两张
+- 11 段没对读者说话的补上主语，长句与「的」链逐句拆开
+
+### Fixed
+
+- `language` 的 `numbers` 规则改跳代码块：同文件的 `syntax` 与 `voice` 都跳，它不跳，于是每份展示真实输出的示例都被报，而样例里加出处会污染样例；补两条测试钉住两边
+
 ### Added
 
 - `api-reference/infra.md`：命令面、`add` 的互斥与不校验、`list` 的 JSON 形、`run` 与 `fire` 的退出码规则、`emit` 打什么、数据放哪

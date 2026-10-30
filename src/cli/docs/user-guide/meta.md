@@ -336,7 +336,7 @@ qtfounder meta validate
 对得上：契约内部一致
 ```
 
-validate 只读契约，不读任何仓库文档：契约是唯一事实源，镜像文档只是给人看的。查的是契约自身的自洽——重复的名字、悬空的引用与落空的路径：
+validate 只读契约，不读任何仓库文档：契约是唯一事实源，镜像文档只给人看。它查的是契约自洽——名字重没重、引用悬没悬、路径落没落：
 
 - 资产：name 与 path 不空不重，role 只写 source、memory 或 exit，layout 只写 domain-asset 或 asset-domain。
 - 关系：from 与 to 指向存在的资产，kind 只写 intake 或 archive，transform 只写 flip 或 same。

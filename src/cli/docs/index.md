@@ -1,6 +1,10 @@
 # qtfounder CLI 文档
 
-命令行工具，十四个子命令：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`think` 管认知，`meta` 判归位，`asset` 看资产契约、清单、关系与维护规则，`product` 记需求差，`execute` 收待办并抽一件，`data` 管标注规则、任务包与结果，`agent` 装 Skill 并查写法，`git` 管钩子配置，`audit` 出体检报告，`design` 走查界面交付物。
+命令行工具，十五个子命令分两组。
+
+查与审的六个：`code` 查源码，`language` 查文字，`docs` 查文档结构，`write` 查表达，`audit` 出体检报告，`design` 走查界面交付物。
+
+管创始人日常的九个分两拨。认知与归位侧是 `think` 管认知、`meta` 判归位、`asset` 看资产契约与维护规则、`product` 记需求差。执行与工具侧是 `execute` 收待办并抽一件、`data` 管标注三样、`infra` 管订阅登记与派发、`agent` 装 Skill 并查写法、`git` 管钩子配置。
 
 ## 用户指南
 
@@ -8,12 +12,13 @@
 - [`language`](user-guide/language.md)：语言检查，六层加语义层，出结果再过一层复核。
 - [`docs`](user-guide/docs.md)：文档审计，表格、列表、密度、加粗与分割线五层；阈值未标定前密度只观测。
 - [`write`](user-guide/write.md)：表达审计，体裁、读者、主题三轴，加空话、口号、指路与结构四层。
-- [`think`](user-guide/think.md)：认知侧，`load` 看消耗落点、`reflect` 记一条反思、`model` 看模型。
+- [`think`](user-guide/think.md)：认知侧，`load` 看消耗记在哪、`reflect` 记一条反思、`model` 看模型。
 - [`meta`](user-guide/meta.md)：归位，`classify` 给一段内容一张落位卡：域、格、档、写法。
 - [`asset`](user-guide/asset.md)：资产，`catalog` 清点二十种资产、`contract` 看边界、`relation` 看角色与迁入边、`maintain` 整理 context 并搬进长期记忆仓。
 - [`product`](user-guide/product.md)：需求与澄清，`clarify` 记一次「不对劲」，`requirement` 看攒出了什么。
 - [`execute`](user-guide/execute.md)：待办的收与抽，`collect` 收进池子，`draw` 按优先级抽一件开工。
-- [`data`](user-guide/data.md)：标注三样——`rule` 设计规则，`task` 看任务包，`result` 导入与统计；与 studio、lite 共用一份 XDG 存储。- [`agent`](user-guide/agent.md)：装 Skill（`list`、`install`、`check`）并查写法（`lint`）。
+- [`data`](user-guide/data.md)：标注三样——`rule` 设计规则，`task` 看任务包，`result` 导入与统计；与 studio、lite 共用一份 XDG 存储。
+- [`agent`](user-guide/agent.md)：装 Skill（`list`、`install`、`check`）并查写法（`lint`）。
 - [`audit`](user-guide/audit.md)：文字体检，合并两套审计，每期只说一处。
 - [`design`](user-guide/design.md)：交互设计走查，数 HTML 交付物的字号与主按钮；`design principles` 摊开十二条原则。
 

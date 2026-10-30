@@ -1,6 +1,6 @@
 # execute：待办的收与抽
 
-`qtfounder execute collect` 把一句「这事儿还没做」收成待办，攒成池子；`qtfounder execute draw` 按优先级抽一件开工。什么时候开口收、待办写成什么形状，判断在随 CLI 发布的 `execute-collect` Skill 里，命令只管落库与抽签。
+你把一句「这事儿还没做」交给 `qtfounder execute collect`，它收成待办攒成池子；想开工时用 `qtfounder execute draw` 按优先级抽一件。什么时候开口收、待办写成什么形状，什么时候开口收、待办写成什么形状，判断在随 CLI 发布的 `execute-collect` Skill 里；命令只管写进池子与抽签。
 
 ## 收一件
 
@@ -76,7 +76,7 @@ $ qtfounder execute draw   # 退出码 3
 
 错误一律是 JSON、写在 stderr，退出码三档：`0` 成功（含去重），`2` 用法错，`3` 池子空时抽签。
 
-常见用法错：位置参数与 `--stdin` 同给、`--priority 0`、待办文本为空（空串或纯空白）、`todos` 为空数组、stdin 不是合法 JSON。逐条对照见[接口参考](../api-reference/execute.md)。
+你这么敲就是用法错：位置参数与 `--stdin` 同给、`--priority 0`、待办文本为空（空串或纯空白）、`todos` 为空数组、stdin 不是合法 JSON。逐条对照见[接口参考](../api-reference/execute.md)。
 
 ## 记录存在哪
 

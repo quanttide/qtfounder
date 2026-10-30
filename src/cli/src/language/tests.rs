@@ -327,3 +327,20 @@ fn judgment_layer_separates_rule_noise_from_real_problems() {
     // 真问题不带误报标
     assert!(!verdicts("改了 22 处。\n").iter().any(|v| *v != "real"));
 }
+
+#[test]
+fn 代码块里的论据数字不报() {
+    // 样例输出里的计数是事实不是断言，报了就没法在文档里展示真实输出。
+    let contract = contract();
+    let text = "上面是一次真实输出：\n\n```text\n命中 53 处，落在 30 篇里。\n```\n";
+    let hits = super::checks::check_numbers("t.md", text, &contract);
+    assert!(hits.is_empty(), "代码块里的数字不该报：{hits:?}");
+}
+
+#[test]
+fn 正文里的论据数字照报() {
+    let contract = contract();
+    let text = "它出现 53 次，落在 30 篇里。";
+    let hits = super::checks::check_numbers("t.md", text, &contract);
+    assert_eq!(hits.len(), 1, "正文里的计数没有出处要报");
+}

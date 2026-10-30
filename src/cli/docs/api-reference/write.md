@@ -15,26 +15,21 @@ qtfounder write [ROOT] [--genre <画像>] [--audience <画像>] [--topic <画像
 
 ## 参数
 
-| 参数 | 说明 |
-|---|---|
-| `ROOT` | 要扫的目录或文件 |
-| `--genre` | 体裁画像；缺省按 front matter 或文件名推断 |
-| `--audience` | 读者画像；缺省 `default` |
-| `--topic` | 主题画像；缺省 `default` |
-| `--kind` | 只看一层：`empty`、`slogan`、`reference`、`structure`、`genre`、`audience`、`topic` |
-| `--rules` | 契约路径；缺省按 `src/write/default-contract.toml` 逐级往上找 |
-| `--top` | 文本报告最多列几个文件，缺省 15 |
-| `--json` | 输出 JSON |
-| `--profiles` | 列出契约里的体裁、读者与主题，不审文件 |
+- `ROOT`：要扫的目录或文件
+- `--genre`：体裁画像，缺省按 front matter 或文件名推断
+- `--audience`：读者画像，缺省 `default`
+- `--topic`：主题画像，缺省 `default`
+- `--kind`：只看一层，取 `empty`、`slogan`、`reference`、`structure`、`genre`、`audience`、`topic`
+- `--rules`：契约路径，缺省按 `src/write/default-contract.toml` 逐级往上找
+- `--top`：文本报告最多列几个文件，缺省 15
+- `--json`：输出 JSON
+- `--profiles`：列出契约里的体裁、读者与主题，不审文件
 
 画像选择顺序：命令行 → front matter（`genre:`、`audience:`、`topic:`）→ 路径推断 → `default`。体裁只从文件名推断，避免把同目录下别的文章一起判；主题不自动推断。
 
 ## 退出码
 
-| 码 | 含义 |
-|---|---|
-| 0 | 没有命中，或 `--profiles` 正常输出 |
-| 1 | 有命中 |
+退出码 `0` 是没有命中，或 `--profiles` 正常输出完毕。`1` 表示有命中。
 | 2 | 契约或文件读不了 |
 
 ## JSON

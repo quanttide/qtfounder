@@ -4,7 +4,7 @@
 
 ## 一、五步
 
-1. 在 `Cargo.toml` 加对应 tree-sitter 语法包；
+1. 你在 `Cargo.toml` 里加对应 tree-sitter 语法包；
 2. 在 `src/code/extract/specs.rs` 写一个返回 `LangSpec` 的函数，十七个字段填全；
 3. 在 `src/code/extract/mod.rs` 按扩展名挂上分支；
 4. 用一门已知良好的代码文件试跑，**逐条核对命中是否真实**；

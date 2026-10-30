@@ -14,7 +14,7 @@ qtfounder docs check [ROOT]
 
 **`--kind`**：`table`／`list`／`density`／`bold`／`rule`／`frontmatter`／`journal`，只报一层。`format` 模式下只过滤审计，状态始终全数。
 
-**`--rules PATH`**：指定契约。缺省按 `QTFOUNDER_DOCS_CONTRACT`、再往上找 `src/docs/default-contract.toml`、最后退到 `~/.config/qtfounder/docs/`。
+**`--rules PATH`**：你给了就用它指的契约。不给就按 `QTFOUNDER_DOCS_CONTRACT`、再往上找 `src/docs/default-contract.toml`、最后退到 `~/.config/qtfounder/docs/`。
 
 **`--top N`**：最多列几个文件，缺省 15。`--stats` 时也用它限制行数。
 
@@ -26,7 +26,9 @@ qtfounder docs check [ROOT]
 
 ## 二、退出码
 
-退出码 `0` 表示无命中，`docs check` 时表示索引与目录一致；`1` 表示有命中，`check` 时是存在缺失索引或失效引用；`2` 表示用不了——契约读不到、`--kind` 取值不认识、有文件读不了，或 `check` 的目标目录不存在。
+退出码 `0` 是没命中；对 `docs check` 而言，是索引与目录对得上。`1` 表示有命中；对 `check` 而言，是存在缺失索引或失效引用。
+
+`2` 表示用不了：契约读不到、`--kind` 取值不认识、有文件读不了，或 `check` 的目标目录不存在。
 
 ## 三、JSON 结构
 
@@ -89,7 +91,11 @@ qtfounder docs check [ROOT]
 
 `[rule]` 两个字段：`max`（全文分割线处数）与 `flag_between_sections`（紧挨标题的横线算装饰，单独报）。
 
-`[frontmatter]` 的字段：`keys`（允许出现的字段名，表外的报嫌疑）、`status`（取值表，表外的报错）、`author_types`（`authors` 每条 `type` 的取值表）、`orgs`（法人署名可用的全名，不在表里报错）、`contexts`（语境声明，表外的报错）、`genre`／`audience`／`topic`（表达审计的画像，表外的报错）。表为空则不查该项；文档没有 front matter 时整层不动。`keys` 默认已含 MyST 的保留字段（`title`、`authors`、`license`、`exports` 等），站点渲染用的字段一律放行；本仓自用有 `name`、`status`、`context`、`genre`、`audience`、`topic`。
+`[frontmatter]` 各字段各管一张表，写在表外就报：`keys` 收允许出现的字段名（表外报嫌疑），`status` 收取值，`author_types` 收 `type` 的取值，`orgs` 收法人全名，`contexts` 收语境声明。
+
+`genre`、`audience`、`topic` 三张表收表达审计要用的画像。
+
+某张表留空就是不查它；文档压根没有 front matter 时整层不动。`keys` 默认已含 MyST 保留字段（`title`、`authors`、`license`、`exports` 等），站点渲染字段一律放行；本仓自用的是 `name`、`status`、`context`、`genre`、`audience`、`topic`。
 
 署名读 `authors` 的块列表，只看每条内部的 `type` 与有没有 `name`：`type` 缺失报错，`agent` 缺模型名报嫌疑，`org` 的名字必须在 `orgs` 里；其他字段（`email`、`affiliations` 等）不查。流式写法（`authors: [...]`）报嫌疑，因为落不了行号。默认取值：`status` 为 `draft`、`pending`、`final`，`author_types` 为 `human`、`agent`、`org`；画像取值与 `write` 契约的 `[genre.*]`、`[audience.*]`、`[topic.*]` 对齐。
 

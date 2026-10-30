@@ -1,6 +1,6 @@
 # data：标注规则、任务包与结果
 
-标注这件事拆三样东西：规则说清「什么算一个标签」，任务包是给标注端的输入（规则快照 + 待标单元），结果是标注端干完活导出的 JSONL。`qtfounder data` 管这三样的存取；规则的设计界面在 studio，标注的执行界面在 lite，CLI 这边是同一份数据的脚本入口。
+标注这件事拆三样东西：规则说清「什么算一个标签」，任务包是给标注端的输入（规则快照 + 待标单元），结果是标注端干完活导出的 JSONL。`qtfounder data` 管这三样的存取。规则的设计界面在 studio，标注的执行界面在 lite；CLI 这边是同一份数据的脚本入口。
 
 三样都存在 XDG 数据目录下（`~/.local/share/qtfounder/data/`，`QTFOUNDER_DATA` 可换），studio 写进去的规则这里直接看得到，不需要同步动作。
 
@@ -48,7 +48,7 @@ qtfounder data task list              # id、规则、单元数、时间
 qtfounder data task show tsk_K2M9     # 规则快照 + 单元清单
 ```
 
-标注端干完活导出 JSONL（一行一条：`task`、`unit`、`label`），导回来与统计：
+你干完标注，从端上导出 JSONL（一行一条：`task`、`unit`、`label`），再导回来统计：
 
 ```bash
 qtfounder data result import lite-export.jsonl   # 按行里的 task 归档，追加不覆盖
@@ -75,6 +75,6 @@ $ qtfounder data rule show rul_没有  # 退出码 3
 
 ## 存储位置
 
-三样都在 XDG 数据目录：`data/rules/<id>.json`、`data/tasks/<id>.json`、`data/results/<task>.jsonl`（JSON Lines，一行一条，追加不覆盖）。本命令组不区分开发与发布构建，一律走 XDG——共享存储必须位置稳定；`QTFOUNDER_DATA` 优先级最高，供测试与临时切换用。
+三样都落在你的 XDG 数据目录：`data/rules/<id>.json`、`data/tasks/<id>.json`、`data/results/<task>.jsonl`（JSON Lines，一行一条，追加不覆盖）。本命令组不区分开发与发布构建，一律走 XDG——共享存储必须位置稳定；`QTFOUNDER_DATA` 优先级最高，供测试与临时切换用。
 
 与 `product`、`execute` 的数据同一目录根，各占一个子目录，互不干扰。

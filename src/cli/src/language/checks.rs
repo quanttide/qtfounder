@@ -95,7 +95,18 @@ pub(super) fn check_numbers(rel: &str, text: &str, contract: &Contract) -> Vec<F
         .collect();
 
     let mut out = Vec::new();
+    // 与 syntax／voice 同规矩：代码块里的数字是样例不是断言，不要求分母。
+    // 不跳的话，每份展示真实输出的示例都会被报，而样例里加出处会污染样例。
+    let mut in_code = false;
     for (lineno, line) in text.lines().enumerate() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("```") {
+            in_code = !in_code;
+            continue;
+        }
+        if in_code {
+            continue;
+        }
         let hits: Vec<&str> = evidence_number
             .find_iter(line)
             .filter(|found| !is_descriptive_number(line, found.start(), found.end()))

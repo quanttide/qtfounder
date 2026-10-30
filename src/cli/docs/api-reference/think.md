@@ -45,7 +45,7 @@ qtfounder think model [--model PATH] [--json]
 
 ## 四、`reflect` 的输出
 
-记一条时给 `id`、`at`、`missing`、`next_question` 与 `recurring`。`missing` 按模型里的栏位顺序列出还空的栏，`next_question` 是照第一处空缺给出的那一句，`recurring` 只列出现两次以上的扭曲。
+记一条时给 `id`、`at`、`missing`、`next_question` 与 `recurring`。`missing` 按模型的栏位顺序列还没填的栏。`next_question` 照第一处空缺给出那一句。`recurring` 只列出现两次以上的扭曲。
 
 ```json
 {
@@ -65,7 +65,7 @@ qtfounder think model [--model PATH] [--json]
 
 输出当前生效的模型与来源。`--json` 给 `source`、`screen`（`signal_words`、`bare_ack`、`min_chars`）、`role`（`domains` 与 `controls`）、`fields`（栏位顺序）、`labels`、`questions`、`distortions`（键与标签）。`[screen]` 是 `load` 的宽筛规则，与认知模型同一份文件。
 
-模型查找顺序是 `--model` → `QTFOUNDER_THINK_MODEL` → 从当前目录逐级往上找 `src/think/default-contract.toml` → `~/.config/qtfounder/think/model.toml` → 内置。前两道指向的文件不存在时报错，后面两道找不到就用内置。
+你指定模型时按这个顺序找：`--model` → `QTFOUNDER_THINK_MODEL` → 从当前目录逐级往上找 `src/think/default-contract.toml` → `~/.config/qtfounder/think/model.toml` → 内置。前两道指向的文件不存在时报错，后面两道找不到就用内置。
 
 ## 六、退出码
 
@@ -86,6 +86,6 @@ qtfounder think model [--model PATH] [--json]
 - 标准输入不是 JSON——`标准输入不是合法 JSON：…`
 - 模型文件读不了或格式不对——`模型 <路径> 格式不对：…`
 
-## 八、落点
+## 八、记在哪
 
-`reflect` 的账本在 `<数据目录>/think/reflect.json`，数据目录取 `QTFOUNDER_DATA`，其次 `$XDG_DATA_HOME/qtfounder`，再次 `~/.local/share/qtfounder`。`load` 只读会话库，不写文件。
+你跑 `reflect`，记录落在 `<数据目录>/think/reflect.json`；数据目录取 `QTFOUNDER_DATA`，其次 `$XDG_DATA_HOME/qtfounder`，再次 `~/.local/share/qtfounder`。`load` 只读会话库，不写文件。
