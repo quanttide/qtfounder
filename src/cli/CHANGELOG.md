@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- `data` 拆成五个文件：`mod.rs` 只留命令面、派发与共用的存储原语，模型进 `model.rs`
+- `rule`／`task`／`result` 三个子命令各带自己的模型与加载器；`mod.rs` 从 813 行降到 131 行
+- `data` 与 `code` 模块头补五层意图声明（核心目标／边界／约束／已知假设／不确定性）
+- 这是 `code review` 自检第一条的根因：全仓没有一处意图声明，「模块拆多细」没有说法，于是同一个 CLI 出现两种组织法
+- `code review` 的 JSON 锚点补 `layer_name`／`kind`／`principle`／`advice` 四键，与 `code` 自己的 JSON 同形
+- 少了 `kind` 就分不了组，只能正则猜 message；这是自检第五条，是那轮自己带进来的
+
 ## [0.0.45] - 2026-10-30
 
 ### Added

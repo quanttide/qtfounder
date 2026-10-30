@@ -124,7 +124,12 @@ fn render_text(rules: &[ReviewRule], findings: &[super::model::Finding], root: &
     }
 }
 
-fn render_json(rules: &[ReviewRule], findings: &[super::model::Finding], root: &PathBuf) {
+pub(super) fn render_json(rules: &[ReviewRule], findings: &[super::model::Finding], root: &PathBuf) {
+    print!("{}", render_json_text(rules, findings, root));
+}
+
+/// 拼 JSON 文本；抽出来是为了能对字段断言，见 `tests::审查JSON的锚点带全八键`。
+pub(super) fn render_json_text(rules: &[ReviewRule], findings: &[super::model::Finding], root: &PathBuf) -> String {
     let rules_json: Vec<String> = rules
         .iter()
         .map(|rule| {
@@ -141,24 +146,32 @@ fn render_json(rules: &[ReviewRule], findings: &[super::model::Finding], root: &
         .iter()
         .map(|finding| {
             format!(
-                "    {{\"layer\":\"{}\",\"path\":\"{}\",\"line\":{},\"message\":\"{}\"}}",
+                "    {{\"layer\":\"{}\",\"layer_name\":\"{}\",\"kind\":\"{}\",\"path\":\"{}\",\"line\":{},\"message\":\"{}\",\"principle\":\"{}\",\"advice\":\"{}\"}}",
                 finding.layer.key(),
+                finding.layer.label(),
+                finding.kind,
                 super::json_escape(&finding.path),
                 finding.line,
                 super::json_escape(&finding.message),
+                finding.principle.label(),
+                super::json_escape(finding.advice),
             )
         })
         .collect();
 
-    println!("{{");
-    println!("  \"root\": \"{}\",", super::json_escape(&root.display().to_string()));
-    println!("  \"intent_layers\": [");
+    let mut out = String::from("{\n");
+    out.push_str(&format!(
+        "  \"root\": \"{}\",\n",
+        super::json_escape(&root.display().to_string())
+    ));
+    out.push_str("  \"intent_layers\": [\n");
     for (index, line) in INTENT_LAYERS.iter().enumerate() {
         let comma = if index + 1 == INTENT_LAYERS.len() { "" } else { "," };
-        println!("    \"{line}\"{comma}");
+        out.push_str(&format!("    \"{line}\"{comma}\n"));
     }
-    println!("  ],");
-    println!("  \"rules\": [\n{}\n  ],", rules_json.join(",\n"));
-    println!("  \"findings\": [\n{}\n  ]", findings_json.join(",\n"));
-    println!("}}");
+    out.push_str("  ],\n");
+    out.push_str(&format!("  \"rules\": [\n{}\n  ],\n", rules_json.join(",\n")));
+    out.push_str(&format!("  \"findings\": [\n{}\n  ]\n", findings_json.join(",\n")));
+    out.push_str("}\n");
+    out
 }

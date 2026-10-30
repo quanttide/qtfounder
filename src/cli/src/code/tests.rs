@@ -1,5 +1,7 @@
 //! 两件事一起验：每层验收标准能证伪，两个语言提取器给出一致结论。
 
+use std::path::PathBuf;
+
 use super::extract::{python, rust_lang, specs, tree_sitter_extractor};
 use super::ir::Facts;
 use super::model::Layer;
@@ -490,4 +492,24 @@ fn 审查骨架的意图五层与重构同一套() {
         super::review::INTENT_LAYERS.map(|line| line.split('：').next().unwrap()),
         ["核心目标", "边界", "约束", "已知假设", "不确定性"]
     );
+}
+
+#[test]
+fn 审查JSON的锚点带全八键() {
+    // 与 code 自己的 JSON 同形：少了 kind 就没法分组，少了 principle 就不知道违反哪条。
+    let rules = Rules::load(None).expect("仓里应能找到默认契约");
+    let (findings, _) = super::collect(
+        &PathBuf::from("src"),
+        &rules,
+        &[Layer::Pragmatic],
+    );
+    if findings.is_empty() {
+        return;
+    }
+    let body = super::review::render_json_text(&rules.review, &findings, &PathBuf::from("src"));
+    let parsed: serde_json::Value = serde_json::from_str(&body).expect("是合法 JSON");
+    let first = &parsed["findings"][0];
+    for key in ["layer", "layer_name", "kind", "path", "line", "message", "principle", "advice"] {
+        assert!(!first.get(key).is_none(), "review 的 JSON 少了 {key}");
+    }
 }
