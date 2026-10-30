@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.0.44] - 2026-10-30
 
 ### Added
 
@@ -11,11 +11,22 @@
 - `--rules` 与 `--json` 提为 global，缺省检查与 `reflect` 两处通用；`qtfounder code <root>` 老用法不变
 - Skill `code-reflect`（随 CLI 发布的第十条）：拿清单 → 逐条回看刚改的代码作答 → 写回路线图 → 三个自检收口 → 提交并复跑
 - 作答只有一句：举得出具体一处才算命中；发现写进 `data/roadmap/qtfounder/index.md`，按 Roadmap 手册的三个自检过一遍
+- `infra` 命令组：订阅登记与派发——`add --on <事件>`／`add --every <周期>`、`list`、`remove`、`run`、`fire <事件>`、`emit`
+- 表落 `<数据根>/infra/subscriptions.json`；CLI 只管登记与派发，触发怎么来交给驱动方
+- `infra` 不解释事件名与周期串，原样交给驱动方；`emit` 只打印接法（git 钩子片段或 crontab 行），不写用户的 crontab、不动仓里已有的 `.githooks`
+- `core` 新增三个原语：`path::upwards` 沿祖先向上、`contract::find` 契约三层查找、`store::data_home` 的 XDG 三级解析；core 仍只依赖 std
 
 ### Changed
 
-- `asset maintain` 的 `--root` 改为起点：从起点沿祖先目录向上定位含契约 `source.path` 的仓根（起点本身含就直接用），查不到时报错退出而不是静默返回空计划 exit 0——「路径指错了」不再和「真没东西可搬」混成同一种输出；查找键取自契约不写死；输出 JSON 增 `start` 与 `root_located_upward`
-- Skill 发布清单九条 → 十条：`registry` 单测、`tests/agent_skill.rs` 的 `PUBLISHED` 与安装数断言、根仓 `AGENTS.md`／`CONTRIBUTING.md`／`api-reference/agent.md` 三处名单同步
+- 六份 `find_contract` 收敛到 `core::contract::find`：逻辑逐字相同只差域名，`code` 那份还少一条相对路径，是抄写漂移的实样
+- `docs check` 向上找 `.agents/skills` 改用 `core::path::upwards`，与另两处向上循环同一个原语
+- 三处 `resolve_root` 同名不同义，拆名：`git_root` git toplevel、`estate_root` 含 context 的仓根、`install_root` 系统位置
+- 两个仓根的 doc 注明为什么不互相代替：子模块的 git toplevel 不是 estate 根，用了会认错家
+- `asset catalog` 改用 `estate_root`，与 `maintain` 同一个根；原先从子目录跑会静默报一份全缺的假清单
+- `asset maintain` 的 `--root` 改为起点：沿祖先向上定位含契约 `source.path` 的仓根（起点本身含就直接用），查不到就报错退出，不再静默返回空计划 exit 0
+- 「路径指错了」与「真没东西可搬」不再混成同一种输出；查找键取自契约不写死，输出 JSON 增 `start` 与 `root_located_upward`
+- Skill 发布清单九条 → 十条：`registry` 单测、`PUBLISHED` 名单与安装数断言一起改
+- 根仓 `AGENTS.md`／`CONTRIBUTING.md`／`api-reference/agent.md` 三处名单同步
 
 ## [0.0.43] - 2026-10-29
 

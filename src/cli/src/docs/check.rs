@@ -99,14 +99,11 @@ pub fn run_check(root: &Path) -> Result<i32, String> {
 /// 找 `.agents/skills`：先看给定目录，再最多上溯三层（从子目录跑也能找到）。
 /// 第二个返回值表示它是否就在给定目录之下——在祖先仓时不查索引缺漏。
 fn find_skills_dir(root: &Path) -> Option<(PathBuf, bool)> {
-    let mut dir = Some(root);
-    for depth in 0..4 {
-        let base = dir?;
-        let candidate = base.join(".agents/skills");
+    for (depth, dir) in crate::core::path::upwards(root, Some(4)).into_iter().enumerate() {
+        let candidate = dir.join(".agents/skills");
         if candidate.is_dir() {
             return Some((candidate, depth == 0));
         }
-        dir = base.parent();
     }
     None
 }

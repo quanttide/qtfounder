@@ -780,37 +780,5 @@ path = "data/insight"
 }
 
 fn find_contract() -> Result<PathBuf, String> {
-    if let Ok(from_env) = std::env::var(CONTRACT_ENV)
-        && !from_env.is_empty()
-    {
-        let path = PathBuf::from(&from_env);
-        if path.is_file() {
-            return Ok(path);
-        }
-        return Err(format!("{CONTRACT_ENV} 指向的契约不存在：{from_env}"));
-    }
-    let start = std::env::current_dir().map_err(|error| format!("读不到当前目录：{error}"))?;
-    let mut dir = start.as_path();
-    loop {
-        for relative in CONTRACT_RELATIVE {
-            let candidate = dir.join(relative);
-            if candidate.is_file() {
-                return Ok(candidate);
-            }
-        }
-        match dir.parent() {
-            Some(parent) => dir = parent,
-            None => break,
-        }
-    }
-
-    if let Ok(home) = std::env::var("HOME") {
-        let user_level = Path::new(&home).join(format!(".config/qtfounder/meta/{CONTRACT_FILE}"));
-        if user_level.is_file() {
-            return Ok(user_level);
-        }
-    }
-    Err(format!(
-        "找不到默认契约 {CONTRACT_FILE}：用 --rules 指定，或设 {CONTRACT_ENV}，或放在 src/meta/{CONTRACT_FILE}，或装到 ~/.config/qtfounder/meta/{CONTRACT_FILE}"
-    ))
+    crate::core::contract::find(CONTRACT_ENV, &CONTRACT_RELATIVE, "meta", CONTRACT_FILE)
 }

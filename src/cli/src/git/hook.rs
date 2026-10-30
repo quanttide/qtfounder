@@ -10,7 +10,7 @@ use serde_json::json;
 
 use super::common::{
     HOOKS_DIR, Repo, configured_path, display_name, git_command, non_executable, repos,
-    resolve_root, same_path,
+    git_root, same_path,
 };
 use super::run::{self, RunArgs};
 
@@ -178,7 +178,7 @@ fn unset_hooks_path(repo: &Path) -> Result<(), String> {
 }
 
 fn status(args: &StatusArgs) -> Result<i32, String> {
-    let root = resolve_root(args.root.as_deref())?;
+    let root = git_root(args.root.as_deref())?;
     let managed = root.join(HOOKS_DIR);
     let managed_exists = managed.is_dir();
     let repos = repos(&root)?;
@@ -244,7 +244,7 @@ fn status(args: &StatusArgs) -> Result<i32, String> {
 }
 
 fn install(args: &InstallArgs) -> Result<i32, String> {
-    let root = resolve_root(args.root.as_deref())?;
+    let root = git_root(args.root.as_deref())?;
     let managed = root.join(HOOKS_DIR);
     if !managed.is_dir() {
         return Err(format!("找不到 {}；钩子目录不存在", managed.display()));
@@ -324,7 +324,7 @@ fn install(args: &InstallArgs) -> Result<i32, String> {
 }
 
 fn uninstall(args: &UninstallArgs) -> Result<i32, String> {
-    let root = resolve_root(args.root.as_deref())?;
+    let root = git_root(args.root.as_deref())?;
     let managed = root.join(HOOKS_DIR);
     let repos = repos(&root)?;
 

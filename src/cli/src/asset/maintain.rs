@@ -59,7 +59,7 @@ pub struct Step {
 
 pub fn run(args: &MaintainArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
-    let (root, upward) = resolve_root(&contract, &args.root)?;
+    let (root, upward) = estate_root(&contract, &args.root)?;
     let plan = plan(&contract, &root)?;
     let nested = nested_assets(&contract, &root);
     let moving = !args.check && !args.dry_run;
@@ -78,12 +78,15 @@ pub fn run(args: &MaintainArgs, rules: Option<&Path>) -> Result<i32, String> {
     Ok(if issues || pending { 1 } else { 0 })
 }
 
-/// 从 `start` 起沿祖先目录向上，找第一个直接含契约 source 资产路径的目录；
+/// Estate 根：从 `start` 起沿祖先目录向上，找第一个直接含契约 source 资产路径的目录；
 /// 起点本身含就直接用。返回（仓根，是否向上才找到）。
+///
+/// 刻意不问 git：`data/roadmap` 这类子模块的 `--show-toplevel` 是它自己，不是 estate 根，
+/// 用 git 版在子模块里会认错家。对照 `git::common::git_root`。
 ///
 /// 找不到必须报错——「路径指错了」和「真没东西可搬」不能混成同一种输出。
 /// 查找键取自契约 `source.path`，不写死：契约换路径，解析跟着换。
-fn resolve_root(contract: &Contract, start: &Path) -> Result<(PathBuf, bool), String> {
+pub(super) fn estate_root(contract: &Contract, start: &Path) -> Result<(PathBuf, bool), String> {
     let source = contract
         .source()
         .ok_or_else(|| "契约缺少 source 资产：context".to_string())?;
@@ -315,15 +318,7 @@ fn print_text(
     nested: &[String],
     moving: bool,
 ) {
-    if upward {
-        println!(
-            "根：{}（自 {} 向上定位）",
-            root.display(),
-            args.root.display()
-        );
-    } else {
-        println!("根：{}", root.display());
-    }
+    super::root_line(root, upward, &args.root);
     if args.dry_run {
         println!("预览，不落盘");
     }
@@ -524,7 +519,7 @@ mod tests {
         let dir = fixture();
         let contract = Contract::bundled();
         let start = dir.path().join("data/context/default");
-        let (root, upward) = resolve_root(&contract, &start).unwrap();
+        let (root, upward) = estate_root(&contract, &start).unwrap();
         assert_eq!(root, dir.path().canonicalize().unwrap());
         assert!(upward);
     }
@@ -533,7 +528,7 @@ mod tests {
     fn 起点即仓根时不再向上找() {
         let dir = fixture();
         let contract = Contract::bundled();
-        let (root, upward) = resolve_root(&contract, dir.path()).unwrap();
+        let (root, upward) = estate_root(&contract, dir.path()).unwrap();
         assert_eq!(root, dir.path().canonicalize().unwrap());
         assert!(!upward);
     }
@@ -543,7 +538,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         fs::create_dir_all(dir.path().join("sub")).unwrap();
         let contract = Contract::bundled();
-        let error = resolve_root(&contract, &dir.path().join("sub")).unwrap_err();
+        let error = estate_root(&contract, &dir.path().join("sub")).unwrap_err();
         assert!(error.contains("找不到"));
         assert!(error.contains("--root"));
     }

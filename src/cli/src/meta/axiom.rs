@@ -42,8 +42,15 @@ pub fn print_domain(
         .filter(|axiom| axiom.is_meta() == want_meta)
         .collect();
     if layer.is_empty() {
-        let which = if want_meta { "元模型领域" } else { "资产领域" };
-        return Err(format!("契约里没有{which}的公理：在 [[axiom]] 里补 domain = \"{}\"", if want_meta { "meta" } else { "asset" }));
+        let which = if want_meta {
+            "元模型领域"
+        } else {
+            "资产领域"
+        };
+        return Err(format!(
+            "契约里没有{which}的公理：在 [[axiom]] 里补 domain = \"{}\"",
+            if want_meta { "meta" } else { "asset" }
+        ));
     }
     let axioms: Vec<&Axiom> = match name {
         Some(name) => vec![axiom_of(&layer, name)?],

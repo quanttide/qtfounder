@@ -15,6 +15,7 @@ mod design;
 mod docs;
 mod execute;
 mod git;
+mod infra;
 mod language;
 mod meta;
 mod product;
@@ -53,6 +54,8 @@ enum CliCommand {
     Data(data::DataArgs),
     /// 执行：collect 收待办进池子，draw 按优先级抽一件
     Execute(execute::ExecuteArgs),
+    /// 基础设施：周期与事件的订阅登记，事件来时派发
+    Infra(infra::InfraArgs),
     /// Agent：装 Skill、查写法
     Agent(agent::AgentArgs),
     /// Git：装钩子、查配置漂移
@@ -120,6 +123,13 @@ fn main() {
                 std::process::exit(error.exit_code());
             }
         }
+        Some(CliCommand::Infra(args)) => match infra::run(&args) {
+            Ok(exit_code) => std::process::exit(exit_code),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(core::exit::USAGE);
+            }
+        },
         Some(CliCommand::Execute(args)) => {
             if let Err(error) = execute::run(args.command, args.json) {
                 product::print_error(&error);

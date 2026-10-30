@@ -108,42 +108,7 @@ pub struct Voice {
 
 /// 找契约：环境变量 → 当前目录往上找 → 都没有就报错。刻意不内置兜底。
 pub fn find_contract() -> Result<PathBuf, String> {
-    if let Ok(from_env) = std::env::var(CONTRACT_ENV)
-        && !from_env.is_empty()
-    {
-        let path = PathBuf::from(&from_env);
-        if path.is_file() {
-            return Ok(path);
-        }
-        return Err(format!("{CONTRACT_ENV} 指向的契约不存在：{from_env}"));
-    }
-    let start = std::env::current_dir().map_err(|error| format!("读不到当前目录：{error}"))?;
-    let mut dir = start.as_path();
-    loop {
-        for relative in CONTRACT_RELATIVE {
-            let candidate = dir.join(relative);
-            if candidate.is_file() {
-                return Ok(candidate);
-            }
-        }
-        match dir.parent() {
-            Some(parent) => dir = parent,
-            None => break,
-        }
-    }
-
-    // 装成命令行工具后，当前目录里不会有源码树的契约——退回用户级目录，
-    // 这样 `qtfounder language .` 在任何目录都能跑，用户改阈值也改这一份。
-    if let Ok(home) = std::env::var("HOME") {
-        let user_level =
-            Path::new(&home).join(format!(".config/qtfounder/language/{CONTRACT_FILE}"));
-        if user_level.is_file() {
-            return Ok(user_level);
-        }
-    }
-    Err(format!(
-        "找不到默认契约 {CONTRACT_FILE}：用 --rules 指定，或设 {CONTRACT_ENV}，或放在 src/language/{CONTRACT_FILE}，或装到 ~/.config/qtfounder/language/{CONTRACT_FILE}"
-    ))
+    crate::core::contract::find(CONTRACT_ENV, &CONTRACT_RELATIVE, "language", CONTRACT_FILE)
 }
 
 impl Contract {

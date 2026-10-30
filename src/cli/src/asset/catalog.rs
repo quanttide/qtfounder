@@ -1,7 +1,8 @@
 //! 资产清单：20 种资产在仓库里各是什么状态。
 //!
-//! 只读文件系统，不改目录。路径相对 `--root` 算，缺省是当前目录。
-//! 二十种 = context（入口）+ 十八类长期记忆 + archive（出口）。
+//! 只读文件系统，不改目录。路径相对 estate 根算，与 `maintain` 同一个根：从 `--root`
+//! 起向上定位含 context 的仓根，起点本身含就直接用——不然从子目录跑会静默报一份
+//! 全缺的假清单。二十种 = context（入口）+ 十八类长期记忆 + archive（出口）。
 
 use std::path::{Path, PathBuf};
 
@@ -12,7 +13,7 @@ use crate::meta::contract::{Asset, Contract};
 
 #[derive(Args, Debug)]
 pub struct CatalogArgs {
-    /// 仓根；资产的相对路径按它算
+    /// 起点；从这里向上定位含 context 的仓根（起点本身含就直接用），缺省当前目录
     #[arg(long, default_value = ".")]
     pub root: PathBuf,
     /// 只列仓库里已存在的资产
@@ -25,10 +26,11 @@ pub struct CatalogArgs {
 
 pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
     let contract = Contract::load(rules)?;
+    let (root, upward) = super::maintain::estate_root(&contract, &args.root)?;
     let rows: Vec<(&Asset, bool)> = contract
         .asset
         .iter()
-        .map(|asset| (asset, args.root.join(&asset.path).exists()))
+        .map(|asset| (asset, root.join(&asset.path).exists()))
         .filter(|(_, present)| !args.present || *present)
         .collect();
 
@@ -48,7 +50,8 @@ pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
         println!(
             "{}",
             serde_json::to_string_pretty(&json!({
-                "root": args.root.display().to_string(),
+                "root": root.display().to_string(),
+                "root_located_upward": upward,
                 "assets": assets,
             }))
             .unwrap_or_else(|_| "{}".to_string())
@@ -60,9 +63,9 @@ pub fn run(args: &CatalogArgs, rules: Option<&Path>) -> Result<i32, String> {
     let found = contract
         .asset
         .iter()
-        .filter(|asset| args.root.join(&asset.path).exists())
+        .filter(|asset| root.join(&asset.path).exists())
         .count();
-    println!("根：{}", args.root.display());
+    super::root_line(&root, upward, &args.root);
     println!(
         "{total} 种资产，仓库里有 {found} 种，缺 {} 种",
         total - found

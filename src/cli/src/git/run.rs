@@ -16,7 +16,7 @@ use crate::language::contract::{self, Contract};
 use crate::language::model::{Finding, Severity, Verdict};
 use crate::language::scan;
 
-use super::common::{HOOKS_DIR, display_name, git, git_command, resolve_root};
+use super::common::{HOOKS_DIR, display_name, git, git_command, git_root};
 use super::submodule;
 
 /// 能执行的钩子。
@@ -45,7 +45,7 @@ pub fn run(args: &RunArgs) -> Result<i32, String> {
     }
 
     // 钩子作用在当前仓；脚本传来的 --root 只用来找契约与面板日志。
-    let repo = resolve_root(None)?;
+    let repo = git_root(None)?;
     let workspace = match &args.root {
         Some(path) => std::fs::canonicalize(path)
             .map_err(|error| format!("读不到 {}：{error}", path.display()))?,

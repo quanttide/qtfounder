@@ -34,8 +34,7 @@ pub fn run(args: &ReflectArgs, rules_path: Option<&Path>, json: bool) -> Result<
     let rules = Rules::load(rules_path)?;
     if rules.reflect.is_empty() {
         return Err(
-            "契约里没有 [[reflect]]：在 default-contract.toml 末尾补一段反思规则再跑"
-                .to_string(),
+            "契约里没有 [[reflect]]：在 default-contract.toml 末尾补一段反思规则再跑".to_string(),
         );
     }
 
@@ -60,7 +59,12 @@ pub fn run(args: &ReflectArgs, rules_path: Option<&Path>, json: bool) -> Result<
 }
 
 /// 把选中的规则拼成报告；抽出来是为了能对输出断言，见 `tests::反思输出例子按需才给`。
-pub(crate) fn render(picked: &[&ReflectRule], total: usize, example: bool, json: bool) -> Result<String, String> {
+pub(crate) fn render(
+    picked: &[&ReflectRule],
+    total: usize,
+    example: bool,
+    json: bool,
+) -> Result<String, String> {
     if json {
         let out: Vec<RuleOut> = picked
             .iter()

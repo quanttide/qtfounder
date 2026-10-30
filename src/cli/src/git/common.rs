@@ -31,7 +31,11 @@ pub(super) struct Repo {
     pub(super) initialized: bool,
 }
 
-pub(super) fn resolve_root(root: Option<&Path>) -> Result<PathBuf, String> {
+/// Git 仓根：`git rev-parse --show-toplevel`。
+///
+/// 注意它给的是「当前这个仓」的根：`data/roadmap` 这类自带 `.git` 的子模块会返回它自己，
+/// 不是外层仓。要找 estate 根用 `asset::maintain::estate_root`，两者在本仓里不是同一个目录。
+pub(super) fn git_root(root: Option<&Path>) -> Result<PathBuf, String> {
     let dir = root.unwrap_or(Path::new("."));
     let output = git_command(dir)
         .args(["rev-parse", "--show-toplevel"])

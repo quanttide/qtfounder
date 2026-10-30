@@ -13,6 +13,20 @@ use std::path::PathBuf;
 
 use clap::{Args, Subcommand};
 
+/// 打「根」那一行：向上定位过就把起点也写出来，让人看得见它不是按给的路径直算的。
+/// `catalog` 与 `maintain` 都用它，措辞只此一处。
+pub fn root_line(root: &std::path::Path, upward: bool, start: &std::path::Path) {
+    if upward {
+        println!(
+            "根：{}（自 {} 向上定位）",
+            root.display(),
+            start.display()
+        );
+    } else {
+        println!("根：{}", root.display());
+    }
+}
+
 #[derive(Args, Debug)]
 pub struct AssetArgs {
     #[command(subcommand)]

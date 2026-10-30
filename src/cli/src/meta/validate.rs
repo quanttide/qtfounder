@@ -36,14 +36,8 @@ const MEMORY_ROLE: &str = "memory";
 /// 管建模的公理本就不该点名具体物件。
 ///
 /// 归域的判断题留在人这边：见 docs/user-guide/meta.md「两个领域的边界」。
-const ESTATE_PHYSICAL_TERMS: [&str; 6] = [
-    "子模块",
-    "仓库根",
-    "目录名",
-    "路径",
-    ".gitmodules",
-    "data/",
-];
+const ESTATE_PHYSICAL_TERMS: [&str; 6] =
+    ["子模块", "仓库根", "目录名", "路径", ".gitmodules", "data/"];
 
 pub fn run(args: &ValidateArgs) -> Result<i32, String> {
     let contract = Contract::load(args.rules.as_deref())?;

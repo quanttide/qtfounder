@@ -46,7 +46,7 @@ pub struct InstallArgs {
 
 /// `list` 与 `check` 共用一张表，区别只在报什么、怎么退出。
 pub(super) fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
-    let root = resolve_root(args.root.as_deref())?;
+    let root = install_root(args.root.as_deref())?;
     let entries = registry::all();
 
     if entries.is_empty() {
@@ -148,7 +148,7 @@ pub(super) fn report(args: &ListArgs, check: bool) -> Result<i32, String> {
 }
 
 pub(super) fn install(args: &InstallArgs) -> Result<i32, String> {
-    let root = resolve_root(args.root.as_deref())?;
+    let root = install_root(args.root.as_deref())?;
     let entries = registry::all();
     if entries.is_empty() {
         return Err(
@@ -234,7 +234,7 @@ pub(super) fn install(args: &InstallArgs) -> Result<i32, String> {
 }
 
 /// 不给 `--root` 就装到系统位置：`$HOME`，落到 `$HOME/.agents/skills`。
-fn resolve_root(root: Option<&Path>) -> Result<PathBuf, String> {
+fn install_root(root: Option<&Path>) -> Result<PathBuf, String> {
     if let Some(path) = root {
         return Ok(path.to_path_buf());
     }

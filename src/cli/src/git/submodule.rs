@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-use super::common::{display_name, git, git_command, repos, resolve_root};
+use super::common::{display_name, git, git_command, repos, git_root};
 
 /// `git submodule` 下的子命令。
 #[derive(Subcommand, Debug)]
@@ -245,7 +245,7 @@ fn unpushed(dir: &Path) -> usize {
 }
 
 fn check(args: &CheckArgs) -> Result<i32, String> {
-    let root = resolve_root(args.root.as_deref())?;
+    let root = git_root(args.root.as_deref())?;
     let report = inspect(&root, args.pushed)?;
     let flagged: Vec<&RepoReport> = report
         .repos

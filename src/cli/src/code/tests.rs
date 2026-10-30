@@ -3,7 +3,11 @@
 use super::extract::{python, rust_lang, specs, tree_sitter_extractor};
 use super::ir::Facts;
 use super::model::Layer;
-use super::{lexical, module, pragmatic, reflect, rules::{ReflectRule, Rules}, syntax};
+use super::{
+    lexical, module, pragmatic, reflect,
+    rules::{ReflectRule, Rules},
+    syntax,
+};
 
 fn facts_rs(source: &str) -> Facts {
     rust_lang::extract(source).expect("Rust 样本必须是合法源码")
@@ -388,13 +392,21 @@ fn unknown_layer_name_is_rejected() {
 #[test]
 fn 反思清单四条齐备且名字不重复() {
     let rules = Rules::load(None).expect("仓里应能找到默认契约");
-    assert_eq!(rules.reflect.len(), 4, "契约里应有四条反思规则，改数量要同步 skill 正文");
+    assert_eq!(
+        rules.reflect.len(),
+        4,
+        "契约里应有四条反思规则，改数量要同步 skill 正文"
+    );
     let mut seen = std::collections::HashSet::new();
     for rule in &rules.reflect {
         assert!(!rule.name.is_empty(), "name 不能为空");
         assert!(!rule.description.is_empty(), "{} 缺 description", rule.name);
         assert!(!rule.why.is_empty(), "{} 缺 why", rule.name);
-        assert!(!rule.example.is_empty(), "{} 缺 example，--example 会打空行", rule.name);
+        assert!(
+            !rule.example.is_empty(),
+            "{} 缺 example，--example 会打空行",
+            rule.name
+        );
         assert!(seen.insert(rule.name.as_str()), "name 重复：{}", rule.name);
     }
     assert_eq!(
@@ -410,7 +422,10 @@ fn 反思输出例子按需才给() {
     let total = picked.len();
 
     let plain = reflect::render(&picked, total, false, false).expect("渲染正文");
-    assert!(plain.contains("为什么算缺陷"), "缺省必给 description 与 why");
+    assert!(
+        plain.contains("为什么算缺陷"),
+        "缺省必给 description 与 why"
+    );
     assert!(!plain.contains("长什么样"), "缺省不打例子，例子按需");
 
     let with_example = reflect::render(&picked, total, true, false).expect("渲染正文");
@@ -434,7 +449,9 @@ fn 反思输出JSON带全四层() {
     for item in list {
         for key in ["name", "description", "why", "example"] {
             assert!(
-                item.get(key).and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty()),
+                item.get(key)
+                    .and_then(|v| v.as_str())
+                    .is_some_and(|s| !s.is_empty()),
                 "JSON 里 {key} 不能空"
             );
         }
