@@ -35,7 +35,7 @@ struct Cli {
 /// 子命令注册表：新功能在这里加一个枚举分支。
 #[derive(Subcommand)]
 enum CliCommand {
-    /// 代码语用检查：词汇、句法、语篇、语用四层
+    /// 代码两道：reflect 任务后反思、review 功能审查
     Code(code::CodeArgs),
     /// 语言检查：落点、术语、数字、句法、语用六层
     Language(language::LanguageArgs),

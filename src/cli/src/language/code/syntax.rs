@@ -3,9 +3,9 @@
 //! 对应 Grice：方式准则（表达不清晰）。不是圈复杂度——数的是「人读起来有多绕」。
 //! 这一层只读 [`Facts`]。
 
-use super::ir::{Facts, FunctionFacts};
 use super::model::{Finding, Layer, Principle};
-use super::rules::Rules;
+use crate::code::ir::{Facts, FunctionFacts};
+use crate::code::rules::Rules;
 
 fn function_findings(function: &FunctionFacts, path: &str, rules: &Rules) -> Vec<Finding> {
     let config = &rules.syntax;

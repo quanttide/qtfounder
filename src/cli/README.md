@@ -16,8 +16,8 @@ cargo test
 
 | 命令 | 说明 |
 |---|---|
-| `qtfounder code` | 代码语用检查：词汇、句法、语篇、语用四层，判下一个维护者能不能看懂；`code reflect` 给任务后的架构反思清单，`code review` 给意图审查骨架与锚点。用法见 [docs/user-guide/code.md](docs/user-guide/code.md) |
-| `qtfounder language` | 语言检查：`placement` 归到哪、`banned` 自造术语、`required` 体系词、`numbers` 数字、`syntax` 句法、`voice` 语用六层，判这段文字是不是在跟读者说话 |
+| `qtfounder code` | 代码两道：`code reflect` 给任务后的架构反思清单，`code review` 给功能审查骨架与事实面的锚点（函数清单、恒假条件、复杂度、错误信息）。读感与命名的四层已并入 `language`。用法见 [docs/user-guide/code.md](docs/user-guide/code.md) |
+| `qtfounder language` | 语言检查——自然语言与编程语言的语言学特点。自然语言侧六层：`placement` 归到哪、`banned` 自造术语、`required` 体系词、`numbers` 数字、`syntax` 句法、`voice` 语用；编程语言侧四层（`lexical`／`syntax`／`structure`／`pragmatic`）判命名与读感，目标里有代码文件时自动并跑 |
 | `qtfounder docs` | 文档审计：表格、列表、密度、加粗、分割线、front matter 与日志模板七层，判这段内容该不该是这个形状；`docs format` 先数格式元素（标题、表格、列表、加粗、分割线、块引用、代码块）再审计；`docs check` 比对技能索引与目录。用法见 [docs/user-guide/docs.md](docs/user-guide/docs.md) |
 | `qtfounder write` | 表达审计：体裁、读者、主题三轴，加空话、口号、指路、结构四层。用法见 [docs/user-guide/write.md](docs/user-guide/write.md) |
 | `qtfounder think` | 认知：`load` 从会话库看消耗落在哪，`reflect` 按 CBT 那套记一条并到点回填，`model` 看当前模型。用法见 [docs/user-guide/think.md](docs/user-guide/think.md) |

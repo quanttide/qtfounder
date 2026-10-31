@@ -85,15 +85,15 @@ example = "排除目录本该契约里一处定，三份检查器各写各的—
 
 [[review]]
 name = "conclusion-first"
-description = "报告开头一到三句说结论：最可能的意图、整体偏移程度、最该先处理的一件事。"
+description = "报告开头一到三句说结论：这段代码该解决什么、功能上最该先核的一件事。"
 why = "读的人先要一个判断，才知道要不要往下看清单。"
-example = "核心意图疑为「把用户输入翻译成 API 调用序列」，但混入了重试与鉴权，与声明的边界矛盾；建议先拆出重试。"
+example = "这段代码该把订单拆成最小可发货单元，但合并分支缺了空购物车的处理，功能上最该先核这一处。"
 
 [[review]]
 name = "anchor-required"
 description = "每条发现带 file:line 锚点；写不出锚点就不写。"
 why = "没有锚点的发现没法核，等于把猜测当结论递出去。"
-example = "重试逻辑散落在调度器内 — src/planner.rs:88"
+example = "恒假分支漏了空购物车 — src/cart.rs:88"
 
 [[review]]
 name = "one-finding-per-item"
@@ -107,10 +107,10 @@ why = "清单一长，重要的就沉到底没人看。"
 
 [[review]]
 name = "candidates-not-verdicts"
-description = "只给候选解释与偏移线索，判定归人。"
-why = "模型会过度合理化，给每个奇怪的地方都编一个像样的解释；还原得成不成立，人说了算。"
+description = "只给候选解释与功能偏移线索，判定归人。"
+why = "模型不知道这段代码本该做什么；它推的「功能对不对」是候选，不是实测。"
 
 [[review]]
 name = "no-process"
-description = "不粘贴 git 日志，不复述模型的逐条推测，不写过程旁白。"
-why = "交付物是报告，扫描、git、考古都是脚手架，脚手架不进报告。"
+description = "不粘贴扫描日志，不复述模型的逐条推测，不写过程旁白。"
+why = "交付物是报告，扫描与取锚点都是脚手架，脚手架不进报告。"

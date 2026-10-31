@@ -1,9 +1,12 @@
-//! `qtfounder language`：文字审计六层。
+//! `qtfounder language`：文字审计——自然语言与编程语言的语言学特点。
 //!
 //! 判的不是「有没有语法错误」，而是**这段文字是不是在跟读者说话**。
+//! 自然语言侧六层（落点、术语、数字、句法、语用）；编程语言侧四层（词汇、句法、
+//! 语篇、语用，见 [`code`]）——同一类活，两种介质。功能对不对归 `code review`。
 //! 契约在 `src/language/default-contract.toml`；与 `code` 那份同构——一份契约 = 一类介质的验收标准。
 
 pub mod checks;
+pub mod code;
 mod common;
 mod context;
 pub mod contract;
@@ -275,7 +278,12 @@ fn judge_summary(findings: &[Finding]) -> String {
     lines.join("\n")
 }
 
-fn render_json(findings: &[Finding], hint: &[String], scanned: usize) {
+fn render_json(
+    findings: &[Finding],
+    hint: &[String],
+    scanned: usize,
+    code_findings: &[crate::language::code::model::Finding],
+) {
     let mut parts = Vec::new();
     for finding in findings {
         parts.push(format!(
@@ -296,10 +304,27 @@ fn render_json(findings: &[Finding], hint: &[String], scanned: usize) {
         .iter()
         .map(|word| format!("\"{}\"", json_escape(word)))
         .collect();
+    let code_parts: Vec<String> = code_findings
+        .iter()
+        .map(|finding| {
+            format!(
+                "  {{\"layer\":\"{}\",\"layer_name\":\"{}\",\"kind\":\"{}\",\"path\":\"{}\",\"line\":{},\"message\":\"{}\",\"principle\":\"{}\",\"advice\":\"{}\"}}",
+                finding.layer.key(),
+                finding.layer.label(),
+                finding.kind,
+                json_escape(&finding.path),
+                finding.line,
+                json_escape(&finding.message),
+                finding.principle.label(),
+                json_escape(finding.advice),
+            )
+        })
+        .collect();
     println!(
-        "{{\n  \"scanned_files\": {},\n  \"findings\": [\n{}\n  ],\n  \"banned_in_own_prose\": [{}]\n}}",
+        "{{\n  \"scanned_files\": {},\n  \"findings\": [\n{}\n  ],\n  \"code_findings\": [\n{}\n  ],\n  \"banned_in_own_prose\": [{}]\n}}",
         scanned,
         parts.join(",\n"),
+        code_parts.join(",\n"),
         hint_json.join(", ")
     );
 }
@@ -325,20 +350,45 @@ pub fn run_language(args: &LanguageArgs) -> Result<i32, String> {
         eprintln!("读不了：{path}");
     }
 
+    // 编程语言侧：目标里有代码文件时才并跑四层，用 code 契约。自然语言侧不加载它。
+    let code_findings = if code::has_code_files(&args.root) {
+        let code_rules = crate::code::rules::Rules::load(None)?;
+        let layers = code::wanted_layers(&[]);
+        let (cf, cbroken) = code::collect(&args.root, &code_rules, &layers);
+        for (path, why) in &cbroken {
+            eprintln!("解析失败：{path} —— {why}");
+        }
+        Some((cf, cbroken))
+    } else {
+        None
+    };
+    let code_broken = code_findings
+        .as_ref()
+        .map(|(_, cbroken)| !cbroken.is_empty())
+        .unwrap_or(false);
+
     let hint = own_usage_hint(&contract, &args.pool);
+    let empty_code: (
+        Vec<crate::language::code::model::Finding>,
+        Vec<(String, String)>,
+    ) = (Vec::new(), Vec::new());
+    let (code_list, _) = code_findings.as_ref().unwrap_or(&empty_code);
     if args.json {
-        render_json(&findings, &hint, scanned);
+        render_json(&findings, &hint, scanned, code_list);
         if args.sense {
             eprintln!("JSON 模式下语义层不并输出：单独跑一次（不带 --json）看判读");
         }
-        return Ok(if broken.is_empty() {
-            i32::from(!findings.is_empty())
+        return Ok(if broken.is_empty() && !code_broken {
+            i32::from(!findings.is_empty() || !code_list.is_empty())
         } else {
             2
         });
     }
 
     print_report(&findings, scanned, args.top);
+    if let Some((code_list, _)) = &code_findings {
+        print_code_report(code_list, args.top);
+    }
     if !hint.is_empty() {
         println!();
         for line in &hint {
@@ -352,8 +402,44 @@ pub fn run_language(args: &LanguageArgs) -> Result<i32, String> {
         0
     };
 
-    if !broken.is_empty() {
+    if !broken.is_empty() || code_broken {
         return Ok(2);
     }
-    Ok(i32::from(!findings.is_empty() || sense_process > 0))
+    let code_hit = code_findings
+        .as_ref()
+        .map(|(code_list, _)| !code_list.is_empty())
+        .unwrap_or(false);
+    Ok(i32::from(
+        !findings.is_empty() || code_hit || sense_process > 0,
+    ))
+}
+
+/// 编程语言侧的人读输出：与自然语言侧分两节，层 → 问题 → 违反的原则 → 建议。
+fn print_code_report(findings: &[crate::language::code::model::Finding], top: usize) {
+    if findings.is_empty() {
+        return;
+    }
+    println!("\n—— 编程语言侧（{} 处）——", findings.len());
+    for layer in crate::language::code::model::Layer::ALL {
+        let group: Vec<&crate::language::code::model::Finding> = findings
+            .iter()
+            .filter(|finding| finding.layer == layer)
+            .collect();
+        if group.is_empty() {
+            continue;
+        }
+        println!("\n【{}】{} 处", layer.label(), group.len());
+        let mut shown: HashMap<&str, usize> = HashMap::new();
+        for finding in group {
+            let count = shown.entry(finding.kind).or_insert(0);
+            if top > 0 && *count >= top {
+                continue;
+            }
+            *count += 1;
+            println!("  [{}] {}:{}", finding.kind, finding.path, finding.line);
+            println!("      问题：{}", finding.message);
+            println!("      违反：{}", finding.principle.label());
+            println!("      建议：{}", finding.advice);
+        }
+    }
 }

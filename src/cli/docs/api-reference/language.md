@@ -41,17 +41,30 @@ qtfounder language [ROOT] [--scope SCOPE] [--kind KIND] [--rules PATH]
       "advice": "要么逐个说明它是什么，要么这段该进日志"
     }
   ],
+  "code_findings": [
+    {
+      "layer": "lexical",
+      "layer_name": "词汇层",
+      "kind": "vague_name",
+      "path": "src/meta/classify.rs",
+      "line": 88,
+      "message": "「data」没告诉读者它是什么",
+      "principle": "量准则（信息量适中）",
+      "advice": "换成说清内容的词"
+    }
+  ],
   "banned_in_own_prose": ["验收标准"]
 }
 ```
 
-字段含义：`scanned_files` 是这次真审了的文件数——它是 0 就说明范围没设对，别看 `findings` 空着就当通过。
+字段含义：`scanned_files` 是这次真审了的文件数——它是 0 就说明范围没设对，别看 `findings` 空着就当通过。`code_findings` 是编程语言侧的命中，目标里没有代码文件时为空数组。
 
 `verdict` 是复核层给每条命中的结论。四个取值是 `real`（真问题）、`mention`（误报·提及，词被引号包着讨论，不是拿来用）、`lead-in`（误报·标题并入，加粗小标签被当成句子成分）、`quoted-output`（误报·引用输出，抄的是工具自己的「合计 N 处」）。只判这三种机判得了的形态。体裁错配和词的多义仍归人判。
 
 - `kind` 是六层之一，稳定；`severity` 只有 `error` 与 `suspect` 两值，后者是嫌疑不是判决。
 - `excerpt` 是命中处的截断原文，最多九十汉字，用来定位，不要拿来当验收标准。
 - `banned_in_own_prose` 列出「你的文风里也在用的禁用词」，是自查提示，不参与退出码。
+- `code_findings` 与自然语言侧不同形：`layer` 是四层之一（`lexical`／`syntax`／`structure`／`pragmatic`），`principle` 是违反的 Grice 原则。它们判代码的读感，与功能审查（`code review`）分工不同。
 
 **`--json` 与 `--sense` 不同时输出**：语义层的结果只在人读模式下打印。理由是全量扫描的 JSON 要可复跑，混入模型结论就不再可复跑。
 

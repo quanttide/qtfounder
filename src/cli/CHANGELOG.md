@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.48] - 2026-10-31
+
+### Changed
+
+- **代码的语言学四层并入 `language`**：`lexical`／`syntax`／`structure`／`pragmatic` 从 `code` 移到 `language/code/`，`language` 成为单一入口——自然语言（markdown 六层）与编程语言（代码四层）的语言学特点都归它。目标里有代码文件（rs/py/go/ts/dart）时自动并跑，输出分两节，`--json` 加 `code_findings` 字段；阈值仍在 `code` 契约的 `[lexical]`／`[syntax]`／`[module]`／`[pragmatic]` 段
+- **`code review` 重设计为功能审查**：不再拿语用命中当意图审查的锚点（那是用「这句话通不通顺」去审「这个算法对不对」，锚点与审查对象错位）。改从事实面（`Facts`）取功能锚点——函数清单、恒假条件、复杂度过高、错误信息太短，四问改为「解决什么／承诺什么／边界覆盖没／哪没验证」；契约 `[[review]]` 六条纪律与「记多用户使用体会」机制原样保留
+- **`code` 命令不再有缺省的语用检查**：那部分归 `language`，`code` 现在只保留 `reflect` 与 `review` 两个子命令
+
+### Added
+
+- `language/code/` 新模块：编程语言侧的四层判断与编排，复用 `code::extract` 的多语言提取器与同一份契约；`has_code_files` 决定要不要并跑，纯文档目录不加载 code 契约
+
 ## [0.0.47] - 2026-10-31
 
 ### Added

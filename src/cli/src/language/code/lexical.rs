@@ -5,9 +5,9 @@
 
 use std::collections::HashSet;
 
-use super::ir::{BindingFacts, Facts};
 use super::model::{Finding, Layer, Principle};
-use super::rules::Rules;
+use crate::code::ir::{BindingFacts, Facts};
+use crate::code::rules::Rules;
 
 /// 初始化构造器归到哪一类形状：判名实不符用。
 fn shape_class(shape: &str) -> Option<&'static str> {

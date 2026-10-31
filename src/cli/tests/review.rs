@@ -119,7 +119,7 @@ fn code_review出骨架带体会节() {
 
     let out = run(data.path(), work.path(), &["code", "review", "a.md"]);
     assert_eq!(out.code, 0, "零命中退 0：{}", out.stderr);
-    assert!(out.stdout.contains("# 意图审查"), "{}", out.stdout);
+    assert!(out.stdout.contains("# 功能审查"), "{}", out.stdout);
     assert!(
         out.stdout.contains("## 使用体会"),
         "骨架该有体会节：{}",

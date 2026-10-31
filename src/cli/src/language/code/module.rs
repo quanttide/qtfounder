@@ -5,9 +5,9 @@
 //! 「导入了却没用」不在这一层判：rustc 的 unused_imports 已经权威且零误报，
 //! 靠语法树自己判会漏掉 derive 与 trait 方法这两种用法（实测过），重复做更差。
 
-use super::ir::Facts;
 use super::model::{Finding, Layer, Principle};
-use super::rules::Rules;
+use crate::code::ir::Facts;
+use crate::code::rules::Rules;
 
 pub fn check(facts: &Facts, path: &str, rules: &Rules) -> Vec<Finding> {
     let config = &rules.module;

@@ -2,9 +2,9 @@
 //!
 //! 对应 Grice：质准则（不误导）与方式准则（不歧义）。这一层只读 [`Facts`]。
 
-use super::ir::{Facts, FunctionFacts};
 use super::model::{Finding, Layer, Principle};
-use super::rules::Rules;
+use crate::code::ir::{Facts, FunctionFacts};
+use crate::code::rules::Rules;
 
 fn name_finding(function: &FunctionFacts, path: &str, rules: &Rules) -> Option<Finding> {
     let bare = function.name.trim_matches('_').to_lowercase();
