@@ -46,7 +46,7 @@ mod tests {
     }
 
     #[test]
-    fn 嵌入清单只有十一条() {
+    fn 嵌入清单只有十二条() {
         let ids: Vec<&str> = super::all().iter().map(|entry| entry.id).collect();
         if ids.is_empty() {
             return;
@@ -65,8 +65,9 @@ mod tests {
                 "product-organize",
                 "think-reflect",
                 "write-express",
+                "write-review",
             ],
-            "随 CLI 发布的 Skill 应当只有这十一条"
+            "随 CLI 发布的 Skill 应当只有这十二条"
         );
     }
 }

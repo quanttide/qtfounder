@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.47] - 2026-10-31
+
+### Added
+
+- `code review` 记使用体会：审完把人的判断记下来，`--record --user <名字>` 从标准输入读正文，`--experiences` 列出；多个用户各记各的，体会进报告的「使用体会」节
+- `write review` 新命令（`src/write/review.rs`）：从读者角度出评审骨架，四个问题（读者是谁／要什么／卡在哪／带走什么），把表达审计的命中当卡点；立场写死在骨架与纪律里——只写「读者读到这会……」，禁止从编辑或作者角度改稿；`--json` 转全局标志，与 `code review` 对齐
+- `write` 契约新增 `[[review]]` 六条读者评审纪律（含 `reader-not-author`：视角滑回作者侧就盖住读者的真实反应）
+- 共用体会存储 `src/review/`（`<数据根>/review/experiences.json`）：`code` 与 `write` 两个 domain 同一张表，靠 domain 区分，`user` 支持多个不同用户各记一条
+- Skill `write-review`：从读者角度评审文档，与 `write-express` 一对；`code-review` 补「记使用体会」一节；随 CLI 发布的 Skill 从十一条增至十二条
+- `tests/review.rs` 集成测试：骨架、记体会、多用户、领域分离、缺 --user 退 2、--json 带体会
+
 ## [0.0.46] - 2026-10-30
 
 ### Added

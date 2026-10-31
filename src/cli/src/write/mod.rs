@@ -7,6 +7,7 @@
 mod checks;
 pub mod contract;
 pub mod model;
+pub mod review;
 mod scan;
 
 #[cfg(test)]
@@ -15,15 +16,24 @@ mod tests;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use clap::Args;
+use clap::{Args, Subcommand};
 
 use checks::Selection;
 use contract::Contract;
 use model::{Finding, Kind, Severity};
 
+/// `write` 的子命令；不给子命令就跑缺省的表达审计。
+#[derive(Subcommand, Debug)]
+pub enum WriteCommand {
+    /// 读者评审：从读者角度出骨架与卡点，不从作者角度改稿
+    Review(review::WriteReviewArgs),
+}
+
 /// 表达审计：空话、口号、指路、结构四层
 #[derive(Args, Debug)]
 pub struct WriteArgs {
+    #[command(subcommand)]
+    pub command: Option<WriteCommand>,
     /// 要扫的目录或文件
     #[arg(default_value = ".")]
     pub root: PathBuf,
@@ -46,7 +56,7 @@ pub struct WriteArgs {
     #[arg(long, default_value_t = 15)]
     pub top: usize,
     /// 输出 JSON
-    #[arg(long)]
+    #[arg(long, global = true)]
     pub json: bool,
     /// 列出契约里的体裁、读者与主题，不审文件
     #[arg(long)]
@@ -136,6 +146,9 @@ fn print_profiles(contract: &Contract) {
 
 /// 入口：返回退出码（0 无命中 / 1 有命中 / 2 契约或文件读不了）。
 pub fn run_write(args: &WriteArgs) -> Result<i32, String> {
+    if let Some(WriteCommand::Review(review_args)) = &args.command {
+        return review::run(review_args, args.json);
+    }
     let contract = Contract::load(args.rules.as_deref())?;
     if args.profiles {
         print_profiles(&contract);

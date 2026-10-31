@@ -233,3 +233,39 @@ max_h1 = 1
 max_heading_jump = 1
 # 超过这个字数还没有二级标题，报「一段到底」
 min_chars_per_section = 500
+
+# 读者评审的交付纪律。立场：只从读者角度评，禁止从编辑或作者角度改稿。
+# 视角一换成作者，报告就成了改稿意见，读者的真实体验反而被盖住。
+
+[[review]]
+name = "reader-first"
+description = "结论先说读者读完会怎样，不先说文章结构好不好。"
+why = "读者评审回答的是「读者带走了什么」，不是「作者写得完不完整」；先给读者的判断，读的人才知道这一篇对他的读者成不成立。"
+example = "读者读到第三节会以为全文在讲定价，其实结论在第五节——先补一句过渡，别急着评价结构。"
+
+[[review]]
+name = "anchor-required"
+description = "每条卡点带 file:line 或引原句；写不出位置就不写。"
+why = "没有位置的卡点没法核，等于把「我觉得不好读」当结论递出去。"
+example = "读者会在「说到底」这句走神 — README.md:L42"
+
+[[review]]
+name = "reader-not-author"
+description = "只写「读者读到这会……」，不写「作者应改成……」。"
+why = "一旦替作者改稿，就滑回编辑视角；读者评审的价值恰恰是留住读者那一刻的真实反应。"
+example = "对：读者读到这句不知道「它」指谁，会回读上一行。错：作者应把代词改成具体名词。"
+
+[[review]]
+name = "one-finding-per-item"
+description = "一条一个卡点，不嵌套，不把几处塞进一条。"
+why = "一条挂几处，改的时候只能挑着改，剩下的自然烂掉。"
+
+[[review]]
+name = "candidates-not-verdicts"
+description = "只给读者可能的反应与线索，成不成立由人拍板。"
+why = "模型不知道真实的读者是谁；它推的「读者会怎样」是候选，不是实测。"
+
+[[review]]
+name = "no-process"
+description = "不粘贴扫描日志，不复述模型的逐条推测，不写过程旁白。"
+why = "交付物是评审，扫描与骨架都是脚手架，脚手架不进报告。"

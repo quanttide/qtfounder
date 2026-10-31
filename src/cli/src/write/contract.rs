@@ -38,6 +38,19 @@ pub struct Contract {
     pub audience: BTreeMap<String, Audience>,
     #[serde(default)]
     pub topic: BTreeMap<String, Topic>,
+    /// 读者评审的交付纪律；缺省为空，`write review` 会提示契约里没有。
+    #[serde(default)]
+    pub review: Vec<ReviewRule>,
+}
+
+/// 一条读者评审纪律：从读者角度评的形状与禁忌。
+#[derive(Debug, Clone, Deserialize)]
+pub struct ReviewRule {
+    pub name: String,
+    pub description: String,
+    pub why: String,
+    #[serde(default)]
+    pub example: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]

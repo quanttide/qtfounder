@@ -465,7 +465,11 @@ fn 反思输出JSON带全四层() {
 #[test]
 fn 审查纪律六条齐备且名字不重复() {
     let rules = Rules::load(None).expect("仓里应能找到默认契约");
-    assert_eq!(rules.review.len(), 6, "契约里应有六条审查纪律，改数量要同步 skill 正文");
+    assert_eq!(
+        rules.review.len(),
+        6,
+        "契约里应有六条审查纪律，改数量要同步 skill 正文"
+    );
     let mut seen = std::collections::HashSet::new();
     for rule in &rules.review {
         assert!(!rule.name.is_empty(), "name 不能为空");
@@ -482,7 +486,10 @@ fn 审查纪律含锚点与判定归人两条() {
     let rules = Rules::load(None).expect("仓里应能找到默认契约");
     let names: Vec<&str> = rules.review.iter().map(|rule| rule.name.as_str()).collect();
     assert!(names.contains(&"anchor-required"), "写不出锚点就不写");
-    assert!(names.contains(&"candidates-not-verdicts"), "模型只给候选，判定归人");
+    assert!(
+        names.contains(&"candidates-not-verdicts"),
+        "模型只给候选，判定归人"
+    );
 }
 
 #[test]
@@ -498,18 +505,24 @@ fn 审查骨架的意图五层与重构同一套() {
 fn 审查JSON的锚点带全八键() {
     // 与 code 自己的 JSON 同形：少了 kind 就没法分组，少了 principle 就不知道违反哪条。
     let rules = Rules::load(None).expect("仓里应能找到默认契约");
-    let (findings, _) = super::collect(
-        &PathBuf::from("src"),
-        &rules,
-        &[Layer::Pragmatic],
-    );
+    let (findings, _) = super::collect(&PathBuf::from("src"), &rules, &[Layer::Pragmatic]);
     if findings.is_empty() {
         return;
     }
-    let body = super::review::render_json_text(&rules.review, &findings, &PathBuf::from("src"));
+    let body =
+        super::review::render_json_text(&rules.review, &findings, &PathBuf::from("src"), &[]);
     let parsed: serde_json::Value = serde_json::from_str(&body).expect("是合法 JSON");
     let first = &parsed["findings"][0];
-    for key in ["layer", "layer_name", "kind", "path", "line", "message", "principle", "advice"] {
+    for key in [
+        "layer",
+        "layer_name",
+        "kind",
+        "path",
+        "line",
+        "message",
+        "principle",
+        "advice",
+    ] {
         assert!(!first.get(key).is_none(), "review 的 JSON 少了 {key}");
     }
 }
