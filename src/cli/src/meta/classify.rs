@@ -20,7 +20,7 @@ pub struct ClassifyArgs {
     /// 从标准输入读
     #[arg(long)]
     pub stdin: bool,
-    /// 契约路径（缺省按 src/meta/default-contract.toml 逐级往上找）
+    /// 契约路径（缺省按 .quanttide/meta/default-contract.toml 逐级往上找）
     #[arg(long)]
     pub rules: Option<PathBuf>,
     /// 输出 JSON
@@ -89,12 +89,34 @@ pub fn run(args: &ClassifyArgs) -> Result<i32, String> {
     let text = read_input(args)?;
     let contract = Contract::load(args.rules.as_deref())?;
     let card = judge(&text, &contract);
+    // 卡要对当前仓的实际结构负责：格目录在本仓不存在就明说，不发空头支票。
+    let dir_status = card.category.as_ref().and_then(dir_status);
     if args.json {
-        print_json(&card)?;
+        print_json(&card, dir_status)?;
     } else {
-        print_card(&card, &contract);
+        print_card(&card, &contract, dir_status);
     }
     Ok(card.verdict.exit_code())
+}
+
+/// 本仓根：从当前目录向上找 `.git`；不在任何 git 仓里返回 None。
+fn repo_root() -> Option<PathBuf> {
+    let mut dir = std::env::current_dir().ok()?;
+    loop {
+        if dir.join(".git").exists() {
+            return Some(dir);
+        }
+        if !dir.pop() {
+            return None;
+        }
+    }
+}
+
+/// 格目录在本仓是否存在。不在 git 仓里没法核（None），核不到就照发卡；
+/// 核到了但不存在就随卡报出——该仓无此格实体，先建目录或改判。
+fn dir_status(category: &Category) -> Option<bool> {
+    let root = repo_root()?;
+    Some(root.join(category.path.trim_end_matches('/')).is_dir())
 }
 
 fn read_input(args: &ClassifyArgs) -> Result<String, String> {
@@ -366,7 +388,7 @@ fn pick_grade(text: &str, category: &Category) -> Option<String> {
 
 // ---------- 输出 ----------
 
-fn print_card(card: &Card, contract: &Contract) {
+fn print_card(card: &Card, contract: &Contract, dir_status: Option<bool>) {
     println!("落位卡");
     println!();
     match (&card.home, card.home_form) {
@@ -383,6 +405,12 @@ fn print_card(card: &Card, contract: &Contract) {
         Verdict::Place | Verdict::Move => {
             if let Some(category) = &card.category {
                 println!("格：{}  {}", category.label, category.path);
+                if dir_status == Some(false) {
+                    println!(
+                        "目录：{} 在本仓不存在——该仓无此格实体，先建目录或改判。",
+                        category.path
+                    );
+                }
                 println!("档：{}", card.grade.as_deref().unwrap_or("不分档"));
                 if let Some(rule) = &card.rule {
                     println!("凭什么：{rule}");
@@ -453,6 +481,9 @@ fn print_axioms(card: &Card, contract: &Contract) {
 #[derive(Serialize)]
 struct JsonCard<'a> {
     verdict: &'a str,
+    /// 格目录在本仓是否存在；不在 git 仓里核不到，不报这个字段。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    dir_exists: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     home: Option<JsonHome<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -494,7 +525,7 @@ struct JsonCandidate<'a> {
     score: usize,
 }
 
-fn print_json(card: &Card) -> Result<(), String> {
+fn print_json(card: &Card, dir_status: Option<bool>) -> Result<(), String> {
     let home = card.home.as_ref().map(|home| JsonHome {
         name: &home.name,
         label: home.label(),
@@ -510,6 +541,7 @@ fn print_json(card: &Card) -> Result<(), String> {
     });
     let view = JsonCard {
         verdict: card.verdict.key(),
+        dir_exists: dir_status,
         home,
         category,
         grade: card.grade.as_deref(),
