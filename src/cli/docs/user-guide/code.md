@@ -27,9 +27,9 @@ qtfounder code reflect --json       # 给脚本读
 ## 二、review：功能审查
 
 ```bash
-qtfounder code review src/meta           # 报告骨架 + 事实面的功能锚点（带 file:line）
-qtfounder code review src/meta --example # 连纪律的例子一起打
-qtfounder code review src/meta --json    # 给脚本读
+qtfounder code review src/asset           # 报告骨架 + 事实面的功能锚点（带 file:line）
+qtfounder code review src/asset --example # 连纪律的例子一起打
+qtfounder code review src/asset --json    # 给脚本读
 ```
 
 审查看的是**功能还对不对得上**，不是代码写得好不好（读感、命名归 `language`）。命令只出两样——

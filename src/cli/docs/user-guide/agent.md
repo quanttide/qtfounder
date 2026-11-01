@@ -2,7 +2,7 @@
 
 `agent` 这一组：把 Skill 装到该在的位置，再检查它写得对不对。装的时候只搬运，查的时候只读。
 
-随 CLI 发布的 Skill 有九条：`design-review`、`docs-format`、`execute-collect`、`meta-classify`、`language-govern`、`think-reflect`、`product-collect`、`product-organize`、`write-express`。你装了二进制，就同时得到这九份说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
+随 CLI 发布的 Skill 有十一条：`code-reflect`、`code-review`、`design-review`、`docs-format`、`execute-collect`、`language-govern`、`think-reflect`、`product-collect`、`product-organize`、`write-express`、`write-review`。你装了二进制，就同时得到这十一条说明书；它们点名的命令都由本 CLI 提供。接口一变文字就得跟着变，所以一起发。
 
 ## 一、嵌了哪九条
 
@@ -25,8 +25,8 @@ qtfounder agent skill check
 ## 三、`install`：装一条或全部
 
 ```bash
-qtfounder agent skill install                  # 九条都装到系统位置
-qtfounder agent skill install meta-classify    # 只装一条
+qtfounder agent skill install                  # 十一条都装到系统位置
+qtfounder agent skill install language-govern   # 只装一条
 qtfounder agent skill install --root <仓>      # 只装进某个仓
 qtfounder agent skill install --copy           # 复制而不是链接
 qtfounder agent skill install --claude         # 同时投递到 .claude/skills
@@ -82,7 +82,7 @@ qtfounder agent skill lint --json
 
 ```bash
 qtfounder agent relation                    # 每条 Skill 引用了哪些命令
-qtfounder agent relation meta-classify      # 只看一条
+qtfounder agent relation language-govern      # 只看一条
 qtfounder agent relation --json
 ```
 
@@ -102,8 +102,6 @@ language-govern
   qtfounder audit
   qtfounder language
   qtfounder docs
-meta-classify
-  qtfounder meta classify
 ...
 未覆盖的命令组：agent、asset、code、data、git
 ```

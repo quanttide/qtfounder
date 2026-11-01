@@ -17,7 +17,6 @@ mod execute;
 mod git;
 mod infra;
 mod language;
-mod meta;
 mod product;
 mod review;
 mod think;
@@ -45,8 +44,6 @@ enum CliCommand {
     Write(write::WriteArgs),
     /// 认知：负载看消耗落点、reflect 记一条、model 看模型
     Think(think::ThinkArgs),
-    /// 归位：模型、关系、公理与范畴
-    Meta(meta::MetaArgs),
     /// 资产：看契约、清单与关系
     Asset(asset::AssetArgs),
     /// 产品：需求与澄清，名词读、动词写
@@ -98,13 +95,6 @@ fn main() {
             }
         },
         Some(CliCommand::Think(args)) => match think::run(&args) {
-            Ok(exit_code) => std::process::exit(exit_code),
-            Err(message) => {
-                eprintln!("{message}");
-                std::process::exit(core::exit::USAGE);
-            }
-        },
-        Some(CliCommand::Meta(args)) => match meta::run(&args) {
             Ok(exit_code) => std::process::exit(exit_code),
             Err(message) => {
                 eprintln!("{message}");

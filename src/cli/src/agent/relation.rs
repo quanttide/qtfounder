@@ -45,7 +45,7 @@ pub fn commands_in(text: &str) -> Vec<String> {
     commands
 }
 
-/// 命令对应的命令组：`qtfounder meta classify` → `meta`。
+/// 命令对应的命令组：`qtfounder asset axiom` → `asset`。
 fn group_of(command: &str) -> Option<&str> {
     command.split_whitespace().nth(1)
 }
@@ -135,12 +135,12 @@ mod tests {
 
     #[test]
     fn 从正文提取命令并去重() {
-        let text = "先跑 `qtfounder meta classify`，再跑 `qtfounder meta classify --json`，最后 `qtfounder write`。";
+        let text = "先跑 `qtfounder asset axiom`，再跑 `qtfounder asset axiom --json`，最后 `qtfounder write`。";
         let commands = commands_in(text);
         assert_eq!(
             commands,
             vec![
-                "qtfounder meta classify".to_string(),
+                "qtfounder asset axiom".to_string(),
                 "qtfounder write".to_string()
             ]
         );
@@ -155,9 +155,9 @@ mod tests {
     #[test]
     fn 未覆盖按契约的命令组算() {
         let contract = Contract::bundled();
-        let commands = vec!["qtfounder meta classify".to_string()];
+        let commands = vec!["qtfounder asset axiom".to_string()];
         let missing = uncovered(&contract, &commands);
-        assert!(!missing.contains(&"meta".to_string()));
+        assert!(!missing.contains(&"asset".to_string()));
         assert!(missing.contains(&"write".to_string()));
     }
 }

@@ -31,7 +31,7 @@ pub fn root_line(root: &std::path::Path, upward: bool, start: &std::path::Path) 
 pub struct AssetArgs {
     #[command(subcommand)]
     pub command: AssetCommand,
-    /// 归位契约路径（缺省按 src/meta/default-contract.toml 逐级往上找）
+    /// 契约路径（缺省按 src/asset/default-contract.toml 逐级往上找）
     #[arg(long, global = true)]
     pub rules: Option<PathBuf>,
 }

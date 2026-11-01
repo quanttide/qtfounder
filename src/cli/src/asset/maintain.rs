@@ -11,7 +11,7 @@ use clap::Args;
 use serde_json::json;
 use walkdir::WalkDir;
 
-use crate::meta::contract::{Asset, Contract};
+use super::contract::{Asset, Contract};
 
 const SCAFFOLD: [&str; 7] = [
     "README.md",

@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use clap::Args;
 use serde_json::json;
 
-use crate::meta::contract::{Asset, Contract};
+use super::contract::{Asset, Contract};
 
 #[derive(Args, Debug)]
 pub struct CatalogArgs {

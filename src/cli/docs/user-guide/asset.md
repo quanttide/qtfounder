@@ -1,6 +1,6 @@
 # `qtfounder asset` 用户指南
 
-资产契约、清单、关系、公理与维护，五个入口。数据源是归位契约：十八类长期记忆，加 context 与 archive，共二十种资产。这里不另存一份资产表，改资产改 `src/meta/default-contract.toml`。
+资产契约、清单、关系、公理与维护，五个入口。数据源是本仓 `src/asset/default-contract.toml`：十八类长期记忆，加 context 与 archive，共二十种资产。这里不另存一份资产表，改资产改那份契约。
 
 ## 一、catalog：仓库里到底有没有
 
@@ -113,7 +113,7 @@ insight  Insight 洞察  长期记忆
 
 ## 四、axiom：领域怎么运转的前提
 
-公理按领域归两面。`asset axiom` 打资产领域——管这个领域具体怎么运转的前提（子模块、目录、迁移、归档）；管建模与跨领域一致性的走 `meta axiom`。两个领域怎么分、将来出现第三个领域怎么加，见 [meta 用户指南「两个领域的边界」](meta.md#两个领域的边界)。
+公理在契约的 `[[axiom]]` 段，都是 `domain = "asset"`——管这个领域具体怎么运转的前提（子模块、目录、迁移、归档）。归位判断的前提随 `meta` 子命令淘汰，不再进这张表。
 
 ```bash
 qtfounder asset axiom                 # 全部资产领域公理
@@ -175,4 +175,4 @@ qtfounder asset maintain --json      # 给脚本读
 
 ## 六、契约在哪
 
-`src/meta/default-contract.toml`，查找顺序与 `meta` 一致；`--rules` 可换一份。
+`src/asset/default-contract.toml`，从当前目录逐级往上找，`--rules` 可换一份。

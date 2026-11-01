@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Removed
+
+- **`meta` 子命令全部淘汰**：`classify`（落位卡）与 `model`／`relation`／`axiom`／`category`／`home`／`domain`／`paradigm`／`compare`／`validate` 共十一条入口连同归位契约一并下线，`meta-classify` Skill 随之停发（随 CLI 发布的 Skill 十二条变十一条）
+- **资产图式独立成活**：二十种资产、迁入边、十八类资产的边界分档写法与五条资产领域公理从归位契约抽进 `src/asset/default-contract.toml`，`asset` 五个入口（`contract`／`catalog`／`relation`／`axiom`／`maintain`）改读自己的契约（`QTFOUNDER_ASSET_CONTRACT`），不再依赖 meta
+
 ## [0.0.48] - 2026-10-31
 
 ### Changed

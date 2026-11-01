@@ -8,7 +8,7 @@ use std::path::Path;
 use clap::Args;
 use serde_json::json;
 
-use crate::meta::contract::{Contract, Relation};
+use super::contract::{Contract, Relation};
 
 #[derive(Args, Debug)]
 pub struct RelationArgs {
@@ -48,7 +48,7 @@ pub fn run(args: &RelationArgs, rules: Option<&Path>) -> Result<i32, String> {
 
 fn print_text(contract: &Contract) {
     for role in ["source", "memory", "exit"] {
-        let assets: Vec<&crate::meta::contract::Asset> = contract
+        let assets: Vec<&super::contract::Asset> = contract
             .asset
             .iter()
             .filter(|asset| asset.role == role)
@@ -144,6 +144,7 @@ fn show_one(name: &str, contract: &Contract, json: bool) -> Result<i32, String> 
                 "label": asset.label(),
                 "role": asset.role,
                 "path": asset.path,
+                "description": asset.description,
                 "category": asset.category,
                 "family": category.map(|category| category.family.clone()),
                 "siblings": siblings,
@@ -166,6 +167,9 @@ fn show_one(name: &str, contract: &Contract, json: bool) -> Result<i32, String> 
         role_label(&asset.role)
     );
     println!("  路径：{}", asset.path);
+    if !asset.description.is_empty() {
+        println!("  收什么：{}", asset.description);
+    }
     if !asset.category.is_empty() {
         println!("  类别：{}", asset.category);
     }
