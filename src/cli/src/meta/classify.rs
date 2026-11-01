@@ -20,7 +20,7 @@ pub struct ClassifyArgs {
     /// 从标准输入读
     #[arg(long)]
     pub stdin: bool,
-    /// 契约路径（缺省按 .quanttide/meta/default-contract.toml 逐级往上找）
+    /// 契约路径（缺省按 .quanttide/meta/contract.toml 逐级往上找）
     #[arg(long)]
     pub rules: Option<PathBuf>,
     /// 输出 JSON
