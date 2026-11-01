@@ -94,7 +94,7 @@ qtfounder meta classify notes.md --json
 qtfounder meta classify notes.md --rules ./my-contract.toml
 ```
 
-契约查找顺序：`--rules` 指定 → 环境变量 → 从当前目录向上（`.quanttide/meta/contract.toml` 优先，再试源码树路径 `src/meta/default-contract.toml`）→ 用户级目录 `~/.config/qtfounder/meta/default-contract.toml`。名字分两层：代码里的内置模板叫 `default-contract.toml`，仓里的配置叫 `contract.toml`。这份契约没有内置兜底：十八格的目录本身就在文件里，缺了无从判断归属，工具会停手报错，不猜一个去处。
+契约查找顺序：`--rules` 指定 → 环境变量 → 从当前目录向上（`.quanttide/meta/default-contract.toml` 优先，再试源码树路径 `src/meta/default-contract.toml`）→ 用户级目录 `~/.config/qtfounder/meta/default-contract.toml`。这份契约没有内置兜底：十八格的目录本身就在文件里，缺了无从判断归属，工具会停手报错，不猜一个去处。
 
 ## 七、退出码
 
@@ -406,7 +406,7 @@ qtfounder meta compare quanttide-founder aristotle --json
 
 这份工具不带着量潮的上下文走：世界观全在契约文件里，代码只认契约。其他领域或客户的第二大脑要接，三步：
 
-1. **把契约放进仓根 `.quanttide/meta/contract.toml`。**CLI 从当前目录向上逐层找这个位置，进仓即认——不设环境变量，不需要量潮的源码布局。模板直接复制本仓 `src/meta/default-contract.toml`（`default-` 是代码内置默认的名字，放上仓就叫配置）。
+1. **把契约放进仓根 `.quanttide/meta/default-contract.toml`。**CLI 从当前目录向上逐层找这个位置，进仓即认——不设环境变量，不需要量潮的源码布局。模板直接复制本仓 `src/meta/default-contract.toml`。
 2. **改三处**：`domain` 写成自己的域名；`[[home]]` 域表换成自己的领域（name/label/cues/status 四个字段，cues 是正文里出现就指向该域的词）；`[[asset]]` 路径对不上仓布局时改路径（`data/journal/` 这类相对路径，换仓照样成立）。
 3. **验收一条**：在那个仓里不设任何环境变量跑 `qtfounder meta classify`，卡上三件事同时成立——去处对、格目录在那个仓里真实存在、格与写法按那份契约。卡上会核对格目录，不存在就明说「该仓无此格实体」，不发空头支票。
 
