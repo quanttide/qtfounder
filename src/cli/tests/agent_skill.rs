@@ -120,8 +120,7 @@ fn 顶层有十个命令且装skill并入agent() {
     let output = run(temp.path(), &["--help"]);
     assert_eq!(output.code, 0, "{}", output.stderr);
     for name in [
-        "code", "language", "docs", "write", "think", "product", "agent", "git", "audit",
-        "design",
+        "code", "language", "docs", "write", "think", "product", "agent", "git", "audit", "design",
     ] {
         assert!(
             output.stdout.contains(name),
