@@ -26,7 +26,7 @@ description: 从代码的事实面反推它该做什么、功能还对不对得�
 
 ```bash
 cargo build --release && install -m755 target/release/qtfounder ~/.local/bin/qtfounder
-qtfounder code review src/meta --example   # 能出骨架说明装的是新版
+qtfounder code review src/asset --example   # 能出骨架说明装的是新版
 ```
 
 ## 审查工作流
@@ -100,20 +100,20 @@ git log -p -- <目标文件>
 
 ## 示例
 
-**题目**：审 `src/meta`，它没写过功能声明。
+**题目**：审 `src/asset`（自 `src/cli` 跑，目标写 `src/asset`），它没写过功能声明。
 
-跑 `qtfounder code review src/meta`，从事实面给出一批功能锚点（函数清单、复杂度过高、恒假条件）。这些是线索不是结论，先放着。
+跑 `qtfounder code review src/asset`，从事实面给出 55 处锚点（50 个函数、2 处复杂、2 处宽参数）。这些是线索不是结论，先放着。
 
-第二步对着函数清单：`judge` 跨 148 行、认知负荷高（锚点 `src/meta/classify.rs:116`，实测于 2026-10-30）——这么长的函数，边界对不对最难核。
+第二步对着函数清单：`plan_on` 跨 92 行、认知负荷约 22（阈 15）（锚点 `src/asset/maintain.rs:119`，实测于 2026-11-02）——它是 maintain 的搬移计划生成器，当天的日志不动、找不到 context 回退、嵌套资产递归，边界全在这一个函数里。
 
-第三步追恒假与错误路径：`contract.rs` 有一段被注释掉的校验，等于某个分支永远走不到。
+第三步追恒假与错误路径：这一批锚点里没有 `dead_branch` 与 `thin_error`——恒假没得追，不是审查过了，是机械层没给线索；`git log -- src/asset/maintain.rs` 照流程走，找出这段代码的变更节奏。
 
-第四步按四问推功能预期，「承诺什么」写的是「给一条内容判它的归位，不搬文件」。对锚点：
+第四步按四问推功能预期，「承诺什么」写的是「给 context 一份整理计划并搬进长期记忆仓，不代写内容」。对锚点：
 
-1. `[严重] judge 跨 148 行，边界与错误路径难核 — src/meta/classify.rs:116` 与承诺的关系：边界漏了——超长函数里空输入、打平这些路径容易漏。
-2. `[中] 校验被注释，某个分支永远走不到 — src/meta/contract.rs` 与承诺的关系：没验证——这段校验还在不在承诺里，得作者确认。
+1. `[严重] plan_on 认知负荷约 22，搬移边界全在一个函数里 — src/asset/maintain.rs:119` 与承诺的关系：边界漏了——超长函数里「当天的日志不移动」这类日子边界容易漏。
+2. `[中] print_text 与 print_json 各 6 参数（阈 5） — src/asset/maintain.rs:313、358` 与承诺的关系：承诺的输入面宽——错配代价大，是否拆报表职责得作者确认。
 
-第五步写报告交出去。**不说「建议立即重构 judge」**——那是用户的判断，只给锚点与关系。
+第五步写报告交出去。**不说「建议立即拆 plan_on」**——那是用户的判断，只给锚点与关系。
 
 ## 记使用体会
 
