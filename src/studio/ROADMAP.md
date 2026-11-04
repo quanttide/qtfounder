@@ -10,13 +10,13 @@
 ## 下一步
 
 - [ ] Studio 重新设计：资产、创作、思考三个职能
-- [ ] 数据层重建：从归档代码恢复 repository，按环境变量读取 fiction 与 memory
-- [ ] 资产页：读取契约，展示 fiction 与 memory 目录树
+- [ ] 数据层重建：从归档代码恢复 repository，按环境变量读取 fiction 与 memory（作废：fiction/memory 已废弃，2026-11-04）
+- [ ] 资产页：读取契约，展示 fiction 与 memory 目录树（作废：fiction/memory 已废弃，2026-11-04）
 - [ ] 写作页：编辑器、工作流、AI 整理层
 - [ ] lite 接入：读任务包做标注，导出 JSONL 回传（`qtfounder data result import` 收）
 - [ ] 标注结果消费：统计视图与规则迭代反馈
 
 ## 已知偏差
 
-- 契约仍用 `memory` 命名，父仓当前数据目录是 `data/context`，重建数据层时统一
+- 契约仍用 `memory` 命名，父仓当前数据目录是 `data/context`，重建数据层时统一（随数据层重建作废：fiction/memory 已废弃，2026-11-04）
 - 资产抽查的删除是移入 `.trash/`，不进版本控制；真正清理需手动删 `.trash/`
