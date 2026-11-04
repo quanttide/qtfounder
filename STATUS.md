@@ -1,27 +1,36 @@
 # qtfounder 状态报告
 
-> 更新日期：2026-08-23
-> 最新 commit：977fd67
+> 更新日期：2026-11-04
+> 最新 commit：b197dbf（`cli/v0.1.0`）
 
 ## 项目定位
 
-量潮创始人项目：创始人官网 + 工作台 + 创作数据 API + CLI 工具。核心主题——**创作现场**（创作流时间线 / 创作域矩阵 / 改稿轨迹），数据源为 fiction（小说仓库）与 memory（创始人记忆仓库）。
+量潮创始人（qtfounder）仓：**创始人第二大脑的规则化**——把协作中形成的规矩落成可执行的规则：CLI 的审计与契约、提交钩子、随发 Skill。
+
+## 迁移状态
+
+整体目标：把本仓内容逐渐提交到各个 `qtcloud-*` 独立仓。
+
+| 内容 | 去处／处置 | 状态 |
+|------|-----------|------|
+| `meta`（归位/元模型十一条入口与归位契约） | `qtcloud-meta` | ✅ 已迁出（`cli/v0.1.0` 起 `meta` 子命令淘汰） |
+| `infra` | `qtcloud-infra` | 🔶 归宿已定，未迁 |
+| fiction/memory 架构（`src/provider` 数据源） | 废弃删除 | ⚠️ 待删除 |
+| 其余模块与命令组 | 各 `qtcloud-*`（site/studio/lite 去处待拍板） | 🔶 逐个拍板，不预设 |
 
 ## 模块状态
 
 | 模块 | 说明 | 版本 | 状态 |
 |------|------|------|------|
-| `src/site/` | 创始人官网（React + Vite） | v0.1.0-beta.1 | ✅ 从"作品集"转向"创作现场"（时间线/矩阵/改稿轨迹） |
-| `src/studio/` | 创始人工作台（Flutter） | v0.0.1 | 🔶 重建中：已落地 `lib/asset/` 资产抽查（扫描/bloc 卡片流/保留/删除移入 `.trash/`）；其余页面按模块重建 |
-| `src/provider/` | 创作数据 API（Go） | v0.1.0 | ✅ chapters/memory/health 三 API，真实数据源测试通过 |
-| `src/cli/` | CLI 工具（Rust） | — | 🔶 三个子命令已落地：`code`（代码四层）、`language`（文字七层，与原 `qfl` 对等）、`health`（消耗归因＋责任环节，读 Hermes 会话库）；journal／submodule／release 见路线图 |
+| `src/site/` | 创始人官网（React + Vite） | v0.1.0-beta.2 | ✅ 可用（beta.2 后 3 笔未发） |
+| `src/studio/` | 创始人工作台（Flutter） | v0.0.2 | 🔶 重建中：`lib/asset`、`lib/data`、`lib/meta` 已入，其余按模块重建 |
+| `src/provider/` | 创作数据 API（Go） | 0.1.0（仅 CHANGELOG，无 tag） | ⚠️ 待删除：fiction/memory 架构已废弃 |
+| `src/lite/` | 微信小程序（Taro + React + TS） | — | 🔶 构建产物经微信开发者工具导入，无 tag |
+| `src/cli/` | CLI（Rust） | cli/v0.1.0 | ✅ 14 个命令组、随发 11 条 Skill、356 测试全绿；meta 已迁出 |
 
-## 数据源
+## fiction/memory（已废弃，待删除）
 
-| 数据源 | 路径（环境变量） | 内容 |
-|--------|-----------------|------|
-| fiction | `QTFOUNDER_FICTION_PATH` | 改稿章节（职场言情/4_改稿，20 章） |
-| memory | `QTFOUNDER_MEMORY_PATH` | roadmap/（方向）+ context/（方法）文档 |
+fiction（小说仓库）与 memory（创始人记忆仓库）是已废弃的架构：`src/provider` 的数据源与旧数据流（fiction+memory → studio/provider → studio Web）随之废弃，待删除；环境变量 `QTFOUNDER_FICTION_PATH` / `QTFOUNDER_MEMORY_PATH` 只在删除前支撑 provider 运行。
 
 ## 验证状态
 
@@ -30,22 +39,16 @@
 | src/studio | flutter analyze 零问题 · flutter test 通过 · flutter build web 成功 |
 | src/provider | go build / go vet / go test 全通过（真实数据源） |
 | src/cli | cargo build / cargo test 通过 |
-| src/site | npm 构建正常（v0.1.0-beta.1） |
-
-## 数据流
-
-```
-fiction + memory（数据源，环境变量配置）
-    ├── → src/studio（桌面端直接读文件系统）
-    └── → src/provider（API：/api/chapters /api/memory）→ src/studio Web 端
-```
+| src/site | npm 构建正常 |
 
 ## 最近进展
 
+- 2026-11-04：定位更正为「第二大脑的规则化」（原「创作现场」定位作废）；fiction/memory 架构废弃——provider、数据源与数据流标记待删除；立 qtcloud-* 迁移走向
+- 2026-11-03：`cli/v0.1.0` 发布——meta 淘汰并入 `qtcloud-meta`，随发 Skill 十二→十一条；此后破坏性变更跳中间位
 - 2026-10-28：src/studio 新增 `lib/asset/` 资产抽查模块（参考 recaller 思路，bloc 架构；扫描 quanttide-founder 文档与代码，卡片流保留/删除，删除移入 `.trash/`）
 - 2026-10-28：src/studio 清空 review 代码（`packages/review_tool`、`lib/review` 等），只保留入口 `lib/main.dart`，等待重新设计
 - 2026-10-17：src/studio 业务代码归档至 data/archive/platform/qtfounder/studio，仅保留入口与骨架
 - 2026-09-27：src/cli 精简为脚手架（移除 health 功能，情绪画像归 memory 五轴档案）
 - 2026-08-15：src/provider Go 初始化（创作数据 API）+ src/studio 数据源配置
-- 2026-08-15：src/studio Flutter 初始化（量潮创始人工作台·创作现场）
-- 2026-08-14：site v0.1.0-alpha.4（创作现场转向 + CLI health）
+- 2026-08-15：src/studio Flutter 初始化（量潮创始人工作台）
+- 2026-08-14：site v0.1.0-alpha.4（CLI health 上线）
