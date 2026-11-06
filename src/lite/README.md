@@ -9,6 +9,21 @@ npm run dev:weapp    # 监听构建
 npm run build:weapp  # 构建产物到 dist/
 ```
 
+## 接入 provider
+
+首页两份列表（改稿章节、memory 文档）来自 provider（`src/provider`，FC 部署，双层 JWT）：
+
+```bash
+cp env.local.example env.local                     # env.local 被 .gitignore 的 *.local 覆盖，不进 git
+cd ../provider && go run ./cmd/mint -ttl 720h      # 签发 30 天令牌（私钥只在本机）
+# 把令牌填进 src/lite/env.local 的 PROVIDER_TOKEN，BASE_URL 填触发器地址
+cd .. && npm run build:weapp                       # 构建时注入为 process.env.PROVIDER_*
+```
+
+- 令牌过期或校验不过时首页会给出可读错误与重试，按提示重铸即可。
+- **令牌会进入 `dist/` 构建产物**（客户端鉴权的固有代价，小程序 JS 可被反编译）：仓库与源码始终不含令牌，但上架分发前必须重新评估——届时改为短期令牌＋服务端中转，或按 README 下面的域名/鉴权方案升级。
+- 真机调试需在微信后台把触发器域名加入 request 合法域名，或开发期在开发者工具勾选「不校验合法域名」。
+
 ## 上架准备
 
 1. 在微信公众平台注册小程序并取得 AppID，替换 `project.config.json` 中的 `appid`，当前占位值为 `touristappid`，替换后需重新执行构建。

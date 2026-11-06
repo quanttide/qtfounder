@@ -1,7 +1,25 @@
 import { defineConfig, type UserConfigExport } from '@tarojs/cli'
+import fs from 'fs'
+import path from 'path'
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import devConfig from './dev'
 import prodConfig from './prod'
+
+// env.local（gitignored，模板见 env.local.example）持有 provider 地址与令牌，
+// 构建时注入为 process.env.PROVIDER_*：仓库与源码不含令牌，产物里会有（客户端鉴权的固有代价，见 README）。
+const loadEnvLocal = (): Record<string, string> => {
+  const file = path.join(__dirname, '..', 'env.local')
+  if (!fs.existsSync(file)) return {}
+  const values: Record<string, string> = {}
+  for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const matched = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line)
+    if (!matched) continue
+    values[matched[1]] = matched[2].trim().replace(/^(['"])([\s\S]*)\1$/, '$2')
+  }
+  return values
+}
+
+const envLocal = loadEnvLocal()
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
@@ -21,6 +39,8 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       "@tarojs/plugin-generator"
     ],
     defineConstants: {
+      'process.env.PROVIDER_BASE_URL': JSON.stringify(envLocal.PROVIDER_BASE_URL ?? ''),
+      'process.env.PROVIDER_TOKEN': JSON.stringify(envLocal.PROVIDER_TOKEN ?? '')
     },
     copy: {
       patterns: [

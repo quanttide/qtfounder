@@ -1,0 +1,93 @@
+.index {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 32rpx 32rpx 64rpx;
+  background: #f7f8fa;
+  color: #1f2329;
+
+  .header {
+    padding: 24rpx 0 8rpx;
+
+    .title {
+      display: block;
+      font-size: 40rpx;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 24rpx;
+      color: #8a9099;
+    }
+  }
+
+  .state {
+    padding: 48rpx 0;
+    font-size: 26rpx;
+    color: #8a9099;
+    text-align: center;
+  }
+
+  .error {
+    display: block;
+    color: #d4380d;
+    line-height: 1.6;
+  }
+
+  .retry {
+    display: block;
+    margin-top: 16rpx;
+    font-size: 24rpx;
+    color: #2b6de5;
+  }
+
+  .section {
+    margin-top: 32rpx;
+    padding: 24rpx;
+    background: #fff;
+    border-radius: 16rpx;
+  }
+
+  .section-title {
+    display: block;
+    margin-bottom: 8rpx;
+    font-size: 28rpx;
+    font-weight: 600;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20rpx 0;
+    border-bottom: 1rpx solid #eef0f3;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .row-main {
+    font-size: 28rpx;
+  }
+
+  .row-sub {
+    font-size: 22rpx;
+    color: #8a9099;
+  }
+
+  .cat {
+    margin-right: 12rpx;
+    padding: 2rpx 12rpx;
+    font-size: 20rpx;
+    color: #2b6de5;
+    background: #eef4ff;
+    border-radius: 8rpx;
+  }
+
+  .empty {
+    display: block;
+    padding: 16rpx 0;
+    font-size: 24rpx;
+    color: #8a9099;
+  }
+}

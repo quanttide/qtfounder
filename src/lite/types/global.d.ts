@@ -23,6 +23,10 @@ declare namespace NodeJS {
      * @see https://taro-docs.jd.com/docs/next/env-mode-config#特殊环境变量-taro_app_id
      */
     TARO_APP_ID: string
+    /** provider 静态地址（构建时从 env.local 注入） */
+    PROVIDER_BASE_URL?: string
+    /** provider Bearer 令牌（构建时注入，不进 git） */
+    PROVIDER_TOKEN?: string
   }
 }
 
