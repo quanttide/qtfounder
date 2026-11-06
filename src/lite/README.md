@@ -24,6 +24,17 @@ cd .. && npm run build:weapp                       # 构建时注入为 process.
 - **令牌会进入 `dist/` 构建产物**（客户端鉴权的固有代价，小程序 JS 可被反编译）：仓库与源码始终不含令牌，但上架分发前必须重新评估——届时改为短期令牌＋服务端中转，或按 README 下面的域名/鉴权方案升级。
 - 真机调试需在微信后台把触发器域名加入 request 合法域名，或开发期在开发者工具勾选「不校验合法域名」。
 
+## H5 端（浏览器）
+
+```bash
+npm run dev:h5     # 开发服务器，默认 http://localhost:10086
+npm run build:h5   # 静态产物到 dist-h5/
+```
+
+- H5 产物独立在 `dist-h5/`（已 gitignore），与小程序 `dist/` 互不覆盖——`project.config.json` 的 `miniprogramRoot` 只认 `dist/`。
+- 浏览器读线上数据靠跨域：provider 侧把 CORS 预检 OPTIONS 短路 204、FC 网关补 `Access-Control-*` 头，本地或任意静态站托管都能直连，无需代理。
+- 上线＝把 `dist-h5/` 挂到任意 HTTPS 静态站；令牌同样进产物，分发评估与上节相同。
+
 ## 上架准备
 
 1. 在微信公众平台注册小程序并取得 AppID，替换 `project.config.json` 中的 `appid`，当前占位值为 `touristappid`，替换后需重新执行构建。

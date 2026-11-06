@@ -34,7 +34,8 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       828: 1.81 / 2
     },
     sourceRoot: 'src',
-    outputRoot: 'dist',
+    // h5 产物独立到 dist-h5，不覆盖小程序的 dist/（project.config.json 的 miniprogramRoot 指向 dist）
+    outputRoot: process.env.TARO_ENV === 'h5' ? 'dist-h5' : 'dist',
     plugins: [
       "@tarojs/plugin-generator"
     ],

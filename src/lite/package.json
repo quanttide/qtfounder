@@ -12,7 +12,9 @@
   "scripts": {
     "new": "taro new",
     "build:weapp": "taro build --type weapp",
-    "dev:weapp": "npm run build:weapp -- --watch"
+    "dev:weapp": "npm run build:weapp -- --watch",
+    "build:h5": "taro build --type h5",
+    "dev:h5": "npm run build:h5 -- --watch"
   },
   "browserslist": [
     "defaults and fully supports es6-module",
@@ -41,6 +43,7 @@
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.5",
     "@tarojs/cli": "4.3.0",
     "@tarojs/plugin-generator": "4.3.0",
+    "@tarojs/plugin-platform-h5": "^4.3.0",
     "@tarojs/taro-loader": "4.3.0",
     "@tarojs/webpack5-runner": "4.3.0",
     "@types/minimatch": "^5",
