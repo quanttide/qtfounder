@@ -1,10 +1,11 @@
 # Changelog
 
-## [Unreleased]
+## [0.1.0-alpha.2] - 2026-11-06
 
 ### Added
 
 - 章节详情页 `pages/chapter`：点章节行进入、展示正文（markdown 原样、不引渲染库），含加载/失败重试/缺 id 三态；`fetchChapter` 走 `GET /chapters/{id}`，404 给「章节不存在或已改名」
+- 修路由参数双重编码：Taro h5/weapp 给未解码原样，客户端先解码还原再统一编码，否则详情页拿到 `22_%E4%B9%A6...` 恒 404
 
 ## [0.1.0-alpha.1] - 2026-11-06
 
