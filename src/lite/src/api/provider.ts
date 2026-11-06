@@ -45,9 +45,10 @@ async function request<T>(path: string): Promise<T> {
 }
 
 export function fetchChapters(): Promise<Chapter[]> {
-  return request<{ chapters: Chapter[] }>('/chapters').then((data) => data.chapters)
+  // 上游偶发空表（历史曾返回 null）统一回退成空数组，不让脏数据击穿渲染
+  return request<{ chapters: Chapter[] }>('/chapters').then((data) => data.chapters ?? [])
 }
 
 export function fetchMemoryDocs(): Promise<MemoryDoc[]> {
-  return request<{ docs: MemoryDoc[] }>('/memory').then((data) => data.docs)
+  return request<{ docs: MemoryDoc[] }>('/memory').then((data) => data.docs ?? [])
 }
