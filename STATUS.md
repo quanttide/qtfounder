@@ -43,6 +43,7 @@ fiction（小说仓库）与 memory（创始人记忆仓库）是已废弃的架
 
 ## 最近进展
 
+- 2026-11-06：lite H5 发布链路照 qtclass 惯例落进 `deploy-lite.yml`（tag → 构建 → OSS `qtfounder-lite` 分缓存上传 → 刷 CDN → `lite.founder.quanttide.com`）；CDN 域名、LE 证书、DNS CNAME 已配好
 - 2026-11-06：src/lite 出 H5 端（`build:h5`/`dev:h5`，产物独立 `dist-h5/`）；src/provider 把 CORS 预检 OPTIONS 短路 204 放行浏览器跨域
 - 2026-11-06：src/lite 接入 provider——首页读取 `/chapters` 与 `/memory`（Bearer JWT 从 env.local 构建时注入，仓库不含令牌）
 - 2026-11-06：src/provider 鉴权由静态密钥改为 RS256 JWT（FC 触发器与应用层双层校验），`/health` 更名 `/healthz`，新增 `cmd/mint` 签发工具，`QTFOUNDER_SECRET_KEY` 退役

@@ -1,5 +1,7 @@
-# 发布 lite 微信小程序：推送 lite tag（如 lite/v1.0.0）时，
-# 构建 Taro 产物并用 miniprogram-ci 上传体验版，随后在微信公众平台「版本管理」验收。
+# 发布 lite：推送 lite tag（如 lite/v1.0.0）时，
+#   小程序任务：构建 Taro weapp 产物并用 miniprogram-ci 上传体验版（未配 MINIPROGRAM_* 密钥时跳过）；
+#   H5 任务：构建 Taro H5 产物上传 OSS 桶 qtfounder-lite 并刷新 CDN，上线 lite.founder.quanttide.com。
+# H5 发布链路照 qtclass Deploy Lite 惯例（tag → 构建 → 分缓存上传 → 刷 CDN）。
 #
 # 触发说明：
 #   lite/v* 与 v*.*.* 两种 tag 均可触发；日常 push 不触发，避免污染开发版本列表。
@@ -11,6 +13,9 @@
 #   - MINIPROGRAM_PRIVATE_KEY：小程序代码上传密钥文件全文（公众平台「开发设置」下载）
 #   - MINIPROGRAM_APPID：小程序 AppID
 #   - MINIPROGRAM_ROBOT：机器人编号 1-30（可选，默认 1，不同编号互不覆盖）
+#   - QTFOUNDER_PROVIDER_TOKEN：provider 访问令牌（cmd/mint 签发，构建时注入 env.local，进 H5 产物）
+# 所需 GitHub variables（仓库级）：
+#   - QTFOUNDER_PROVIDER_BASE_URL：provider 触发器地址
 # 若公众平台开启了 IP 白名单，需关闭或加入 GitHub Actions 出口 IP（出口 IP 不固定，建议关闭）。
 
 name: Deploy Lite
@@ -38,7 +43,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check miniprogram secrets
+        id: mp
+        env:
+          MINIPROGRAM_PRIVATE_KEY: ${{ secrets.MINIPROGRAM_PRIVATE_KEY }}
+        run: |
+          if [ -n "$MINIPROGRAM_PRIVATE_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::MINIPROGRAM_PRIVATE_KEY 未配置，跳过小程序上传（H5 部署不受影响）"
+          fi
+
       - name: Setup Node.js
+        if: steps.mp.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -46,6 +64,7 @@ jobs:
           cache-dependency-path: src/lite/package-lock.json
 
       - name: Install & Build
+        if: steps.mp.outputs.ready == 'true'
         working-directory: src/lite
         # 锁文件在 npmmirror 下生成，CI 改用 npmjs 拉取，避免依赖国内镜像的可达性
         run: |
@@ -53,6 +72,7 @@ jobs:
           npm run build:weapp
 
       - name: Upload to WeChat
+        if: steps.mp.outputs.ready == 'true'
         working-directory: src/lite
         env:
           MINIPROGRAM_PRIVATE_KEY: ${{ secrets.MINIPROGRAM_PRIVATE_KEY }}
@@ -60,3 +80,77 @@ jobs:
           MINIPROGRAM_ROBOT: ${{ secrets.MINIPROGRAM_ROBOT }}
           RELEASE_VERSION: ${{ inputs.version || github.ref_name }}
         run: node scripts/upload.js
+
+  build-and-deploy-web:
+    name: Build H5 & Deploy to OSS/CDN
+    runs-on: ubuntu-latest
+    env:
+      OSS_BUCKET: qtfounder-lite
+      OSS_ENDPOINT: oss-cn-hangzhou.aliyuncs.com
+      CDN_DOMAIN: lite.founder.quanttide.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: src/lite/package-lock.json
+
+      - name: Write provider env.local
+        working-directory: src/lite
+        env:
+          PROVIDER_BASE_URL: ${{ vars.QTFOUNDER_PROVIDER_BASE_URL }}
+          PROVIDER_TOKEN: ${{ secrets.QTFOUNDER_PROVIDER_TOKEN }}
+        run: |
+          if [ -z "$PROVIDER_BASE_URL" ] || [ -z "$PROVIDER_TOKEN" ]; then
+            echo "::error::缺少 QTFOUNDER_PROVIDER_BASE_URL（variable）或 QTFOUNDER_PROVIDER_TOKEN（secret）"
+            exit 1
+          fi
+          printf 'PROVIDER_BASE_URL=%s\nPROVIDER_TOKEN=%s\n' "$PROVIDER_BASE_URL" "$PROVIDER_TOKEN" > env.local
+
+      - name: Install & Build
+        working-directory: src/lite
+        # 锁文件在 npmmirror 下生成，CI 改用 npmjs 拉取，避免依赖国内镜像的可达性
+        run: |
+          npm ci --registry=https://registry.npmjs.org --replace-registry-host=always
+          npm run build:h5
+
+      - name: Setup ossutil
+        uses: manyuanrong/setup-ossutil@v3.0
+        with:
+          endpoint: ${{ env.OSS_ENDPOINT }}
+          access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+
+      - name: Upload long-cache assets
+        working-directory: src/lite
+        run: |
+          ossutil cp dist-h5/ oss://${{ env.OSS_BUCKET }}/ -r -f \
+            --exclude "index.html" \
+            --meta "Cache-Control:public,max-age=31536000"
+
+      - name: Upload entry files
+        working-directory: src/lite
+        # H5 为 hash 路由单页，只 index.html 需 no-cache；无 404 兜底页
+        run: |
+          ossutil cp dist-h5/index.html oss://${{ env.OSS_BUCKET }}/index.html -f --meta "Cache-Control:no-cache"
+
+      - name: Refresh CDN
+        run: |
+          pip install aliyun-python-sdk-cdn
+          python -c "
+          from aliyunsdkcore.client import AcsClient
+          from aliyunsdkcdn.request.v20180510.RefreshObjectCachesRequest import RefreshObjectCachesRequest
+          import os
+          cli = AcsClient(os.environ['ALIYUN_ACCESS_KEY_ID'], os.environ['ALIYUN_ACCESS_KEY_SECRET'], 'cn-hangzhou')
+          req = RefreshObjectCachesRequest()
+          req.set_ObjectPath('https://${{ env.CDN_DOMAIN }}/')
+          req.set_ObjectType('Directory')
+          cli.do_action_with_exception(req)
+          "
+        env:
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}

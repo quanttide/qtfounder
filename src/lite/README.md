@@ -33,7 +33,21 @@ npm run build:h5   # 静态产物到 dist-h5/
 
 - H5 产物独立在 `dist-h5/`（已 gitignore），与小程序 `dist/` 互不覆盖——`project.config.json` 的 `miniprogramRoot` 只认 `dist/`。
 - 浏览器读线上数据靠跨域：provider 侧把 CORS 预检 OPTIONS 短路 204、FC 网关补 `Access-Control-*` 头，本地或任意静态站托管都能直连，无需代理。
-- 上线＝把 `dist-h5/` 挂到任意 HTTPS 静态站；令牌同样进产物，分发评估与上节相同。
+- 上线走下面的发布流程；令牌同样进产物（暴露面＝章节与文档的**列表元数据**，无正文接口），泄露即换令牌重发。
+
+## 发布 H5（lite.founder.quanttide.com）
+
+照 qtclass 的 Deploy Lite 惯例，推 tag 即发：
+
+```bash
+git tag lite/vX.Y.Z && git push origin lite/vX.Y.Z
+```
+
+链路：`build:h5` → 上传 OSS 桶 `qtfounder-lite`（静态资源长缓存、`index.html` no-cache）→ 刷新 CDN → `https://lite.founder.quanttide.com/`。同一次 push 会顺带跑小程序上传任务，未配 `MINIPROGRAM_*` 密钥时自动跳过、不产生失败。
+
+仓库配置依赖：secret `QTFOUNDER_PROVIDER_TOKEN`（构建时注入 `env.local`，现为 90 天令牌，过期用 `src/provider` 的 `cmd/mint` 重签后 `gh secret set` 更新）、variable `QTFOUNDER_PROVIDER_BASE_URL`；OSS/CDN 走 `ALIYUN_*` 密钥。
+
+CDN 证书是 acme.sh 签的 `lite.founder.quanttide.com`（LE，2027-02 到期）；续期后需用 `SetCdnDomainSSLCertificate` 重推，做法同 qtclass 的 `configure-class-cdn.sh`。
 
 ## 上架准备
 
