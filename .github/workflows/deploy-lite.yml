@@ -1,4 +1,4 @@
-# 发布 lite：推送 lite tag（如 lite/v1.0.0）时，
+# 发布 lite：推送 lite tag（如 lite/v0.1.0-alpha.1）时，
 #   小程序任务：构建 Taro weapp 产物并用 miniprogram-ci 上传体验版（未配 MINIPROGRAM_* 密钥时跳过）；
 #   H5 任务：构建 Taro H5 产物上传 OSS 桶 qtfounder-lite 并刷新 CDN，上线 lite.founder.quanttide.com。
 # H5 发布链路照 qtclass Deploy Lite 惯例（tag → 构建 → 分缓存上传 → 刷 CDN）。
@@ -7,7 +7,7 @@
 #   lite/v* 与 v*.*.* 两种 tag 均可触发；日常 push 不触发，避免污染开发版本列表。
 #   亦可在 Actions 页面手动触发（可指定版本号，缺省回退 package.json 版本）。
 #
-# 版本号取 tag 最后一段并去掉 v 前缀（lite/v1.0.0 → 1.0.0），保证与代码版本一一对应。
+# 版本号取 tag 最后一段并去掉 v 前缀（lite/v0.1.0-alpha.1 → 0.1.0-alpha.1），保证与代码版本一一对应。
 #
 # 所需 GitHub secrets（仓库级）：
 #   - MINIPROGRAM_PRIVATE_KEY：小程序代码上传密钥文件全文（公众平台「开发设置」下载）

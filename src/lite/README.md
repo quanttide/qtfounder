@@ -59,6 +59,6 @@ CDN 证书是 acme.sh 签的 `lite.founder.quanttide.com`（LE，2027-02 到期�
 
 ## 发布（CI）
 
-`.github/workflows/deploy-lite.yml` 在推送 `lite/v1.0.0` 或 `v1.0.0` 形式的 tag 时自动执行 `npm ci`、`npm run build:weapp`，再由 `scripts/upload.js` 调用 miniprogram-ci 上传体验版；也可在 Actions 页面手动触发并指定版本号，版本号取 tag 最后一段并去掉 `v` 前缀。
+`.github/workflows/deploy-lite.yml` 在推送 `lite/v*` 形式的 tag（如 `lite/v0.1.0-alpha.1`）时自动执行 `npm ci`、`npm run build:weapp`，再由 `scripts/upload.js` 调用 miniprogram-ci 上传体验版；也可在 Actions 页面手动触发并指定版本号，版本号取 tag 最后一段并去掉 `v` 前缀。
 
 需在仓库 Secrets 配置 `MINIPROGRAM_PRIVATE_KEY`（公众平台「开发设置」下载的密钥文件全文）、`MINIPROGRAM_APPID`、`MINIPROGRAM_ROBOT`（可选，1-30，默认 1）。若公众平台开启了 IP 白名单需关闭，因 GitHub Actions 出口 IP 不固定。
