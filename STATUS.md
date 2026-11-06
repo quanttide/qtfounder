@@ -43,6 +43,7 @@ fiction（小说仓库）与 memory（创始人记忆仓库）是已废弃的架
 
 ## 最近进展
 
+- 2026-11-06：src/provider 鉴权由静态密钥改为 RS256 JWT（FC 触发器与应用层双层校验），`/health` 更名 `/healthz`，新增 `cmd/mint` 签发工具，`QTFOUNDER_SECRET_KEY` 退役
 - 2026-11-04：定位更正为「第二大脑的规则化」（原「创作现场」定位作废）；fiction/memory 架构废弃——provider、数据源与数据流标记待删除；立 qtcloud-* 迁移走向
 - 2026-11-03：`cli/v0.1.0` 发布——meta 淘汰并入 `qtcloud-meta`，随发 Skill 十二→十一条；此后破坏性变更跳中间位
 - 2026-10-28：src/studio 新增 `lib/asset/` 资产抽查模块（参考 recaller 思路，bloc 架构；扫描 quanttide-founder 文档与代码，卡片流保留/删除，删除移入 `.trash/`）

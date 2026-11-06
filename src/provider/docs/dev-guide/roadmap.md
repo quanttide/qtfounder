@@ -2,7 +2,7 @@
 
 量潮创始人工作台服务端（Go）——创作数据 API。
 
-现状订正（2026-10-21）：目标 3 的三项均已完成而清单未勾——`internal/creative/auth.go` 实现基于 `QTFOUNDER_SECRET_KEY` 的访问限制并已在 `cmd/server/main.go` 接线（`/health` 免鉴权）；`Dockerfile` 与 `manifests/terraform` 已在仓；`.github/workflows/` 有 `ci.yml`、`deploy-provider.yml`（另有 `deploy-lite.yml`、`deploy-site.yml`）。
+现状订正（2026-10-21）：目标 3 的三项均已完成而清单未勾——`internal/creative/auth.go` 实现访问限制并已在 `cmd/server/main.go` 接线（2026-11-06 起为 RS256 JWT 双层校验，`/healthz` 免鉴权）；`Dockerfile` 与 `manifests/terraform` 已在仓；`.github/workflows/` 有 `ci.yml`、`deploy-provider.yml`（另有 `deploy-lite.yml`、`deploy-site.yml`）。
 
 ## 目标 1：创作数据 API（当前）
 
@@ -10,7 +10,7 @@
 
 - [x] `GET /chapters`：改稿章节列表（数值排序）
 - [x] `GET /memory`：memory 文档列表（roadmap/ + context/）
-- [x] `GET /health`：健康检查
+- [x] `GET /healthz`：健康检查（原 `/health`，2026-11-06 更名）
 - [x] 真实数据源测试（repository_test.go）
 
 ## 目标 2：内容接口
@@ -21,7 +21,7 @@
 
 ## 目标 3：生产化
 
-- [x] 鉴权（工作台为私有数据源）：`SecretKeyAuth` 中间件，`Authorization: Bearer` 或 `?key=`，`QTFOUNDER_SECRET_KEY` 未设时不启用（本地开发）
+- [x] 鉴权（工作台为私有数据源）：`JWTAuth` 中间件，`Authorization: Bearer <RS256 JWT>`（触发器边缘同验），`QTFOUNDER_JWT_PUBLIC_KEY` 未设时不启用（本地开发）
 - [x] 部署：`Dockerfile` + `manifests/terraform`
 - [x] CI：`.github/workflows/ci.yml`（build/vet/test）+ `deploy-provider.yml`
 

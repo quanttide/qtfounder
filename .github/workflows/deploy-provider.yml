@@ -4,8 +4,8 @@
 # 参考 qtcloud-asset deploy-provider 模式。
 #
 # 所需 GitHub secrets（仓库级）：
-#   - QTFOUNDER_SECRET_KEY：API 访问密钥（注入 FC 环境变量，客户端以 Bearer 携带）
 #   - ALIYUN_ACCESS_KEY_ID / ALIYUN_ACCESS_KEY_SECRET：RAM 用户 AccessKey（OSS 上传 + terraform）
+# JWT 鉴权不占仓库 secret：公钥在 manifests/terraform/（jwt_public_key.pem、jwks.json），私钥只留本机供 cmd/mint 签发。
 
 name: Deploy Provider
 
@@ -87,7 +87,6 @@ jobs:
     env:
       ALICLOUD_ACCESS_KEY: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
       ALICLOUD_SECRET_KEY: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
-      TF_VAR_secret_key: ${{ secrets.QTFOUNDER_SECRET_KEY }}
 
     steps:
       - name: Checkout

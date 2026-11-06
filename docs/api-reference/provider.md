@@ -12,11 +12,25 @@ QTFOUNDER_ADDR=:8080 \
   go run ./cmd/server
 ```
 
+## 鉴权
+
+RS256 JWT，双层校验：FC 触发器（`manifests/terraform/jwks.json`）与应用层 `JWTAuth` 中间件，客户端只带一个令牌：
+
+```bash
+TOKEN=$(cd src/provider && go run ./cmd/mint -ttl 24h)   # 私钥默认 ~/.local/share/qtfounder/jwt/RS256_private.pem
+curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8080/chapters
+```
+
+- 只认 `Authorization` 头，`?key=` 查询参数不再放行（URL 会把密钥带进日志与历史）；
+- 令牌必须带 `exp`，签名算法钉死 RS256，过期或换算法一律 401；
+- `GET /healthz` 免验（FC 健康检查与探活）；
+- 本地未设置 `QTFOUNDER_JWT_PUBLIC_KEY` 时不启用鉴权，仅限本地开发。
+
 ## 端点
 
-### GET /health
+### GET /healthz
 
-健康检查。
+健康检查，免鉴权。
 
 **响应**：
 ```json
@@ -67,6 +81,7 @@ memory 文档列表（roadmap/ + context/，按分类与名称排序）。
 
 | 状态码 | 场景 |
 |--------|------|
+| 401 | 缺少、过期或校验不过的 JWT（`WWW-Authenticate: Bearer`） |
 | 500 | 数据源不可用（环境变量未配置 / 路径不存在） |
 
 ## 用途

@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [Unreleased]
+
+### Changed
+
+- 鉴权从共享静态密钥改为 RS256 JWT，双层校验（FC 触发器 + 应用层中间件）：
+  - 应用层 `JWTAuth`（`internal/creative/auth.go`）只认 `Authorization: Bearer` 头，算法钉死 RS256，`exp` 必填
+  - FC 触发器 `authType=jwt`，JWKS 见 `manifests/terraform/jwks.json`，`/healthz` 白名单免验
+  - 新增 `cmd/mint`：用本机私钥签发令牌，公钥随 terraform 注入，私钥不进仓库
+  - `QTFOUNDER_SECRET_KEY` 变量、GitHub secret 依赖与 `tfstate` 明文落盘一并移除
+- `GET /health` 更名为 `GET /healthz`，FC 健康检查同步改为探 `/healthz`
+
+### Removed
+
+- `?key=` 查询参数携带密钥的通路（URL 会把密钥带进访问日志与历史）
+
 ## [0.1.0] - 2026-08-15
 
 ### Added

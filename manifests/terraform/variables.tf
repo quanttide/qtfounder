@@ -28,12 +28,6 @@ variable "code_object" {
   default     = "qtfounder/provider/qtfounder-provider-go-linux-amd64.zip"
 }
 
-variable "secret_key" {
-  description = "API 访问密钥（注入 FC 环境变量 QTFOUNDER_SECRET_KEY）。注意：会以明文落入 tfstate，与 qtcloud-delib 同一已知权衡"
-  type        = string
-  sensitive   = true
-}
-
 variable "fc_memory" {
   description = "FC 函数内存（MB）"
   type        = number
