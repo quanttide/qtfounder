@@ -62,3 +62,19 @@ func TestListMemoryDocs(t *testing.T) {
 		t.Error("应读到 memory 文档")
 	}
 }
+
+// 空数据源必须返回非 nil 空切片，否则 json 编出 "docs":null，客户端数组假设被击穿（lite 曾因此白屏）
+func TestListEmptySourceReturnsJSONArrays(t *testing.T) {
+	repo := NewRepository(t.TempDir(), t.TempDir())
+	docs, err := repo.ListMemoryDocs()
+	if err != nil {
+		t.Fatalf("ListMemoryDocs: %v", err)
+	}
+	if docs == nil {
+		t.Error("docs 为 nil，应是非 nil 空切片")
+	}
+	chapters, err := repo.ListChapters()
+	if err == nil && chapters == nil {
+		t.Error("chapters 为 nil，应是非 nil 空切片")
+	}
+}

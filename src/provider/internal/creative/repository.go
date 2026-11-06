@@ -26,7 +26,7 @@ func (r *Repository) ListChapters() ([]Chapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	var chapters []Chapter
+	chapters := make([]Chapter, 0)
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
 			continue
@@ -64,7 +64,8 @@ func chapterNumbers(id string) (int, int) {
 
 // ListMemoryDocs memory 文档列表（journal/*.md + handbook/*.md）
 func (r *Repository) ListMemoryDocs() ([]MemoryDoc, error) {
-	var docs []MemoryDoc
+	// 空表也要是非 nil 切片：nil 经 json 编码成 null，会击穿客户端的数组假设
+	docs := make([]MemoryDoc, 0)
 	for _, category := range []string{"journal", "handbook"} {
 		dir := filepath.Join(r.MemoryPath, category)
 		entries, err := os.ReadDir(dir)

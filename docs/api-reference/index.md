@@ -10,7 +10,7 @@ qtfounder 的接口目前只有 Provider API 一类：
 |------|------|
 | `GET /healthz` | 健康检查（免鉴权） |
 | `GET /chapters` | 改稿章节列表（fiction/职场言情/4_改稿） |
-| `GET /memory` | memory 文档列表（roadmap/ + context/） |
+| `GET /memory` | memory 文档列表（journal/ + handbook/） |
 
 除 `GET /healthz` 外一律要求 `Authorization: Bearer <JWT>`（RS256，双层校验：FC 触发器 + 应用层），令牌用 `src/provider` 的 `cmd/mint` 签发。
 

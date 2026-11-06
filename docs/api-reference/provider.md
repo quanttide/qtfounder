@@ -59,14 +59,14 @@ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8080/chapters
 
 ### GET /memory
 
-memory 文档列表（roadmap/ + context/，按分类与名称排序）。
+memory 文档列表（journal/ + handbook/，按分类与名称排序）。数据源目录缺失或无文档时返回空数组。
 
 **响应**：
 ```json
 {
   "docs": [
-    {"name": "fiction", "category": "roadmap", "path": "/abs/path/fiction.md"},
-    {"name": "fiction-plot", "category": "context", "path": "/abs/path/fiction-plot.md"}
+    {"name": "2026-11-06", "category": "journal", "path": "/abs/path/journal/2026-11-06.md"},
+    {"name": "api-reference", "category": "handbook", "path": "/abs/path/handbook/api-reference.md"}
   ]
 }
 ```
@@ -74,7 +74,7 @@ memory 文档列表（roadmap/ + context/，按分类与名称排序）。
 | 字段 | 说明 |
 |------|------|
 | `name` | 文档名（去 .md） |
-| `category` | 分类：`roadmap`（方向）/ `context`（方法） |
+| `category` | 分类：`journal`（日志）/ `handbook`（手册） |
 | `path` | 文件绝对路径 |
 
 ## 错误
