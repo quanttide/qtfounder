@@ -10,6 +10,7 @@
   - 新增 `cmd/mint`：用本机私钥签发令牌，公钥随 terraform 注入，私钥不进仓库
   - `QTFOUNDER_SECRET_KEY` 变量、GitHub secret 依赖与 `tfstate` 明文落盘一并移除
 - `GET /health` 更名为 `GET /healthz`，FC 健康检查同步改为探 `/healthz`
+- 部署：代码包 OSS 对象名带 git sha——同名对象重复上传时 FC 不会重新拉取代码，此前部署新代码可能仍跑旧版本
 
 ### Removed
 

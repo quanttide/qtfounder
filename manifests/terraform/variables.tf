@@ -23,7 +23,7 @@ variable "code_bucket" {
 }
 
 variable "code_object" {
-  description = "ZIP 代码包在桶内的对象路径"
+  description = "ZIP 代码包在桶内的对象路径。CI 传带 git sha 的路径（deploy-provider.yml 的 OSS_CODE_OBJECT）——同名对象重复上传时 FC 不会重新拉取代码；本地 apply 需自行传新路径"
   type        = string
   default     = "qtfounder/provider/qtfounder-provider-go-linux-amd64.zip"
 }

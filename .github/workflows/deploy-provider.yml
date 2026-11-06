@@ -28,7 +28,8 @@ env:
   TF_STATE_BUCKET: quanttide-terraform-state
   TF_STATE_KEY: qtfounder/terraform.tfstate
   OSS_CODE_BUCKET: qtcloud-asset
-  OSS_CODE_OBJECT: qtfounder/provider/qtfounder-provider-go-linux-amd64.zip
+  # 对象名带 git sha：同名对象重复上传时 FC 不会重新拉取代码，路径必须每次部署都变（terraform 侧见 deploy job 的 TF_VAR_code_object）
+  OSS_CODE_OBJECT: qtfounder/provider/qtfounder-provider-go-linux-amd64-${{ github.sha }}.zip
 
 jobs:
   package:
@@ -107,11 +108,12 @@ jobs:
 
       - name: Terraform Plan
         working-directory: manifests/terraform
-        run: terraform plan -input=false -no-color -out=tfplan
+        # $OSS_CODE_OBJECT 由 workflow env 注入（带 git sha），包上传与 terraform 用同一路径
+        run: TF_VAR_code_object="$OSS_CODE_OBJECT" terraform plan -input=false -no-color -out=tfplan
 
       - name: Terraform Apply
         working-directory: manifests/terraform
-        run: terraform apply -input=false -no-color tfplan
+        run: TF_VAR_code_object="$OSS_CODE_OBJECT" terraform apply -input=false -no-color tfplan
 
       - name: Show Trigger URL
         working-directory: manifests/terraform
