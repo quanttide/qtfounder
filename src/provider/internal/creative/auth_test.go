@@ -173,3 +173,25 @@ func TestParsePublicKeyRejectsGarbage(t *testing.T) {
 		t.Error("期望报错，实际通过")
 	}
 }
+
+func TestPreflight(t *testing.T) {
+	t.Run("OPTIONS 返回 204 且不进鉴权", func(t *testing.T) {
+		inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			t.Error("预检不应落到内层处理器")
+		})
+		req := httptest.NewRequest("OPTIONS", "/chapters", nil)
+		rec := httptest.NewRecorder()
+		Preflight(inner).ServeHTTP(rec, req)
+		if rec.Code != http.StatusNoContent {
+			t.Errorf("code = %d, want 204", rec.Code)
+		}
+	})
+
+	t.Run("GET 照常进内层", func(t *testing.T) {
+		rec := httptest.NewRecorder()
+		Preflight(okHandler()).ServeHTTP(rec, newRequest("/chapters", ""))
+		if rec.Code != http.StatusOK {
+			t.Errorf("code = %d, want 200", rec.Code)
+		}
+	})
+}

@@ -42,7 +42,7 @@ func main() {
 		addr = ":8080"
 	}
 	log.Printf("qtfounder provider listening on %s (fiction=%s, memory=%s)", addr, fictionPath, memoryPath)
-	if err := http.ListenAndServe(addr, creative.JWTAuth(mux, pub)); err != nil {
+	if err := http.ListenAndServe(addr, creative.Preflight(creative.JWTAuth(mux, pub))); err != nil {
 		log.Fatal(err)
 	}
 }

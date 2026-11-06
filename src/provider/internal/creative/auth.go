@@ -34,6 +34,18 @@ func JWTAuth(next http.Handler, pub *rsa.PublicKey) http.Handler {
 	})
 }
 
+// Preflight 让 CORS 预检在鉴权之前拿到 204：按规范预检不携带任何凭据、
+// 且必须以 2xx 返回，否则浏览器直接判网络错误；Access-Control-* 响应头由 FC 网关补齐。
+func Preflight(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 // PublicKeyFromEnv 读取并解析 PEM 公钥环境变量；未设置时返回 nil（不启用鉴权），
 // 设置了但解析不了则报错——宁可启动失败，也不能带着残缺配置开门。
 func PublicKeyFromEnv() (*rsa.PublicKey, error) {
