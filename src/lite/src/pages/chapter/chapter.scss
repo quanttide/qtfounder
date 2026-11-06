@@ -1,0 +1,41 @@
+.chapter {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 32rpx 32rpx 80rpx;
+  background: #fff;
+  color: #1f2329;
+
+  .title {
+    display: block;
+    margin-bottom: 24rpx;
+    font-size: 36rpx;
+    font-weight: 600;
+  }
+
+  .body {
+    font-size: 28rpx;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .state {
+    padding: 48rpx 0;
+    font-size: 26rpx;
+    color: #8a9099;
+    text-align: center;
+  }
+
+  .error {
+    display: block;
+    color: #d4380d;
+    line-height: 1.6;
+  }
+
+  .retry {
+    display: block;
+    margin-top: 16rpx;
+    font-size: 24rpx;
+    color: #2b6de5;
+  }
+}

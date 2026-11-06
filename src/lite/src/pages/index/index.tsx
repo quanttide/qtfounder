@@ -1,5 +1,5 @@
 import { View, Text } from '@tarojs/components'
-import { useLoad } from '@tarojs/taro'
+import { navigateTo, useLoad } from '@tarojs/taro'
 import { useCallback, useState } from 'react'
 
 import { Chapter, MemoryDoc, fetchChapters, fetchMemoryDocs, isProviderConfigured } from '../../api/provider'
@@ -39,6 +39,10 @@ export default function Index () {
     load()
   })
 
+  const openChapter = (id: string) => {
+    navigateTo({ url: `/pages/chapter/chapter?id=${encodeURIComponent(id)}` })
+  }
+
   const { loading, error, chapters, docs } = state
 
   return (
@@ -66,7 +70,12 @@ export default function Index () {
           <View className='section'>
             <Text className='section-title'>改稿章节（{chapters.length}）</Text>
             {chapters.map((chapter) => (
-              <View className='row' key={chapter.id}>
+              <View
+                className='row'
+                key={chapter.id}
+                hoverClass='hover'
+                onClick={() => openChapter(chapter.id)}
+              >
                 <Text className='row-main'>{chapter.title}</Text>
                 <Text className='row-sub'>{chapter.id}</Text>
               </View>

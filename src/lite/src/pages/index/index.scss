@@ -64,6 +64,10 @@
     &:last-child {
       border-bottom: none;
     }
+
+    &.hover {
+      background: #f0f2f5;
+    }
   }
 
   .row-main {

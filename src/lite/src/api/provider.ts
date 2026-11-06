@@ -14,6 +14,14 @@ export interface MemoryDoc {
   path: string
 }
 
+/** 章节详情（provider `GET /chapters/{id}`） */
+export interface ChapterDetail {
+  id: string
+  title: string
+  path: string
+  content: string
+}
+
 const BASE_URL = process.env.PROVIDER_BASE_URL || ''
 const TOKEN = process.env.PROVIDER_TOKEN || ''
 
@@ -38,6 +46,9 @@ async function request<T>(path: string): Promise<T> {
   if (res.statusCode === 400) {
     throw new Error('令牌没随请求带上：检查 env.local 的 PROVIDER_TOKEN 是否填了值并重新构建')
   }
+  if (res.statusCode === 404) {
+    throw new Error('章节不存在或已改名')
+  }
   if (res.statusCode !== 200) {
     throw new Error(`provider 返回 ${res.statusCode}`)
   }
@@ -51,4 +62,18 @@ export function fetchChapters(): Promise<Chapter[]> {
 
 export function fetchMemoryDocs(): Promise<MemoryDoc[]> {
   return request<{ docs: MemoryDoc[] }>('/memory').then((data) => data.docs ?? [])
+}
+
+export function fetchChapter(id: string): Promise<ChapterDetail> {
+  // Taro 各端路由参数解码行为不一致（h5/weapp 常给未解码原样）：先还原成原文再统一编码，
+  // 否则双重编码会让服务端拿 "22_%E4%B9%A6..." 找不到章。
+  let raw = id
+  if (raw.includes('%')) {
+    try {
+      raw = decodeURIComponent(raw)
+    } catch {
+      // 保持原样，交给服务端 404
+    }
+  }
+  return request<ChapterDetail>(`/chapters/${encodeURIComponent(raw)}`)
 }
