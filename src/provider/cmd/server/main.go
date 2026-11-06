@@ -23,6 +23,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /chapters", h.ListChapters)
+	mux.HandleFunc("GET /chapters/{id}", h.GetChapter)
 	mux.HandleFunc("GET /memory", h.ListMemoryDocs)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

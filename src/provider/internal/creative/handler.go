@@ -2,6 +2,7 @@ package creative
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -23,6 +24,21 @@ func (h *Handler) ListChapters(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"chapters": chapters})
+}
+
+// GetChapter 处理 GET /chapters/{id}：正文内容，id 不存在 404 而非 500
+func (h *Handler) GetChapter(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	detail, err := h.repo.GetChapter(id)
+	if errors.Is(err, ErrNotFound) {
+		http.Error(w, "章节不存在："+id, http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "章节正文加载失败："+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusOK, detail)
 }
 
 // ListMemoryDocs 处理 GET /api/memory

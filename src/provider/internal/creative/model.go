@@ -16,6 +16,14 @@ type Chapter struct {
 	Path  string `json:"path"`
 }
 
+// ChapterDetail 章节详情（含正文，目标 2 内容接口）
+type ChapterDetail struct {
+	ID      string `json:"id"`
+	Title   string `json:"title"`
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
 // MemoryDoc memory 文档（roadmap/ 或 context/）
 type MemoryDoc struct {
 	Name     string `json:"name"`

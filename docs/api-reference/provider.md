@@ -57,6 +57,22 @@ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8080/chapters
 | `title` | 章节标题（如 `咖啡厅重逢`） |
 | `path` | 文件绝对路径 |
 
+### GET /chapters/{id}
+
+章节详情：返回 id、title、path 与**正文**（markdown 原文）。id 按改稿目录的文件名清单比对，不拼进路径，越界形状只会 404。
+
+**响应**（200）：
+```json
+{
+  "id": "1_1",
+  "title": "咖啡厅重逢",
+  "path": "/abs/path/1_1_咖啡厅重逢.md",
+  "content": "# 第一段\n\n正文……"
+}
+```
+
+id 不存在返回 404（不 500）。
+
 ### GET /memory
 
 memory 文档列表（journal/ + handbook/，按分类与名称排序）。数据源目录缺失或无文档时返回空数组。
@@ -82,6 +98,7 @@ memory 文档列表（journal/ + handbook/，按分类与名称排序）。数�
 | 状态码 | 场景 |
 |--------|------|
 | 401 | 缺少、过期或校验不过的 JWT（`WWW-Authenticate: Bearer`） |
+| 404 | `/chapters/{id}` 的 id 在改稿目录里查无此章 |
 | 500 | 数据源不可用（环境变量未配置 / 路径不存在） |
 
 ## 用途

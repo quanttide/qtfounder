@@ -1,12 +1,16 @@
 package creative
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 )
+
+// ErrNotFound 请求的条目在数据源里不存在（转 404，不 500）
+var ErrNotFound = errors.New("条目不存在")
 
 // Repository 创作数据存储：从 fiction/memory 仓库读取（文件系统）
 type Repository struct {
@@ -40,6 +44,32 @@ func (r *Repository) ListChapters() ([]Chapter, error) {
 	}
 	sort.Slice(chapters, func(i, j int) bool { return lessChapterID(chapters[i].ID, chapters[j].ID) })
 	return chapters, nil
+}
+
+// GetChapter 章节详情（正文）：只在改稿目录的文件名清单里比对 id，
+// 用户输入从不拼进路径——越界形状的 id 只会「查无此章」，天然无路径穿越。
+func (r *Repository) GetChapter(id string) (ChapterDetail, error) {
+	dir := filepath.Join(r.FictionPath, "职场言情", "4_改稿")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return ChapterDetail{}, err
+	}
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
+			continue
+		}
+		name := strings.TrimSuffix(e.Name(), ".md")
+		if idOf(name) != id {
+			continue
+		}
+		path := filepath.Join(dir, e.Name())
+		body, err := os.ReadFile(path)
+		if err != nil {
+			return ChapterDetail{}, err
+		}
+		return ChapterDetail{ID: id, Title: titleOf(name), Path: path, Content: string(body)}, nil
+	}
+	return ChapterDetail{}, fmt.Errorf("%w: %s", ErrNotFound, id)
 }
 
 // lessChapterID 按数值比较章节编号："10_1" 应排在 "1_1" 之后
