@@ -30,3 +30,11 @@ type MemoryDoc struct {
 	Category string `json:"category"` // roadmap / context
 	Path     string `json:"path"`
 }
+
+// Todo 待办条目：数据源里任一 TODO.md 的 `- [ ]` / `- [x]` 行
+// Group 取所在小节标题（`## xxx`），该行之前没有小节则为空串
+type Todo struct {
+	Group string `json:"group"`
+	Text  string `json:"text"`
+	Done  bool   `json:"done"`
+}

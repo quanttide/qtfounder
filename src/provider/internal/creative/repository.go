@@ -3,6 +3,7 @@ package creative
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -120,6 +121,63 @@ func (r *Repository) ListMemoryDocs() ([]MemoryDoc, error) {
 		return docs[i].Name < docs[j].Name
 	})
 	return docs, nil
+}
+
+// ListTodos 待办列表：递归找两个数据源里的 TODO.md，解析 `- [ ]` / `- [x]`
+// 与所在 `## 小节`；单个文件读不到不阻断（同 ListMemoryDocs 的容忍度），
+// 找不到任何待办时返回非 nil 空切片，json 编成 [] 而不是 null
+func (r *Repository) ListTodos() ([]Todo, error) {
+	todos := make([]Todo, 0)
+	for _, root := range []string{r.FictionPath, r.MemoryPath} {
+		if root == "" {
+			continue
+		}
+		_ = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+			if err != nil {
+				return nil // 子树不可读（权限/断链）跳过，不整表失败
+			}
+			if d.IsDir() {
+				if d.Name() == ".git" {
+					return fs.SkipDir
+				}
+				return nil
+			}
+			if d.Name() != "TODO.md" {
+				return nil
+			}
+			items, perr := parseTodos(path)
+			if perr != nil {
+				return nil
+			}
+			todos = append(todos, items...)
+			return nil
+		})
+	}
+	return todos, nil
+}
+
+// parseTodos 解析一个 TODO.md：`## 标题` 记为当前小节，`- [ ]`/`- [x]` 记为条目
+func parseTodos(path string) ([]Todo, error) {
+	body, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]Todo, 0)
+	group := ""
+	for _, line := range strings.Split(string(body), "\n") {
+		trimmed := strings.TrimSpace(line)
+		switch {
+		case strings.HasPrefix(trimmed, "## "):
+			group = strings.TrimSpace(strings.TrimPrefix(trimmed, "## "))
+		case strings.HasPrefix(trimmed, "- [ ]"), strings.HasPrefix(trimmed, "- [x]"), strings.HasPrefix(trimmed, "- [X]"):
+			text := strings.TrimSpace(trimmed[len("- [ ]"):])
+			if text == "" {
+				continue
+			}
+			items = append(items, Todo{Group: group, Text: text, Done: !strings.HasPrefix(trimmed, "- [ ]")})
+		}
+	}
+	return items, nil
 }
 
 // idOf 章节编号：文件名 "1_1_咖啡厅重逢" → "1_1"

@@ -9,6 +9,35 @@ import (
 	"testing"
 )
 
+func TestListTodosHTTP(t *testing.T) {
+	fiction := t.TempDir()
+	if err := os.WriteFile(filepath.Join(fiction, "TODO.md"),
+		[]byte("## 小说\n\n- [ ] 改第三四章\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /todos", NewHandler(NewRepository(fiction, t.TempDir())).ListTodos)
+
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, httptest.NewRequest("GET", "/todos", nil))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("code = %d, body = %s", rec.Code, rec.Body.String())
+	}
+	var payload struct {
+		Todos []Todo `json:"todos"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("响应不是 JSON: %v", err)
+	}
+	if len(payload.Todos) != 1 {
+		t.Fatalf("todos = %+v, want 1 条", payload.Todos)
+	}
+	if payload.Todos[0].Group != "小说" || payload.Todos[0].Text != "改第三四章" || payload.Todos[0].Done {
+		t.Errorf("条目 = %+v", payload.Todos[0])
+	}
+}
+
 func TestGetChapterHTTP(t *testing.T) {
 	fiction := t.TempDir()
 	dir := filepath.Join(fiction, "职场言情", "4_改稿")
