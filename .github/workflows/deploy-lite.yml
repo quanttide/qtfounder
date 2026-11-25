@@ -111,16 +111,18 @@ jobs:
           access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
           access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
-      - name: Upload long-cache assets
+      # 缓存策略：Taro 产物文件名不带内容 hash（js/app.js、chunk/169.js 都是固定名），
+      # 长缓存会把旧代码钉在用户浏览器里一年——上一版首屏一直打到旧 provider 就是这么来的。
+      # 全部 no-cache：站点只有几百 KB，代价可忽略。
+      - name: Upload assets (no-cache)
         working-directory: src/lite
         run: |
           ossutil cp dist-h5/ oss://${{ env.OSS_BUCKET }}/ -r -f \
             --exclude "index.html" \
-            --meta "Cache-Control:public,max-age=31536000"
+            --meta "Cache-Control:no-cache"
 
       - name: Upload entry files
         working-directory: src/lite
-        # H5 为 hash 路由单页，只 index.html 需 no-cache；无 404 兜底页
         run: |
           ossutil cp dist-h5/index.html oss://${{ env.OSS_BUCKET }}/index.html -f --meta "Cache-Control:no-cache"
 

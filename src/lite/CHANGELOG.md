@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.0-alpha.5] - 2026-11-25
+
+### Fixed
+
+- 首屏报错（旧代码打服务端）根因：Taro 产物文件名不带内容 hash，却按 `max-age=31536000` 上传——用户浏览器把旧 JS 钉一年，新 index 配旧 app.js，旧代码还在调 provider。发布改为全部 `no-cache`
+- 任意路径直开吐 OSS `NoSuchKey` XML：桶补静态托管（`index.html` 兜底），深链回落首页
+- `<title>` 从占位 `lite` 改为「量潮创始人 lite」
+
 ## [0.1.0-alpha.4] - 2026-11-25
 
 ### Added
