@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.0-alpha.4] - 2026-11-25
+
+### Added
+
+- 待办每条带完整说明：`data/todos.ts` 的条目加 `detail`（多行原样换行显示），首页详情行小字灰色置于标题下
+
+### Changed
+
+- 改纯静态、撤掉服务端接入：首页不再请求 provider（`src/api/provider.ts` 与章节详情页 `pages/chapter` 删除，`config/index.ts` 不再注入 `PROVIDER_*`，`env.local.example` 删除），待办内容落在 `src/data/todos.ts`——改这份文件推 tag 即发布；`deploy-lite.yml` 去掉写 env.local 的步骤与 `QTFOUNDER_PROVIDER_*` 依赖
+- 首页只留待办：改稿章节与 memory 文档两区移除（数据源本就读不到，页面不再受其 500 影响）
+
 ## [0.1.0-alpha.3] - 2026-11-25
 
 ### Added

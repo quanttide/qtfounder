@@ -13,10 +13,8 @@
 #   - MINIPROGRAM_PRIVATE_KEY：小程序代码上传密钥文件全文（公众平台「开发设置」下载）
 #   - MINIPROGRAM_APPID：小程序 AppID
 #   - MINIPROGRAM_ROBOT：机器人编号 1-30（可选，默认 1，不同编号互不覆盖）
-#   - QTFOUNDER_PROVIDER_TOKEN：provider 访问令牌（cmd/mint 签发，构建时注入 env.local，进 H5 产物）
-# 所需 GitHub variables（仓库级）：
-#   - QTFOUNDER_PROVIDER_BASE_URL：provider 触发器地址
 # 若公众平台开启了 IP 白名单，需关闭或加入 GitHub Actions 出口 IP（出口 IP 不固定，建议关闭）。
+# 站点是纯静态（待办写在 src/lite/src/data/todos.ts），构建不注入任何服务端地址或令牌。
 
 name: Deploy Lite
 
@@ -98,18 +96,6 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: src/lite/package-lock.json
-
-      - name: Write provider env.local
-        working-directory: src/lite
-        env:
-          PROVIDER_BASE_URL: ${{ vars.QTFOUNDER_PROVIDER_BASE_URL }}
-          PROVIDER_TOKEN: ${{ secrets.QTFOUNDER_PROVIDER_TOKEN }}
-        run: |
-          if [ -z "$PROVIDER_BASE_URL" ] || [ -z "$PROVIDER_TOKEN" ]; then
-            echo "::error::缺少 QTFOUNDER_PROVIDER_BASE_URL（variable）或 QTFOUNDER_PROVIDER_TOKEN（secret）"
-            exit 1
-          fi
-          printf 'PROVIDER_BASE_URL=%s\nPROVIDER_TOKEN=%s\n' "$PROVIDER_BASE_URL" "$PROVIDER_TOKEN" > env.local
 
       - name: Install & Build
         working-directory: src/lite
