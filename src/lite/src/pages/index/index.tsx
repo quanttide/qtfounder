@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { navigateTo, useLoad } from '@tarojs/taro'
 import { useCallback, useState } from 'react'
 
-import { Chapter, MemoryDoc, fetchChapters, fetchMemoryDocs, isProviderConfigured } from '../../api/provider'
+import { Chapter, MemoryDoc, Todo, fetchChapters, fetchMemoryDocs, fetchTodos, isProviderConfigured } from '../../api/provider'
 import './index.scss'
 
 interface PageState {
@@ -10,9 +10,10 @@ interface PageState {
   error: string
   chapters: Chapter[]
   docs: MemoryDoc[]
+  todos: Todo[]
 }
 
-const INITIAL: PageState = { loading: true, error: '', chapters: [], docs: [] }
+const INITIAL: PageState = { loading: true, error: '', chapters: [], docs: [], todos: [] }
 
 export default function Index () {
   const [state, setState] = useState<PageState>(INITIAL)
@@ -28,8 +29,8 @@ export default function Index () {
     }
     setState({ ...INITIAL })
     try {
-      const [chapters, docs] = await Promise.all([fetchChapters(), fetchMemoryDocs()])
-      setState({ loading: false, error: '', chapters, docs })
+      const [todos, chapters, docs] = await Promise.all([fetchTodos(), fetchChapters(), fetchMemoryDocs()])
+      setState({ loading: false, error: '', todos, chapters, docs })
     } catch (e) {
       setState({ ...INITIAL, loading: false, error: e instanceof Error ? e.message : String(e) })
     }
@@ -43,7 +44,7 @@ export default function Index () {
     navigateTo({ url: `/pages/chapter/chapter?id=${encodeURIComponent(id)}` })
   }
 
-  const { loading, error, chapters, docs } = state
+  const { loading, error, chapters, docs, todos } = state
 
   return (
     <View className='index'>
@@ -67,6 +68,19 @@ export default function Index () {
 
       {!loading && error === '' && (
         <View>
+          <View className='section'>
+            <Text className='section-title'>待办（{todos.length}）</Text>
+            {todos.map((todo) => (
+              <View className='row' key={`${todo.group}/${todo.text}`}>
+                <Text className='row-main'>
+                  {todo.group !== '' && <Text className='cat'>{todo.group}</Text>}
+                  <Text className={todo.done ? 'todo-done' : 'todo-item'}>{todo.text}</Text>
+                </Text>
+              </View>
+            ))}
+            {todos.length === 0 && <Text className='empty'>暂无待办</Text>}
+          </View>
+
           <View className='section'>
             <Text className='section-title'>改稿章节（{chapters.length}）</Text>
             {chapters.map((chapter) => (

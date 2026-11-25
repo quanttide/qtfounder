@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- qtfounder-lite 首页「待办」区（`lite/v0.1.0-alpha.3`）：provider 新增 `GET /todos` 读数据源 `TODO.md`，lite 首页顶上直出待办清单，已完成项删除线
+
 ### Changed
 
 - `CONTRIBUTING.md`：新增「API 兼容约定（自 `cli/v0.1.0` 起）」——命令面、输出面、退出码、落盘格式、契约文件五面冻结；破坏 bump minor、兼容 bump patch、废弃不删、JSON 只增不删、阈值属配置不属 API

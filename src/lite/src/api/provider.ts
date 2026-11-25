@@ -22,6 +22,13 @@ export interface ChapterDetail {
   content: string
 }
 
+/** 待办条目（provider `GET /todos`，源自数据源里的 TODO.md） */
+export interface Todo {
+  group: string
+  text: string
+  done: boolean
+}
+
 const BASE_URL = process.env.PROVIDER_BASE_URL || ''
 const TOKEN = process.env.PROVIDER_TOKEN || ''
 
@@ -62,6 +69,11 @@ export function fetchChapters(): Promise<Chapter[]> {
 
 export function fetchMemoryDocs(): Promise<MemoryDoc[]> {
   return request<{ docs: MemoryDoc[] }>('/memory').then((data) => data.docs ?? [])
+}
+
+export function fetchTodos(): Promise<Todo[]> {
+  // 空表回退同 fetchChapters：上游 null 不击穿数组假设
+  return request<{ todos: Todo[] }>('/todos').then((data) => data.todos ?? [])
 }
 
 export function fetchChapter(id: string): Promise<ChapterDetail> {

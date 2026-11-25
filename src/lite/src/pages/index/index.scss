@@ -88,6 +88,15 @@
     border-radius: 8rpx;
   }
 
+  .todo-item {
+    color: #1f2329;
+  }
+
+  .todo-done {
+    color: #8a9099;
+    text-decoration: line-through;
+  }
+
   .empty {
     display: block;
     padding: 16rpx 0;
