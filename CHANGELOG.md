@@ -6,7 +6,7 @@
 
 - qtfounder-lite 改纯静态（`lite/v0.1.0-alpha.4`）：待办写进 `src/lite/src/data/todos.ts`、每条带完整说明，撤掉 provider 接入与首页另两个列表——更新＝改文件推 tag，不再依赖服务端
 
-- qtfounder-lite 首页「待办」区（`lite/v0.1.0-alpha.3`）：provider 新增 `GET /todos` 读数据源 `TODO.md`，lite 首页顶上直出待办清单，已完成项删除线
+- qtfounder-lite 首页「待办」区（`lite/v0.1.0-alpha.3`）：provider 曾新增 `GET /todos` 读数据源 `TODO.md`，lite 首页顶上直出待办清单——`lite/v0.1.0-alpha.4` 改纯静态后该端点与配套改动一并撤除，待办改在 `src/lite/src/data/todos.ts` 里维护
 
 ### Changed
 

@@ -4,8 +4,6 @@
 
 ### Added
 
-- 数据快照同步：待办清单改由 context 仓 `default/TODO.md` 提供（按 2026-11-25 日志列出），fiction 仓 `TODO.md` 的过时两条已清空——本提交触发 Deploy Provider 重打含新数据的 ZIP
-- `GET /todos` 待办接口：递归读两个数据源（fiction/memory）里的 `TODO.md`，解析 `- [ ]` / `- [x]` 与所在 `## 小节` 成 `group`/`text`/`done`；跳过 `.git`、单文件读不到不阻断、空表返回 `[]`；lite 首页待办区消费
 - `GET /chapters/{id}` 章节详情接口（目标 2 首项）：返回正文内容；id 只在改稿目录文件名清单里比对、不拼进路径（越界形状 404），不存在 404 而非 500；lite 章节详情页消费
 
 ### Changed
@@ -24,7 +22,6 @@
 
 ### Fixed
 
-- 改稿目录缺失返回空表而非 500：fiction 仓 `职场言情/4_改稿` 已不存在，`ListChapters` 把 `os.ReadDir` 错误直接抛出，一次目录改名就让 lite 首页整页报「provider 返回 500」；现与 `ListMemoryDocs` 同容忍度，补空目录测试
 - 列表端点在无数据时返回 `[]` 而非 `null`：nil 切片经 json 编码成 `null`，线上 `/memory` 数据源目录对不上恒为空表，`null` 击穿客户端数组假设（lite H5 因此白屏）；补空数据源测试
 - CORS 预检 OPTIONS 在鉴权前短路返回 204（`Preflight` 中间件）：浏览器规范要求预检 2xx，此前预检落到应用层 401，跨端页面（lite H5）会被判网络错误；`Access-Control-*` 响应头由 FC 网关补
 

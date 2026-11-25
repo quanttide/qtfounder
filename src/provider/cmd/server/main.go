@@ -25,7 +25,6 @@ func main() {
 	mux.HandleFunc("GET /chapters", h.ListChapters)
 	mux.HandleFunc("GET /chapters/{id}", h.GetChapter)
 	mux.HandleFunc("GET /memory", h.ListMemoryDocs)
-	mux.HandleFunc("GET /todos", h.ListTodos)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"ok"}`))

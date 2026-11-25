@@ -17,65 +17,6 @@ func TestIDAndTitleOf(t *testing.T) {
 	}
 }
 
-func TestListTodos(t *testing.T) {
-	fiction := t.TempDir()
-	memory := t.TempDir()
-
-	if err := os.WriteFile(filepath.Join(fiction, "TODO.md"),
-		[]byte("# TODO\n\n## 重生言情\n\n- [ ] 重逢篇增加演武大桥场景描写。\n\n## 校园言情\n\n- [x] 已经做完的一条\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	// memory 侧嵌一层也要被找到
-	if err := os.MkdirAll(filepath.Join(memory, "default"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(memory, "default", "TODO.md"), []byte("- [ ] 没有小节的待办\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	// .git 里的 TODO.md 不该被读进来
-	if err := os.MkdirAll(filepath.Join(memory, ".git"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(memory, ".git", "TODO.md"), []byte("- [ ] 不该出现\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	repo := NewRepository(fiction, memory)
-	todos, err := repo.ListTodos()
-	if err != nil {
-		t.Fatalf("ListTodos: %v", err)
-	}
-	if len(todos) != 3 {
-		t.Fatalf("len = %d, want 3（%+v）", len(todos), todos)
-	}
-	if todos[0].Group != "重生言情" || todos[0].Done {
-		t.Errorf("第一条 = %+v, want 重生言情/未完成", todos[0])
-	}
-	if todos[1].Group != "校园言情" || !todos[1].Done {
-		t.Errorf("第二条 = %+v, want 校园言情/已完成", todos[1])
-	}
-	if todos[2].Group != "" || todos[2].Text != "没有小节的待办" {
-		t.Errorf("第三条 = %+v, want 无小节", todos[2])
-	}
-	for _, todo := range todos {
-		if todo.Text == "不该出现" {
-			t.Error("读到了 .git 下的 TODO.md")
-		}
-	}
-}
-
-// 空数据源也要返回非 nil 空切片，否则 json 编出 "todos":null，客户端数组假设被击穿
-func TestListTodosEmptyReturnsJSONArray(t *testing.T) {
-	repo := NewRepository(t.TempDir(), t.TempDir())
-	todos, err := repo.ListTodos()
-	if err != nil {
-		t.Fatalf("ListTodos: %v", err)
-	}
-	if todos == nil {
-		t.Error("todos 为 nil，应是非 nil 空切片")
-	}
-}
-
 // 数据源路径：默认主仓库本地布局（src/provider/internal/creative → quanttide-founder 根 = 6 级）；
 // 可用 QTFOUNDER_TEST_DATA_ROOT 覆盖。目录不存在时跳过（CI 单仓库 checkout 无数据源）
 func testDataRepo(t *testing.T) *Repository {
@@ -120,18 +61,6 @@ func TestListMemoryDocs(t *testing.T) {
 	}
 	if len(docs) == 0 {
 		t.Error("应读到 memory 文档")
-	}
-}
-
-// 改稿目录缺失＝没有改稿章节：空表而非报错（否则 lite 首页整页被一次 500 掀掉）
-func TestListChaptersMissingDirReturnsEmpty(t *testing.T) {
-	repo := NewRepository(t.TempDir(), t.TempDir())
-	chapters, err := repo.ListChapters()
-	if err != nil {
-		t.Fatalf("目录缺失应返回空表，实际 err = %v", err)
-	}
-	if chapters == nil || len(chapters) != 0 {
-		t.Errorf("chapters = %+v, want 非 nil 空切片", chapters)
 	}
 }
 

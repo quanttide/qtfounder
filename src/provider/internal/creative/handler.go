@@ -51,16 +51,6 @@ func (h *Handler) ListMemoryDocs(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"docs": docs})
 }
 
-// ListTodos 处理 GET /todos：待办条目（TODO.md 解析）
-func (h *Handler) ListTodos(w http.ResponseWriter, r *http.Request) {
-	todos, err := h.repo.ListTodos()
-	if err != nil {
-		http.Error(w, "待办加载失败："+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"todos": todos})
-}
-
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
