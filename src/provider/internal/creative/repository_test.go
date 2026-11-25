@@ -123,6 +123,18 @@ func TestListMemoryDocs(t *testing.T) {
 	}
 }
 
+// 改稿目录缺失＝没有改稿章节：空表而非报错（否则 lite 首页整页被一次 500 掀掉）
+func TestListChaptersMissingDirReturnsEmpty(t *testing.T) {
+	repo := NewRepository(t.TempDir(), t.TempDir())
+	chapters, err := repo.ListChapters()
+	if err != nil {
+		t.Fatalf("目录缺失应返回空表，实际 err = %v", err)
+	}
+	if chapters == nil || len(chapters) != 0 {
+		t.Errorf("chapters = %+v, want 非 nil 空切片", chapters)
+	}
+}
+
 // 空数据源必须返回非 nil 空切片，否则 json 编出 "docs":null，客户端数组假设被击穿（lite 曾因此白屏）
 func TestListEmptySourceReturnsJSONArrays(t *testing.T) {
 	repo := NewRepository(t.TempDir(), t.TempDir())

@@ -29,7 +29,9 @@ func (r *Repository) ListChapters() ([]Chapter, error) {
 	dir := filepath.Join(r.FictionPath, "职场言情", "4_改稿")
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		return nil, err
+		// 目录缺失＝当前没有改稿章节：给空表而不是 500（同 ListMemoryDocs 的容忍度）。
+		// 此前这里直接抛错，一次目录改名就把 lite 首页整页掀掉
+		return make([]Chapter, 0), nil
 	}
 	chapters := make([]Chapter, 0)
 	for _, e := range entries {
