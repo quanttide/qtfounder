@@ -4,6 +4,7 @@
 
 ### Added
 
+- 数据快照同步：待办清单改由 context 仓 `default/TODO.md` 提供（按 2026-11-25 日志列出），fiction 仓 `TODO.md` 的过时两条已清空——本提交触发 Deploy Provider 重打含新数据的 ZIP
 - `GET /todos` 待办接口：递归读两个数据源（fiction/memory）里的 `TODO.md`，解析 `- [ ]` / `- [x]` 与所在 `## 小节` 成 `group`/`text`/`done`；跳过 `.git`、单文件读不到不阻断、空表返回 `[]`；lite 首页待办区消费
 - `GET /chapters/{id}` 章节详情接口（目标 2 首项）：返回正文内容；id 只在改稿目录文件名清单里比对、不拼进路径（越界形状 404），不存在 404 而非 500；lite 章节详情页消费
 
