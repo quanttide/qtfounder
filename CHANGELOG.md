@@ -12,7 +12,7 @@
 
 ### Changed
 
-- qtfounder-lite 首页「待办」改名「想法」：页面标题、副标题、空态、README 与 workflow 注释同步改词（记录的本就不是具体任务，是念头），不发新 tag
+- qtfounder-lite 首页改版（`lite/v0.1.0-alpha.6`）：「待办」改名「想法」并拆成「想法」「目标」两块——`data/todos.ts` 删除，新建 `data/ideas.ts`（念头）与 `data/goals.ts`（要达成的状态，`done` 划掉）各管一块；条目清到 1 条，任务与心情、进度快照不留，首页与样式重写
 
 - `CONTRIBUTING.md`：新增「API 兼容约定（自 `cli/v0.1.0` 起）」——命令面、输出面、退出码、落盘格式、契约文件五面冻结；破坏 bump minor、兼容 bump patch、废弃不删、JSON 只增不删、阈值属配置不属 API
 - CHANGELOG 拆分：`cli/v0.0.1` 至 `cli/v0.0.3` 三个版本段移至 `src/cli/CHANGELOG.md`，与 `src/site/CHANGELOG.md` 的模块化约定一致；本文件只留仓库级版本，模块版本按 `<模块>/CHANGELOG.md` 维护（studio 自 0.0.1 起版，记录见 `src/studio/CHANGELOG.md`）

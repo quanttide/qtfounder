@@ -1,10 +1,13 @@
 # Changelog
 
-## [Unreleased]
+## [0.1.0-alpha.6] - 2026-11-26
 
 ### Changed
 
-- 首页「待办」改名「想法」：`pages/index` 的区块标题、副标题与空态、`data/todos.ts` 注释、README 与 `deploy-lite.yml` 注释同步改词——记录的是念头不是任务，不发新 tag
+- 首页拆成「想法」「目标」两块，数据分文件：`data/todos.ts` 删除，新建 `data/ideas.ts`（记念头，无状态）与 `data/goals.ts`（记要达成的状态，`done` 划掉）；副标题改「想法与目标」，两块各自计数与空态
+- 「待办」改名「想法」：区块标题、副标题、空态、README 与 `deploy-lite.yml` 注释同步改词——记录的本就不是任务
+- 条目从 5 条清到 1 条：任务与心情、进度快照（先做漫画、改第三四章、已安排下去、联系更多人看）不留，「平台：把这些状态管理住」进目标；两份数据文件头写明各自收什么、不收什么
+- 首页样式重写：删掉 provider 时代遗留的 `state` / `error` / `retry` / `row-sub` 类，行样式改 `row-text` / `row-detail`
 
 ## [0.1.0-alpha.5] - 2026-11-25
 
