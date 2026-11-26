@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- 首页「待办」改名「想法」：`pages/index` 的区块标题、副标题与空态、`data/todos.ts` 注释、README 与 `deploy-lite.yml` 注释同步改词——记录的是念头不是任务，不发新 tag
+
 ## [0.1.0-alpha.5] - 2026-11-25
 
 ### Fixed

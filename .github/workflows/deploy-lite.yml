@@ -14,7 +14,7 @@
 #   - MINIPROGRAM_APPID：小程序 AppID
 #   - MINIPROGRAM_ROBOT：机器人编号 1-30（可选，默认 1，不同编号互不覆盖）
 # 若公众平台开启了 IP 白名单，需关闭或加入 GitHub Actions 出口 IP（出口 IP 不固定，建议关闭）。
-# 站点是纯静态（待办写在 src/lite/src/data/todos.ts），构建不注入任何服务端地址或令牌。
+# 站点是纯静态（想法写在 src/lite/src/data/todos.ts），构建不注入任何服务端地址或令牌。
 
 name: Deploy Lite
 
